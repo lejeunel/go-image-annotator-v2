@@ -1,18 +1,18 @@
 package create
 
-type CreatePresenter interface {
-	Success(CreateResponse)
+type CreateLabelPresenter interface {
+	Success(CreateLabelResponse)
 	ErrDuplication(string)
 	ErrInternal(string)
 }
 
 type FakeCreatePresenter struct {
-	Got               CreateResponse
+	Got               CreateLabelResponse
 	GotDuplicationErr bool
 	GotInternalErr    bool
 }
 
-func (p *FakeCreatePresenter) Success(r CreateResponse) {
+func (p *FakeCreatePresenter) Success(r CreateLabelResponse) {
 	p.Got = r
 }
 func (p *FakeCreatePresenter) ErrDuplication(m string) {

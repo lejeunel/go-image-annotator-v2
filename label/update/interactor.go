@@ -11,7 +11,7 @@ type UpdateInteractor struct {
 	repo      UpdateRepo
 }
 
-func NewUpdateCollectionInteractor(r UpdateRepo, p UpdatePresenter) *UpdateInteractor {
+func NewUpdateInteractor(r UpdateRepo, p UpdatePresenter) *UpdateInteractor {
 	return &UpdateInteractor{repo: r, presenter: p}
 }
 

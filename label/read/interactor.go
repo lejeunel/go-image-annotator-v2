@@ -26,6 +26,6 @@ type ReadInteractor struct {
 	presenter ReadPresenter
 }
 
-func NewReadCollectionInteractor(r ReadRepo, p ReadPresenter) *ReadInteractor {
+func NewReadInteractor(r ReadRepo, p ReadPresenter) *ReadInteractor {
 	return &ReadInteractor{repo: r, presenter: p}
 }

@@ -6,12 +6,12 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type CreateInteractor struct {
-	presenter CreatePresenter
+type CreateLabelInteractor struct {
+	presenter CreateLabelPresenter
 	repo      CreateRepo
 }
 
-func (i *CreateInteractor) Execute(r CreateRequest) {
+func (i *CreateLabelInteractor) Execute(r CreateLabelRequest) {
 	if err := i.repo.Create(CreateModel{Name: r.Name, Description: r.Description}); err != nil {
 		switch {
 		case errors.Is(err, e.ErrDuplicate):
@@ -20,9 +20,9 @@ func (i *CreateInteractor) Execute(r CreateRequest) {
 			i.presenter.ErrInternal(err.Error())
 		}
 	}
-	i.presenter.Success(CreateResponse{Name: r.Name, Description: r.Description})
+	i.presenter.Success(CreateLabelResponse{Name: r.Name, Description: r.Description})
 }
 
-func NewCreateInteractor(r CreateRepo, p CreatePresenter) *CreateInteractor {
-	return &CreateInteractor{presenter: p, repo: r}
+func NewCreateLabelInteractor(r CreateRepo, p CreateLabelPresenter) *CreateLabelInteractor {
+	return &CreateLabelInteractor{presenter: p, repo: r}
 }

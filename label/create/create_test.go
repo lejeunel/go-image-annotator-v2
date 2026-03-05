@@ -4,14 +4,14 @@ import (
 	"testing"
 )
 
-func TestCreateCollection(t *testing.T) {
+func TestCreateLabel(t *testing.T) {
 	presenter := &FakeCreatePresenter{}
 	repo := &FakeCreateRepo{}
-	itr := NewCreateInteractor(repo, presenter)
+	itr := NewCreateLabelInteractor(repo, presenter)
 	name := "a-name"
 	desc := "a-description"
-	req := CreateRequest{Name: name, Description: desc}
-	wantp := CreateResponse{Name: name, Description: desc}
+	req := CreateLabelRequest{Name: name, Description: desc}
+	wantp := CreateLabelResponse{Name: name, Description: desc}
 	wantr := CreateModel{Name: name, Description: desc}
 	itr.Execute(req)
 	if presenter.Got != wantp {
@@ -23,11 +23,11 @@ func TestCreateCollection(t *testing.T) {
 	}
 }
 
-func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
-	name := "my-collection"
+func TestCreateLabelWithDuplicateNameShouldFail(t *testing.T) {
+	name := "my-label"
 	presenter := &FakeCreatePresenter{}
-	itr := NewCreateInteractor(&FakeCreateRepo{Names: []string{name}}, presenter)
-	itr.Execute(CreateRequest{Name: name})
+	itr := NewCreateLabelInteractor(&FakeCreateRepo{Names: []string{name}}, presenter)
+	itr.Execute(CreateLabelRequest{Name: name})
 	if !presenter.GotDuplicationErr {
 		t.Fatal("expected duplication error, but go none")
 	}
@@ -35,8 +35,8 @@ func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 
 func TestHandleInternalError(t *testing.T) {
 	presenter := &FakeCreatePresenter{}
-	itr := NewCreateInteractor(&FakeInternalErrCreateRepo{}, presenter)
-	itr.Execute(CreateRequest{})
+	itr := NewCreateLabelInteractor(&FakeInternalErrCreateRepo{}, presenter)
+	itr.Execute(CreateLabelRequest{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}
