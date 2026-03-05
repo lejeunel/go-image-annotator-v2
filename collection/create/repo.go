@@ -1,7 +1,7 @@
 package create
 
 import (
-	c "github.com/lejeunel/go-image-annotator-v2/collection"
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"slices"
 )
 
@@ -16,8 +16,15 @@ type FakeCreateCollectionRepo struct {
 
 func (r *FakeCreateCollectionRepo) Create(req CreateCollectionRequest) error {
 	if slices.Contains(r.Names, req.Name) {
-		return c.ErrDuplicate
+		return e.ErrDuplicate
 	}
 	r.Got = req
 	return nil
+}
+
+type FakeInternalErrCreateCollectionRepo struct {
+}
+
+func (r *FakeInternalErrCreateCollectionRepo) Create(req CreateCollectionRequest) error {
+	return e.ErrInternal
 }

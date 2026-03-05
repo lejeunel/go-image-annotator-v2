@@ -1,8 +1,9 @@
 package update
 
 type UpdateCollectionRequest struct {
-	Name        string
-	Description string
+	Name           string
+	NewName        string
+	NewDescription string
 }
 
 type UpdateCollectionResponse struct {

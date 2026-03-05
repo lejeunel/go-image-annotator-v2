@@ -2,14 +2,17 @@ package read
 
 import (
 	"errors"
-	c "github.com/lejeunel/go-image-annotator-v2/collection"
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 func (i *ReadCollectionInteractor) Execute(r ReadCollectionRequest) {
 	found, err := i.repo.Find(r.Name)
 	if err != nil {
-		if errors.Is(err, c.ErrNotFound) {
+		switch {
+		case errors.Is(err, e.ErrNotFound):
 			i.presenter.ErrNotFound(err.Error())
+		default:
+			i.presenter.ErrInternal(err.Error())
 		}
 		return
 	}

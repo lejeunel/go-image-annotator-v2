@@ -2,7 +2,7 @@ package create
 
 import (
 	"errors"
-	c "github.com/lejeunel/go-image-annotator-v2/collection"
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type CreateCollectionInteractor struct {
@@ -12,10 +12,12 @@ type CreateCollectionInteractor struct {
 
 func (i *CreateCollectionInteractor) Execute(r CreateCollectionRequest) {
 	if err := i.repo.Create(r); err != nil {
-		if errors.Is(err, c.ErrDuplicate) {
+		switch {
+		case errors.Is(err, e.ErrDuplicate):
 			i.presenter.ErrDuplication(err.Error())
+		default:
+			i.presenter.ErrInternal(err.Error())
 		}
-		return
 	}
 	i.presenter.Success(CreateCollectionResponse{Name: r.Name, Description: r.Description})
 }

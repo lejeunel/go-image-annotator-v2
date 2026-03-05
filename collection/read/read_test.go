@@ -28,3 +28,12 @@ func TestReadNonExistingCollectionShouldFail(t *testing.T) {
 		t.Fatal("expected not found error, but got none")
 	}
 }
+
+func TestHandleInternalError(t *testing.T) {
+	presenter := &FakeReadCollectionPresenter{}
+	itr := NewReadCollectionInteractor(&FakeInternalErrReadCollectionRepo{}, presenter)
+	itr.Execute(ReadCollectionRequest{})
+	if !presenter.GotInternalErr {
+		t.Fatal("expected internal error, but got none")
+	}
+}

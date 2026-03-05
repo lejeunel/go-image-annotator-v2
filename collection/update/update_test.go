@@ -4,18 +4,30 @@ import (
 	"testing"
 )
 
-func TestUpdateCollection(t *testing.T) {
+func TestUpdateNonExistingCollectionShouldFail(t *testing.T) {
 
 	presenter := &FakeUpdateCollectionPresenter{}
-	repo := &FakeUpdateCollectionRepo{}
-	itr := NewUpdateCollectionInteractor(repo, presenter)
+	non_existing_name := "non-existing-name"
+	itr := NewUpdateCollectionInteractor(&FakeUpdateCollectionRepo{}, presenter)
+	itr.Execute(UpdateCollectionRequest{Name: non_existing_name, NewName: "new-name"})
+	if !presenter.GotNotFoundErr {
+		t.Fatal("expected not found error, but got none")
+	}
+}
+
+func TestUpdateCollection(t *testing.T) {
+	name := "name"
 	new_name := "updated-name"
 	new_description := "updated-description"
-	req := UpdateCollectionRequest{Name: new_name, Description: new_description}
-	res := UpdateCollectionResponse{Name: new_name, Description: new_description}
+
+	presenter := &FakeUpdateCollectionPresenter{}
+	repo := &FakeUpdateCollectionRepo{Names: []string{name}}
+	itr := NewUpdateCollectionInteractor(repo, presenter)
+	req := UpdateCollectionRequest{Name: name, NewName: new_name, NewDescription: new_description}
+	want := UpdateCollectionResponse{Name: new_name, Description: new_description}
 	itr.Execute(req)
-	if presenter.Got != res {
-		t.Fatalf("expected %v, got %v", res, presenter.Got)
+	if presenter.Got != want {
+		t.Fatalf("expected %v, got %v", want, presenter.Got)
 
 	}
 	if repo.Got != req {
@@ -24,13 +36,23 @@ func TestUpdateCollection(t *testing.T) {
 	}
 }
 
-func TestUpdateCollectionWithExistingNameShouldFail(t *testing.T) {
+func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 
 	presenter := &FakeUpdateCollectionPresenter{}
-	new_name := "updated-name"
-	itr := NewUpdateCollectionInteractor(&FakeUpdateCollectionRepo{Names: []string{new_name}}, presenter)
-	itr.Execute(UpdateCollectionRequest{Name: new_name})
+	name := "name"
+	existing_name := "existing-name"
+	itr := NewUpdateCollectionInteractor(&FakeUpdateCollectionRepo{Names: []string{name, existing_name}}, presenter)
+	itr.Execute(UpdateCollectionRequest{Name: name, NewName: existing_name})
 	if !presenter.GotDuplicationErr {
-		t.Fatal("expected duplication error, but go none")
+		t.Fatal("expected duplication error, but got none")
+	}
+}
+
+func TestHandleInternalError(t *testing.T) {
+	presenter := &FakeUpdateCollectionPresenter{}
+	itr := NewUpdateCollectionInteractor(&FakeInternalErrUpdateCollectionRepo{}, presenter)
+	itr.Execute(UpdateCollectionRequest{})
+	if !presenter.GotInternalErr {
+		t.Fatal("expected internal error, but got none")
 	}
 }
