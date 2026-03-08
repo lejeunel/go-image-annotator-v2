@@ -1,6 +1,6 @@
-package read
+package list
 
-func (i *ListInteractor) Execute(r ListRequest) {
+func (i *Interactor) Execute(r Request) {
 	found, err := i.repo.List(r)
 	if err != nil {
 		i.output.ErrInternal(err)
@@ -15,11 +15,11 @@ func (i *ListInteractor) Execute(r ListRequest) {
 
 }
 
-type ListInteractor struct {
-	repo   ListRepo
-	output ListOutputPort
+type Interactor struct {
+	repo   Repo
+	output OutputPort
 }
 
-func NewListInteractor(r ListRepo, o ListOutputPort) *ListInteractor {
-	return &ListInteractor{repo: r, output: o}
+func NewListInteractor(r Repo, o OutputPort) *Interactor {
+	return &Interactor{repo: r, output: o}
 }

@@ -8,13 +8,13 @@ import (
 	v "github.com/lejeunel/go-image-annotator-v2/validation"
 )
 
-type CreateInteractor struct {
-	output    CreateOutputPort
-	repo      CreateRepo
+type Interactor struct {
+	output    OutputPort
+	repo      Repo
 	validator v.Validator
 }
 
-func (i *CreateInteractor) checkDuplicate(name string) error {
+func (i *Interactor) checkDuplicate(name string) error {
 	errBaseMsg := "checking for duplicate label with name %v: %w"
 	alreadyExists, err := i.repo.Exists(name)
 	if err != nil {
@@ -26,7 +26,7 @@ func (i *CreateInteractor) checkDuplicate(name string) error {
 	return nil
 }
 
-func (i *CreateInteractor) Execute(r CreateRequest) {
+func (i *Interactor) Execute(r Request) {
 	if err := i.validator.Validate(r.Name); err != nil {
 		i.output.ErrValidation(err)
 		return
@@ -40,13 +40,13 @@ func (i *CreateInteractor) Execute(r CreateRequest) {
 		return
 	}
 
-	if err := i.repo.Create(CreateModel{Name: r.Name, Description: r.Description}); err != nil {
+	if err := i.repo.Create(Model{Name: r.Name, Description: r.Description}); err != nil {
 		i.output.ErrInternal(err)
 		return
 	}
-	i.output.Success(CreateResponse{Name: r.Name, Description: r.Description})
+	i.output.Success(Response{Name: r.Name, Description: r.Description})
 }
 
-func NewCreateLabelInteractor(r CreateRepo, v v.Validator, o CreateOutputPort) *CreateInteractor {
-	return &CreateInteractor{output: o, repo: r, validator: v}
+func NewCreateLabelInteractor(r Repo, v v.Validator, o OutputPort) *Interactor {
+	return &Interactor{output: o, repo: r, validator: v}
 }

@@ -1,6 +1,6 @@
-package read
+package list
 
-type ListRequest struct {
+type Request struct {
 	PageSize int
 	Page     int
 }

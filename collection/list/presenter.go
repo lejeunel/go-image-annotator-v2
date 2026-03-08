@@ -1,4 +1,4 @@
-package read
+package list
 
 type ListOutputPort interface {
 	Success(ListResponse)

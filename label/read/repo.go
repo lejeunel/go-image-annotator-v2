@@ -5,15 +5,15 @@ import (
 	l "github.com/lejeunel/go-image-annotator-v2/label"
 )
 
-type ReadRepo interface {
+type Repo interface {
 	Find(string) (*l.Label, error)
 }
 
-type FakeReadRepo struct {
+type FakeRepo struct {
 	Label l.Label
 }
 
-func (r *FakeReadRepo) Find(name string) (*l.Label, error) {
+func (r *FakeRepo) Find(name string) (*l.Label, error) {
 
 	if name == r.Label.Name {
 		return &r.Label, nil
@@ -22,9 +22,11 @@ func (r *FakeReadRepo) Find(name string) (*l.Label, error) {
 
 }
 
-type FakeInternalErrReadRepo struct{}
+type FakeErrRepo struct {
+	err error
+}
 
-func (r *FakeInternalErrReadRepo) Find(name string) (*l.Label, error) {
-	return nil, e.ErrInternal
+func (r *FakeErrRepo) Find(name string) (*l.Label, error) {
+	return nil, r.err
 
 }

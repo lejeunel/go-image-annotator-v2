@@ -1,27 +1,28 @@
-package read
+package list
 
 import (
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	l "github.com/lejeunel/go-image-annotator-v2/label"
 )
 
-type ListRepo interface {
-	List(ListRequest) ([]*l.Label, error)
+type Repo interface {
+	List(Request) ([]*l.Label, error)
 }
 
-type FakeListRepo struct {
+type FakeRepo struct {
 	ReturnedSomething bool
 }
 
-func (r *FakeListRepo) List(req ListRequest) ([]*l.Label, error) {
+func (r *FakeRepo) List(req Request) ([]*l.Label, error) {
 	r.ReturnedSomething = true
 	return []*l.Label{}, nil
 
 }
 
-type FakeInternalErrListRepo struct{}
+type FakeErrRepo struct {
+	err error
+}
 
-func (r *FakeInternalErrListRepo) List(req ListRequest) ([]*l.Label, error) {
-	return nil, e.ErrInternal
+func (r *FakeErrRepo) List(req Request) ([]*l.Label, error) {
+	return nil, r.err
 
 }

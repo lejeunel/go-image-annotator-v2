@@ -1,16 +1,16 @@
 package create
 
-type CreateResponse struct {
+type Response struct {
 	Name        string
 	Description string
 }
 
-type CreateRequest struct {
+type Request struct {
 	Name        string
 	Description string
 }
 
-type CreateModel struct {
+type Model struct {
 	Name        string
 	Description string
 }

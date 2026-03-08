@@ -1,14 +1,15 @@
-package read
+package list
 
 import (
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"testing"
 )
 
 func TestListCollection(t *testing.T) {
-	repo := &FakeListRepo{}
+	repo := &FakeRepo{}
 	presenter := &FakeListPresenter{}
 	itr := NewListInteractor(repo, presenter)
-	req := ListRequest{PageSize: 1, Page: 1}
+	req := Request{PageSize: 1, Page: 1}
 	itr.Execute(req)
 	if !repo.ReturnedSomething {
 		t.Fatal("expected repository to return something")
@@ -20,8 +21,8 @@ func TestListCollection(t *testing.T) {
 
 func TestHandleInternalError(t *testing.T) {
 	presenter := &FakeListPresenter{}
-	itr := NewListInteractor(&FakeInternalErrListRepo{}, presenter)
-	itr.Execute(ListRequest{})
+	itr := NewListInteractor(&FakeErrListRepo{e.ErrInternal}, presenter)
+	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}

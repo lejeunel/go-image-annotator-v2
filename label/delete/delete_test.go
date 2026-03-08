@@ -2,14 +2,16 @@ package delete
 
 import (
 	"testing"
+
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 func TestDeleteLabelWithAssociatedResourcesShouldFail(t *testing.T) {
 
 	name := "my-collection"
-	presenter := &FakeDeletePresenter{}
-	itr := NewDeleteLabelInteractor(&FakeDeleteRepo{ArePopulated: []string{name}}, presenter)
-	itr.Execute(DeleteRequest{Name: name})
+	presenter := &FakePresenter{}
+	itr := NewDeleteLabelInteractor(&FakeRepo{ArePopulated: []string{name}}, presenter)
+	itr.Execute(Request{Name: name})
 	if !presenter.GotDependencyErr {
 		t.Fatal("expected dependency error, but got none")
 	}
@@ -21,18 +23,18 @@ func TestDeleteLabelWithAssociatedResourcesShouldFail(t *testing.T) {
 func TestDeleteLabel(t *testing.T) {
 
 	name := "my-collection"
-	presenter := &FakeDeletePresenter{}
-	itr := NewDeleteLabelInteractor(&FakeDeleteRepo{}, presenter)
-	itr.Execute(DeleteRequest{Name: name})
+	presenter := &FakePresenter{}
+	itr := NewDeleteLabelInteractor(&FakeRepo{}, presenter)
+	itr.Execute(Request{Name: name})
 	if !presenter.GotSuccess {
 		t.Fatal("expected success, but did not")
 	}
 }
 
 func TestHandleInternalError(t *testing.T) {
-	presenter := &FakeDeletePresenter{}
-	itr := NewDeleteLabelInteractor(&FakeInternalErrDeleteRepo{}, presenter)
-	itr.Execute(DeleteRequest{})
+	presenter := &FakePresenter{}
+	itr := NewDeleteLabelInteractor(&FakeErrRepo{e.ErrInternal}, presenter)
+	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}

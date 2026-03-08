@@ -6,17 +6,17 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type UpdateInteractor struct {
-	output UpdateOutputPort
-	repo   UpdateRepo
+type Interactor struct {
+	output OutputPort
+	repo   Repo
 }
 
-func NewUpdateInteractor(r UpdateRepo, o UpdateOutputPort) *UpdateInteractor {
-	return &UpdateInteractor{repo: r, output: o}
+func NewUpdateInteractor(r Repo, o OutputPort) *Interactor {
+	return &Interactor{repo: r, output: o}
 }
 
-func (i *UpdateInteractor) Execute(r UpdateRequest) {
-	if err := i.repo.Update(UpdateModel{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
+func (i *Interactor) Execute(r Request) {
+	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
 		switch {
 		case errors.Is(err, e.ErrDuplicate):
 			i.output.ErrDuplication(err.Error())
@@ -28,5 +28,5 @@ func (i *UpdateInteractor) Execute(r UpdateRequest) {
 		return
 	}
 
-	i.output.Success(UpdateResponse{Name: r.NewName, Description: r.NewDescription})
+	i.output.Success(Response{Name: r.NewName, Description: r.NewDescription})
 }
