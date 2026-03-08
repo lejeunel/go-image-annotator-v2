@@ -1,14 +1,14 @@
 package read
 
 import (
-	c "github.com/lejeunel/go-image-annotator-v2/label"
+	l "github.com/lejeunel/go-image-annotator-v2/label"
 	"testing"
 )
 
 func TestReadLabel(t *testing.T) {
 	name := "my-label"
 	desc := "a-description"
-	repo := &FakeReadRepo{Label: c.Label{Name: name, Description: desc}}
+	repo := &FakeReadRepo{Label: l.Label{Name: name, Description: desc}}
 	presenter := &FakeReadPresenter{}
 	itr := NewReadInteractor(repo, presenter)
 	req := ReadRequest{Name: name}
@@ -20,13 +20,16 @@ func TestReadLabel(t *testing.T) {
 }
 
 func TestReadNonExistingLabelShouldFail(t *testing.T) {
-	repo := &FakeReadRepo{Label: c.Label{Name: "my-label", Description: "a-description"}}
+	repo := &FakeReadRepo{Label: l.Label{Name: "my-label", Description: "a-description"}}
 	presenter := &FakeReadPresenter{}
 	itr := NewReadInteractor(repo, presenter)
 	req := ReadRequest{Name: "non-existing-label"}
 	itr.Execute(req)
 	if !presenter.GotNotFoundErr {
 		t.Fatal("expected not found error, but got none")
+	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
 	}
 }
 

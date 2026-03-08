@@ -6,26 +6,26 @@ import (
 )
 
 type DeleteInteractor struct {
-	repo      DeleteRepo
-	presenter DeletePresenter
+	repo   DeleteRepo
+	output DeleteOutputPort
 }
 
 func (i *DeleteInteractor) Execute(r DeleteRequest) {
 	if err := i.repo.Delete(DeleteModel{Name: r.Name}); err != nil {
 		switch {
 		case errors.Is(err, e.ErrDependency):
-			i.presenter.ErrDependency(err.Error())
+			i.output.ErrDependency(err)
 			return
 		default:
-			i.presenter.ErrInternal(err.Error())
+			i.output.ErrInternal(err)
 		}
 	}
-	i.presenter.Success()
+	i.output.Success()
 }
 
-func NewDeleteInteractor(r DeleteRepo, p DeletePresenter) *DeleteInteractor {
+func NewDeleteInteractor(r DeleteRepo, o DeleteOutputPort) *DeleteInteractor {
 	return &DeleteInteractor{
-		repo:      r,
-		presenter: p,
+		repo:   r,
+		output: o,
 	}
 }

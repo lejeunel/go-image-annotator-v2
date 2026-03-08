@@ -13,6 +13,9 @@ func TestDeleteCollectionWithAssociatedResourcesShouldFail(t *testing.T) {
 	if !presenter.GotDependencyErr {
 		t.Fatal("expected dependency error, but got none")
 	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
+	}
 }
 
 func TestDeleteCollection(t *testing.T) {

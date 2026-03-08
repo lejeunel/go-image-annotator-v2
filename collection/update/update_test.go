@@ -13,6 +13,9 @@ func TestUpdateNonExistingCollectionShouldFail(t *testing.T) {
 	if !presenter.GotNotFoundErr {
 		t.Fatal("expected not found error, but got none")
 	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
+	}
 }
 
 func TestUpdateCollection(t *testing.T) {
@@ -46,6 +49,9 @@ func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 	itr.Execute(UpdateRequest{Name: name, NewName: existing_name})
 	if !presenter.GotDuplicationErr {
 		t.Fatal("expected duplication error, but got none")
+	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
 	}
 }
 

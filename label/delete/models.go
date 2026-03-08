@@ -1,9 +1,9 @@
 package delete
 
-type DeleteLabelRequest struct {
+type DeleteRequest struct {
 	Name string
 }
 
-type DeleteLabelModel struct {
+type DeleteModel struct {
 	Name string
 }

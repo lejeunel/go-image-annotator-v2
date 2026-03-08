@@ -1,11 +1,11 @@
 package create
 
-type CreateLabelResponse struct {
+type CreateResponse struct {
 	Name        string
 	Description string
 }
 
-type CreateLabelRequest struct {
+type CreateRequest struct {
 	Name        string
 	Description string
 }

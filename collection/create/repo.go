@@ -1,12 +1,12 @@
 package create
 
 import (
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"slices"
 )
 
 type CreateRepo interface {
 	Create(CreateModel) error
+	Exists(string) (bool, error)
 }
 
 type FakeCreateRepo struct {
@@ -15,15 +15,24 @@ type FakeCreateRepo struct {
 }
 
 func (r *FakeCreateRepo) Create(m CreateModel) error {
-	if slices.Contains(r.Names, m.Name) {
-		return e.ErrDuplicate
-	}
 	r.Got = m
 	return nil
 }
+func (r *FakeCreateRepo) Exists(name string) (bool, error) {
+	if slices.Contains(r.Names, name) {
+		return true, nil
+	}
+	return false, nil
+}
 
-type FakeInternalErrCreateRepo struct{}
+type FakeErrCreateRepo struct {
+	err error
+}
 
-func (r *FakeInternalErrCreateRepo) Create(m CreateModel) error {
-	return e.ErrInternal
+func (r *FakeErrCreateRepo) Create(m CreateModel) error {
+	return r.err
+}
+
+func (r *FakeErrCreateRepo) Exists(string) (bool, error) {
+	return false, r.err
 }

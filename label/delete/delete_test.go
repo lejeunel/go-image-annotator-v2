@@ -7,29 +7,32 @@ import (
 func TestDeleteLabelWithAssociatedResourcesShouldFail(t *testing.T) {
 
 	name := "my-collection"
-	presenter := &FakeDeleteLabelPresenter{}
-	itr := NewDeleteLabelInteractor(&FakeDeleteLabelRepo{ArePopulated: []string{name}}, presenter)
-	itr.Execute(DeleteLabelRequest{Name: name})
+	presenter := &FakeDeletePresenter{}
+	itr := NewDeleteLabelInteractor(&FakeDeleteRepo{ArePopulated: []string{name}}, presenter)
+	itr.Execute(DeleteRequest{Name: name})
 	if !presenter.GotDependencyErr {
 		t.Fatal("expected dependency error, but got none")
+	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
 	}
 }
 
 func TestDeleteLabel(t *testing.T) {
 
 	name := "my-collection"
-	presenter := &FakeDeleteLabelPresenter{}
-	itr := NewDeleteLabelInteractor(&FakeDeleteLabelRepo{}, presenter)
-	itr.Execute(DeleteLabelRequest{Name: name})
+	presenter := &FakeDeletePresenter{}
+	itr := NewDeleteLabelInteractor(&FakeDeleteRepo{}, presenter)
+	itr.Execute(DeleteRequest{Name: name})
 	if !presenter.GotSuccess {
 		t.Fatal("expected success, but did not")
 	}
 }
 
 func TestHandleInternalError(t *testing.T) {
-	presenter := &FakeDeleteLabelPresenter{}
-	itr := NewDeleteLabelInteractor(&FakeInternalErrDeleteLabelRepo{}, presenter)
-	itr.Execute(DeleteLabelRequest{})
+	presenter := &FakeDeletePresenter{}
+	itr := NewDeleteLabelInteractor(&FakeInternalErrDeleteRepo{}, presenter)
+	itr.Execute(DeleteRequest{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}

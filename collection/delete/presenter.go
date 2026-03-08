@@ -1,8 +1,8 @@
 package delete
 
-type DeletePresenter interface {
-	ErrDependency(string)
-	ErrInternal(string)
+type DeleteOutputPort interface {
+	ErrDependency(error)
+	ErrInternal(error)
 	Success()
 }
 
@@ -12,11 +12,11 @@ type FakeDeletePresenter struct {
 	GotSuccess       bool
 }
 
-func (p *FakeDeletePresenter) ErrDependency(m string) {
+func (p *FakeDeletePresenter) ErrDependency(error) {
 	p.GotDependencyErr = true
 }
 
-func (p *FakeDeletePresenter) ErrInternal(m string) {
+func (p *FakeDeletePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 

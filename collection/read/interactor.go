@@ -10,22 +10,22 @@ func (i *ReadInteractor) Execute(r ReadRequest) {
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			i.presenter.ErrNotFound(err.Error())
+			i.output.ErrNotFound(err)
 		default:
-			i.presenter.ErrInternal(err.Error())
+			i.output.ErrInternal(err)
 		}
 		return
 	}
 
-	i.presenter.Success(ReadResponse{Name: found.Name, Description: found.Description})
+	i.output.Success(ReadResponse{Name: found.Name, Description: found.Description})
 
 }
 
 type ReadInteractor struct {
-	repo      ReadRepo
-	presenter ReadPresenter
+	repo   ReadRepo
+	output ReadOutputPort
 }
 
-func NewReadCollectionInteractor(r ReadRepo, p ReadPresenter) *ReadInteractor {
-	return &ReadInteractor{repo: r, presenter: p}
+func NewReadCollectionInteractor(r ReadRepo, o ReadOutputPort) *ReadInteractor {
+	return &ReadInteractor{repo: r, output: o}
 }

@@ -1,25 +1,25 @@
 package delete
 
-type DeleteLabelPresenter interface {
-	ErrDependency(string)
-	ErrInternal(string)
+type DeleteOutputPort interface {
+	ErrDependency(error)
+	ErrInternal(error)
 	Success()
 }
 
-type FakeDeleteLabelPresenter struct {
+type FakeDeletePresenter struct {
 	GotDependencyErr bool
 	GotInternalErr   bool
 	GotSuccess       bool
 }
 
-func (p *FakeDeleteLabelPresenter) ErrDependency(m string) {
+func (p *FakeDeletePresenter) ErrDependency(error) {
 	p.GotDependencyErr = true
 }
 
-func (p *FakeDeleteLabelPresenter) ErrInternal(m string) {
+func (p *FakeDeletePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 
-func (p *FakeDeleteLabelPresenter) Success() {
+func (p *FakeDeletePresenter) Success() {
 	p.GotSuccess = true
 }

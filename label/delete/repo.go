@@ -6,21 +6,21 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type DeleteLabelRepo interface {
-	Delete(r DeleteLabelModel) error
+type DeleteRepo interface {
+	Delete(r DeleteModel) error
 }
 
-type FakeDeleteLabelRepo struct {
+type FakeDeleteRepo struct {
 	ArePopulated []string
 }
 
-type FakeInternalErrDeleteLabelRepo struct{}
+type FakeInternalErrDeleteRepo struct{}
 
-func (r *FakeInternalErrDeleteLabelRepo) Delete(m DeleteLabelModel) error {
+func (r *FakeInternalErrDeleteRepo) Delete(m DeleteModel) error {
 	return e.ErrInternal
 }
 
-func (r *FakeDeleteLabelRepo) Delete(m DeleteLabelModel) error {
+func (r *FakeDeleteRepo) Delete(m DeleteModel) error {
 	if slices.Contains(r.ArePopulated, m.Name) {
 		return e.ErrDependency
 	}

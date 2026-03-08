@@ -5,27 +5,27 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type DeleteLabelInteractor struct {
-	repo      DeleteLabelRepo
-	presenter DeleteLabelPresenter
+type DeleteInteractor struct {
+	repo   DeleteRepo
+	output DeleteOutputPort
 }
 
-func (i *DeleteLabelInteractor) Execute(r DeleteLabelRequest) {
-	if err := i.repo.Delete(DeleteLabelModel{Name: r.Name}); err != nil {
+func (i *DeleteInteractor) Execute(r DeleteRequest) {
+	if err := i.repo.Delete(DeleteModel{Name: r.Name}); err != nil {
 		switch {
 		case errors.Is(err, e.ErrDependency):
-			i.presenter.ErrDependency(err.Error())
+			i.output.ErrDependency(err)
 			return
 		default:
-			i.presenter.ErrInternal(err.Error())
+			i.output.ErrInternal(err)
 		}
 	}
-	i.presenter.Success()
+	i.output.Success()
 }
 
-func NewDeleteLabelInteractor(r DeleteLabelRepo, p DeleteLabelPresenter) *DeleteLabelInteractor {
-	return &DeleteLabelInteractor{
-		repo:      r,
-		presenter: p,
+func NewDeleteLabelInteractor(r DeleteRepo, o DeleteOutputPort) *DeleteInteractor {
+	return &DeleteInteractor{
+		repo:   r,
+		output: o,
 	}
 }

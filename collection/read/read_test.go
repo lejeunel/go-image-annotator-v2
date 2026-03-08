@@ -28,6 +28,9 @@ func TestReadNonExistingCollectionShouldFail(t *testing.T) {
 	if !presenter.GotNotFoundErr {
 		t.Fatal("expected not found error, but got none")
 	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
+	}
 }
 
 func TestHandleInternalError(t *testing.T) {
