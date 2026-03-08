@@ -10,7 +10,7 @@ func TestDeleteLabelWithAssociatedResourcesShouldFail(t *testing.T) {
 
 	name := "my-collection"
 	presenter := &FakePresenter{}
-	itr := NewDeleteLabelInteractor(&FakeRepo{ArePopulated: []string{name}}, presenter)
+	itr := NewDeleteLabelInteractor(&FakeRepo{Used: []string{name}}, presenter)
 	itr.Execute(Request{Name: name})
 	if !presenter.GotDependencyErr {
 		t.Fatal("expected dependency error, but got none")

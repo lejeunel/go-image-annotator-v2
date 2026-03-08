@@ -3,23 +3,29 @@ package delete
 type DeleteOutputPort interface {
 	ErrDependency(error)
 	ErrInternal(error)
+	ErrNotFound(error)
 	Success()
 }
 
-type FakeDeletePresenter struct {
+type FakePresenter struct {
 	GotDependencyErr bool
 	GotInternalErr   bool
+	GotNotFoundErr   bool
 	GotSuccess       bool
 }
 
-func (p *FakeDeletePresenter) ErrDependency(error) {
+func (p *FakePresenter) ErrDependency(error) {
 	p.GotDependencyErr = true
 }
 
-func (p *FakeDeletePresenter) ErrInternal(error) {
+func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 
-func (p *FakeDeletePresenter) Success() {
+func (p *FakePresenter) Success() {
 	p.GotSuccess = true
+}
+
+func (p *FakePresenter) ErrNotFound(error) {
+	p.GotNotFoundErr = true
 }

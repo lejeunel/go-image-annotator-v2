@@ -1,7 +1,7 @@
 package update
 
 import (
-	"errors"
+	"fmt"
 
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
@@ -16,15 +16,27 @@ func NewUpdateInteractor(r Repo, o OutputPort) *Interactor {
 }
 
 func (i *Interactor) Execute(r Request) {
+	exists, err := i.repo.Exists(r.Name)
+	if err != nil {
+		i.output.ErrInternal(fmt.Errorf("updating label %v: checking whether it exists: %w", r.Name, e.ErrInternal))
+		return
+	}
+	if !exists {
+		i.output.ErrNotFound(fmt.Errorf("updating label %v: checking whether it exists: %w", r.Name, e.ErrNotFound))
+		return
+	}
+
+	exists, err = i.repo.Exists(r.NewName)
+	if err != nil {
+		i.output.ErrInternal(fmt.Errorf("updating label %v to new name %v: checking whether new name exists: %w", r.Name, r.NewName, e.ErrInternal))
+		return
+	}
+	if exists {
+		i.output.ErrDuplication(fmt.Errorf("updating label %v to new name %v: checking whether new name exists: %w", r.Name, r.NewName, e.ErrDuplicate))
+		return
+	}
 	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
-		switch {
-		case errors.Is(err, e.ErrDuplicate):
-			i.output.ErrDuplication(err.Error())
-		case errors.Is(err, e.ErrNotFound):
-			i.output.ErrNotFound(err.Error())
-		default:
-			i.output.ErrInternal(err.Error())
-		}
+		i.output.ErrInternal(err)
 		return
 	}
 

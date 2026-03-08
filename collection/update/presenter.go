@@ -7,7 +7,7 @@ type UpdateOutputPort interface {
 	ErrInternal(error)
 }
 
-type FakeUpdatePresenter struct {
+type FakePresenter struct {
 	Got               UpdateResponse
 	GotDuplicationErr bool
 	GotNotFoundErr    bool
@@ -15,19 +15,19 @@ type FakeUpdatePresenter struct {
 	GotSuccess        bool
 }
 
-func (p *FakeUpdatePresenter) ErrDuplication(error) {
+func (p *FakePresenter) ErrDuplication(error) {
 	p.GotDuplicationErr = true
 }
 
-func (p *FakeUpdatePresenter) ErrNotFound(error) {
+func (p *FakePresenter) ErrNotFound(error) {
 	p.GotNotFoundErr = true
 }
 
-func (p *FakeUpdatePresenter) ErrInternal(error) {
+func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 
-func (p *FakeUpdatePresenter) Success(r UpdateResponse) {
+func (p *FakePresenter) Success(r UpdateResponse) {
 	p.GotSuccess = true
 	p.Got = r
 }

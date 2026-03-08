@@ -1,5 +1,6 @@
 package delete
 
 type Repo interface {
-	Delete(r Model) error
+	Delete(string) error
+	IsUsed(string) (bool, error)
 }

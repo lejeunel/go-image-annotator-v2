@@ -18,6 +18,7 @@ func (r *FakeCreateRepo) Create(m CreateModel) error {
 	r.Got = m
 	return nil
 }
+
 func (r *FakeCreateRepo) Exists(name string) (bool, error) {
 	if slices.Contains(r.Names, name) {
 		return true, nil

@@ -1,28 +1,31 @@
 package delete
 
-import (
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
-	"slices"
-)
-
-type FakeRepo struct {
-	ArePopulated []string
-}
+import "slices"
 
 type FakeErrRepo struct {
 	err error
 }
 
-func (r *FakeErrRepo) Delete(m Model) error {
-	return e.ErrInternal
+func (r *FakeErrRepo) Delete(string) error {
+	return r.err
+}
+func (r *FakeErrRepo) IsUsed(string) (bool, error) {
+	return false, r.err
 }
 
-func (r *FakeRepo) Delete(m Model) error {
-	if slices.Contains(r.ArePopulated, m.Name) {
-		return e.ErrDependency
-	}
+type FakeRepo struct {
+	Used []string
+}
 
+func (r *FakeRepo) Delete(string) error {
 	return nil
+}
+
+func (r *FakeRepo) IsUsed(n string) (bool, error) {
+	if slices.Contains(r.Used, n) {
+		return true, nil
+	}
+	return false, nil
 }
 
 type FakePresenter struct {

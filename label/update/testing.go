@@ -1,9 +1,6 @@
 package update
 
-import (
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
-	"slices"
-)
+import "slices"
 
 type FakeRepo struct {
 	Names []string
@@ -11,14 +8,15 @@ type FakeRepo struct {
 }
 
 func (r *FakeRepo) Update(m Model) error {
-	if !slices.Contains(r.Names, m.Name) {
-		return e.ErrNotFound
-	}
-	if slices.Contains(r.Names, m.NewName) {
-		return e.ErrDuplicate
-	}
 	r.Got = m
 	return nil
+}
+
+func (r *FakeRepo) Exists(n string) (bool, error) {
+	if slices.Contains(r.Names, n) {
+		return true, nil
+	}
+	return false, nil
 }
 
 type FakeErrRepo struct {
@@ -27,6 +25,9 @@ type FakeErrRepo struct {
 
 func (r *FakeErrRepo) Update(m Model) error {
 	return r.err
+}
+func (r *FakeErrRepo) Exists(n string) (bool, error) {
+	return false, r.err
 }
 
 type FakePresenter struct {
@@ -37,15 +38,15 @@ type FakePresenter struct {
 	GotSuccess        bool
 }
 
-func (p *FakePresenter) ErrDuplication(m string) {
+func (p *FakePresenter) ErrDuplication(error) {
 	p.GotDuplicationErr = true
 }
 
-func (p *FakePresenter) ErrNotFound(m string) {
+func (p *FakePresenter) ErrNotFound(error) {
 	p.GotNotFoundErr = true
 }
 
-func (p *FakePresenter) ErrInternal(m string) {
+func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 

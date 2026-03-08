@@ -1,14 +1,15 @@
 package update
 
 import (
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"testing"
 )
 
 func TestUpdateNonExistingCollectionShouldFail(t *testing.T) {
 
-	presenter := &FakeUpdatePresenter{}
+	presenter := &FakePresenter{}
 	non_existing_name := "non-existing-name"
-	itr := NewUpdateCollectionInteractor(&FakeUpdateRepo{}, presenter)
+	itr := NewUpdateCollectionInteractor(&FakeRepo{}, presenter)
 	itr.Execute(UpdateRequest{Name: non_existing_name, NewName: "new-name"})
 	if !presenter.GotNotFoundErr {
 		t.Fatal("expected not found error, but got none")
@@ -23,8 +24,8 @@ func TestUpdateCollection(t *testing.T) {
 	new_name := "updated-name"
 	new_description := "updated-description"
 
-	presenter := &FakeUpdatePresenter{}
-	repo := &FakeUpdateRepo{Names: []string{name}}
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{Names: []string{name}}
 	itr := NewUpdateCollectionInteractor(repo, presenter)
 	req := UpdateRequest{Name: name, NewName: new_name, NewDescription: new_description}
 	wantr := UpdateModel{Name: name, NewName: new_name, NewDescription: new_description}
@@ -42,10 +43,10 @@ func TestUpdateCollection(t *testing.T) {
 
 func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 
-	presenter := &FakeUpdatePresenter{}
+	presenter := &FakePresenter{}
 	name := "name"
 	existing_name := "existing-name"
-	itr := NewUpdateCollectionInteractor(&FakeUpdateRepo{Names: []string{name, existing_name}}, presenter)
+	itr := NewUpdateCollectionInteractor(&FakeRepo{Names: []string{name, existing_name}}, presenter)
 	itr.Execute(UpdateRequest{Name: name, NewName: existing_name})
 	if !presenter.GotDuplicationErr {
 		t.Fatal("expected duplication error, but got none")
@@ -56,8 +57,8 @@ func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 }
 
 func TestHandleInternalError(t *testing.T) {
-	presenter := &FakeUpdatePresenter{}
-	itr := NewUpdateCollectionInteractor(&FakeInternalErrUpdateRepo{}, presenter)
+	presenter := &FakePresenter{}
+	itr := NewUpdateCollectionInteractor(&FakeErrRepo{e.ErrInternal}, presenter)
 	itr.Execute(UpdateRequest{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")

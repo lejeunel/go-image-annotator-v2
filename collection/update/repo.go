@@ -1,32 +1,40 @@
 package update
 
 import (
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"slices"
+
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type UpdateRepo interface {
+type Repo interface {
 	Update(UpdateModel) error
+	Exists(string) (bool, error)
 }
 
-type FakeUpdateRepo struct {
+type FakeRepo struct {
 	Names []string
 	Got   UpdateModel
 }
 
-func (r *FakeUpdateRepo) Update(m UpdateModel) error {
-	if !slices.Contains(r.Names, m.Name) {
-		return e.ErrNotFound
-	}
-	if slices.Contains(r.Names, m.NewName) {
-		return e.ErrDuplicate
-	}
+func (r *FakeRepo) Update(m UpdateModel) error {
 	r.Got = m
 	return nil
 }
+func (r *FakeRepo) Exists(n string) (bool, error) {
+	if slices.Contains(r.Names, n) {
+		return true, nil
+	}
+	return false, nil
+}
 
-type FakeInternalErrUpdateRepo struct{}
+type FakeErrRepo struct {
+	err error
+}
 
-func (r *FakeInternalErrUpdateRepo) Update(m UpdateModel) error {
+func (r *FakeErrRepo) Update(m UpdateModel) error {
 	return e.ErrInternal
+}
+
+func (r *FakeErrRepo) Exists(n string) (bool, error) {
+	return false, r.err
 }
