@@ -1,31 +1,31 @@
 package create
 
-type CreateOutputPort interface {
-	Success(CreateResponse)
+type OutputPort interface {
+	Success(Response)
 	ErrDuplication(error)
 	ErrInternal(error)
 	ErrValidation(error)
 }
 
-type FakeCreatePresenter struct {
-	Got               CreateResponse
+type FakePresenter struct {
+	Got               Response
 	GotSuccess        bool
 	GotDuplicationErr bool
 	GotInternalErr    bool
 	GotValidationErr  bool
 }
 
-func (p *FakeCreatePresenter) Success(r CreateResponse) {
+func (p *FakePresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
 }
-func (p *FakeCreatePresenter) ErrDuplication(error) {
+func (p *FakePresenter) ErrDuplication(error) {
 	p.GotDuplicationErr = true
 }
-func (p *FakeCreatePresenter) ErrValidation(error) {
+func (p *FakePresenter) ErrValidation(error) {
 	p.GotValidationErr = true
 }
 
-func (p *FakeCreatePresenter) ErrInternal(error) {
+func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }

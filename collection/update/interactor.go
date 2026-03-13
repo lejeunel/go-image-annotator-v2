@@ -6,40 +6,57 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type UpdateInteractor struct {
+type Interactor struct {
 	output UpdateOutputPort
 	repo   Repo
 }
 
-func NewUpdateCollectionInteractor(r Repo, o UpdateOutputPort) *UpdateInteractor {
-	return &UpdateInteractor{repo: r, output: o}
+func NewUpdateCollectionInteractor(r Repo, o UpdateOutputPort) *Interactor {
+	return &Interactor{repo: r, output: o}
 }
 
-func (i *UpdateInteractor) Execute(r UpdateRequest) {
-	exists, err := i.repo.Exists(r.Name)
-	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("updating collection %v: checking whether it exists: %w", r.Name, e.ErrInternal))
-		return
-	}
-	if !exists {
-		i.output.ErrNotFound(fmt.Errorf("updating collection %v: checking whether it exists: %w", r.Name, e.ErrNotFound))
+func (i *Interactor) Execute(r UpdateRequest) {
+
+	if !i.sourceExists(r.Name) {
 		return
 	}
 
-	exists, err = i.repo.Exists(r.NewName)
-	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("updating collection %v to new name %v: checking whether new name exists: %w", r.Name, r.NewName, e.ErrInternal))
-		return
-	}
-	if exists {
-		i.output.ErrDuplication(fmt.Errorf("updating collection %v to new name %v: checking whether new name exists: %w", r.Name, r.NewName, e.ErrDuplicate))
+	if i.destinationExists(r.NewName) {
 		return
 	}
 
 	if err := i.repo.Update(UpdateModel{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
-		i.output.ErrInternal(fmt.Errorf("updating collection %v: %w", r.Name, err))
+		i.output.ErrInternal(fmt.Errorf("updating collection %v: %w", r.Name, e.ErrInternal))
 		return
 	}
 
 	i.output.Success(UpdateResponse{Name: r.NewName, Description: r.NewDescription})
+}
+
+func (i *Interactor) sourceExists(name string) bool {
+	baseErrMsg := fmt.Sprintf("updating collection %v: checking whether it exists", name)
+	exists, err := i.repo.Exists(name)
+	if err != nil {
+		i.output.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
+		return true
+	}
+	if exists {
+		return true
+	}
+	i.output.ErrNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
+	return false
+}
+
+func (i *Interactor) destinationExists(name string) bool {
+	baseErrMsg := fmt.Sprintf("updating collection to name %v: checking whether it exists", name)
+	exists, err := i.repo.Exists(name)
+	if err != nil {
+		i.output.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
+		return true
+	}
+	if exists {
+		i.output.ErrDuplication(fmt.Errorf("%v: %w", baseErrMsg, e.ErrDuplicate))
+		return true
+	}
+	return false
 }

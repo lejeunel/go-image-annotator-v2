@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"fmt"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"regexp"
 )
@@ -28,7 +29,7 @@ var validName = regexp.MustCompile(`^[a-z0-9-]+$`)
 
 func (v *NameValidator) Validate(name string) error {
 	if !validName.MatchString(name) {
-		return e.ErrValidation
+		return fmt.Errorf("checking for illegal characters (capital letters, special characters except '-'): %w", e.ErrValidation)
 	}
 	return nil
 

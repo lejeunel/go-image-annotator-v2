@@ -5,35 +5,35 @@ import (
 )
 
 type CreateRepo interface {
-	Create(CreateModel) error
+	Create(Model) error
 	Exists(string) (bool, error)
 }
 
-type FakeCreateRepo struct {
+type FakeRepo struct {
 	Names []string
-	Got   CreateModel
+	Got   Model
 }
 
-func (r *FakeCreateRepo) Create(m CreateModel) error {
+func (r *FakeRepo) Create(m Model) error {
 	r.Got = m
 	return nil
 }
 
-func (r *FakeCreateRepo) Exists(name string) (bool, error) {
+func (r *FakeRepo) Exists(name string) (bool, error) {
 	if slices.Contains(r.Names, name) {
 		return true, nil
 	}
 	return false, nil
 }
 
-type FakeErrCreateRepo struct {
+type FakeErrRepo struct {
 	err error
 }
 
-func (r *FakeErrCreateRepo) Create(m CreateModel) error {
+func (r *FakeErrRepo) Create(m Model) error {
 	return r.err
 }
 
-func (r *FakeErrCreateRepo) Exists(string) (bool, error) {
+func (r *FakeErrRepo) Exists(string) (bool, error) {
 	return false, r.err
 }

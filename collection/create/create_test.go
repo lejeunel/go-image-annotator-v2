@@ -8,14 +8,14 @@ import (
 )
 
 func TestCreateCollection(t *testing.T) {
-	presenter := &FakeCreatePresenter{}
-	repo := &FakeCreateRepo{}
-	itr := NewCreateInteractor(repo, &v.FakeValidNameValidator{}, presenter)
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{}
+	itr := NewInteractor(repo, &v.FakeValidNameValidator{}, presenter)
 	name := "a-name"
 	desc := "a-description"
-	req := CreateRequest{Name: name, Description: desc}
-	wantp := CreateResponse{Name: name, Description: desc}
-	wantr := CreateModel{Name: name, Description: desc}
+	req := Request{Name: name, Description: desc}
+	wantp := Response{Name: name, Description: desc}
+	wantr := Model{Name: name, Description: desc}
 	itr.Execute(req)
 	if presenter.Got != wantp {
 		t.Fatalf("expected %v, got %v", wantp, presenter.Got)
@@ -27,9 +27,9 @@ func TestCreateCollection(t *testing.T) {
 
 func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 	name := "my-collection"
-	presenter := &FakeCreatePresenter{}
-	itr := NewCreateInteractor(&FakeCreateRepo{Names: []string{name}}, &v.FakeValidNameValidator{}, presenter)
-	itr.Execute(CreateRequest{Name: name})
+	presenter := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Names: []string{name}}, &v.FakeValidNameValidator{}, presenter)
+	itr.Execute(Request{Name: name})
 	if !presenter.GotDuplicationErr {
 		t.Fatal("expected duplication error, but go none")
 	}
@@ -39,9 +39,9 @@ func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 }
 
 func TestHandleInternalError(t *testing.T) {
-	presenter := &FakeCreatePresenter{}
-	itr := NewCreateInteractor(&FakeErrCreateRepo{e.ErrInternal}, &v.FakeValidNameValidator{}, presenter)
-	itr.Execute(CreateRequest{})
+	presenter := &FakePresenter{}
+	itr := NewInteractor(&FakeErrRepo{e.ErrInternal}, &v.FakeValidNameValidator{}, presenter)
+	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}
@@ -49,10 +49,10 @@ func TestHandleInternalError(t *testing.T) {
 
 func TestCreateCollectionWithInvalidNameShouldFail(t *testing.T) {
 	name := "my-collection%/"
-	presenter := &FakeCreatePresenter{}
+	presenter := &FakePresenter{}
 	validator := &v.FakeInvalidNameValidator{}
-	itr := NewCreateInteractor(&FakeCreateRepo{Names: []string{name}}, validator, presenter)
-	itr.Execute(CreateRequest{Name: name})
+	itr := NewInteractor(&FakeRepo{Names: []string{name}}, validator, presenter)
+	itr.Execute(Request{Name: name})
 	if !presenter.GotValidationErr {
 		t.Fatal("expected validation error, but go none")
 	}
