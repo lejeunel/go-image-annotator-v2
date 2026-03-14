@@ -1,23 +1,35 @@
 package ingest
 
 import (
-	"bytes"
-	"strings"
+	"io"
 	"testing"
 
+	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type FakeFailingReader struct{}
+type FakeReader struct {
+	Data   []byte
+	Offset int
+	Err    error
+}
 
-func (r *FakeFailingReader) Read(b []byte) (int, error) {
-	return 0, e.ErrValidation
+func (r FakeReader) Read(b []byte) (int, error) {
+	if r.Err != nil {
+		return 0, r.Err
+	}
+	if r.Offset >= len(r.Data) {
+		return 0, io.EOF
+	}
+	n := copy(b, r.Data[r.Offset:])
+	r.Offset += n
+	return n, nil
 }
 
 func TestIngestInNonExistingCollectionShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{}, &FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Collection: "non-existing-collection", Reader: bytes.NewReader([]byte{})})
+	itr := NewInteractor(&FakeRepo{CollectionExists_: false}, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{})
 	if !presenter.GotCollectionNotFoundErr {
 		t.Fatal("expected not found error, but go none")
 	}
@@ -28,9 +40,9 @@ func TestIngestInNonExistingCollectionShouldFail(t *testing.T) {
 
 func TestIngestInvalidImageDataShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{Collections: []string{"a-collection"}}
-	itr := NewInteractor(repo, &FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Collection: "a-collection", Reader: &FakeFailingReader{}})
+	repo := &FakeRepo{CollectionExists_: true, LabelExists_: true}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &FakeReader{Err: e.ErrInternal}})
 	if !presenter.GotInvalidImageDataErr {
 		t.Fatal("expected invalid data error, but go none")
 	}
@@ -41,7 +53,7 @@ func TestIngestInvalidImageDataShouldFail(t *testing.T) {
 
 func TestHandleInternalErrorOnCollectionExistsCheck(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeCollectionExistsErrRepo{e.ErrInternal}, &FakeArtefactRepo{}, presenter)
+	itr := NewInteractor(&FakeRepo{ErrOnFindCollection: true, Err: e.ErrInternal}, &a.FakeArtefactRepo{}, presenter)
 	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
@@ -50,11 +62,11 @@ func TestHandleInternalErrorOnCollectionExistsCheck(t *testing.T) {
 
 func TestHandleArtefactRepoError(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{Collections: []string{"a-collection"}}
-	itr := NewInteractor(repo, &FakeErrArtefactRepo{e.ErrInternal}, presenter)
-	itr.Execute(Request{Collection: "a-collection", Reader: strings.NewReader("dummy-data")})
+	repo := &FakeRepo{CollectionExists_: true, LabelExists_: true}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{Err: e.ErrInternal}, presenter)
+	itr.Execute(Request{Reader: FakeReader{}})
 	if !presenter.GotInternalErr {
-		t.Fatal("expected invalid data error, but go none")
+		t.Fatal("expected invalid data error")
 	}
 	if presenter.GotSuccess {
 		t.Fatal("expected no success")
@@ -63,9 +75,9 @@ func TestHandleArtefactRepoError(t *testing.T) {
 
 func TestIngestImageWithNonExistingLabelShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{Collections: []string{"a-collection"}, Labels: []string{"a-label"}}
-	itr := NewInteractor(repo, &FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Collection: "a-collection", Labels: []string{"non-existing-label"}})
+	repo := &FakeRepo{LabelExists_: false, CollectionExists_: true}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Labels: []string{"a-label"}})
 	if !presenter.GotLabelNotFoundErr {
 		t.Fatal("expected label not found error, but go none")
 	}
@@ -77,14 +89,26 @@ func TestIngestImageWithNonExistingLabelShouldFail(t *testing.T) {
 
 func TestHandleLabelExistsInternalErr(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeLabelExistsErrRepo{e.ErrInternal}
-	itr := NewInteractor(repo, &FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Collection: "a-collection", Labels: []string{"a-label"}})
+	repo := &FakeRepo{CollectionExists_: true, ErrOnLabelExists: true, Err: e.ErrInternal}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Labels: []string{"a-label"}})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error")
 	}
 	if presenter.GotSuccess {
 		t.Fatal("expected no success")
 	}
+}
 
+func TestHandleIngestionInternalErr(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{CollectionExists_: true, LabelExists_: true, ErrOnIngest: true, Err: e.ErrInternal}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: FakeReader{}})
+	if !presenter.GotInternalErr {
+		t.Fatal("expected internal error")
+	}
+	if presenter.GotSuccess {
+		t.Fatal("expected no success")
+	}
 }

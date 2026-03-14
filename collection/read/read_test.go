@@ -1,14 +1,14 @@
 package read
 
 import (
-	c "github.com/lejeunel/go-image-annotator-v2/collection"
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	"testing"
 )
 
 func TestReadCollection(t *testing.T) {
 	name := "my-collection"
 	desc := "a-description"
-	repo := &FakeReadRepo{Collection: c.Collection{Name: name, Description: desc}}
+	repo := &FakeReadRepo{Collection: clc.Collection{Name: name, Description: desc}}
 	presenter := &FakeReadPresenter{}
 	itr := NewReadCollectionInteractor(repo, presenter)
 	req := ReadRequest{Name: name}
@@ -20,7 +20,7 @@ func TestReadCollection(t *testing.T) {
 }
 
 func TestReadNonExistingCollectionShouldFail(t *testing.T) {
-	repo := &FakeReadRepo{Collection: c.Collection{Name: "my-collection", Description: "a-description"}}
+	repo := &FakeReadRepo{Collection: clc.Collection{Name: "my-collection", Description: "a-description"}}
 	presenter := &FakeReadPresenter{}
 	itr := NewReadCollectionInteractor(repo, presenter)
 	req := ReadRequest{Name: "non-existing-collection"}

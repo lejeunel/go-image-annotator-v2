@@ -1,8 +1,8 @@
 package read
 
 import (
+	l "github.com/lejeunel/go-image-annotator-v2/domain/label"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
-	l "github.com/lejeunel/go-image-annotator-v2/label"
 )
 
 type Repo interface {

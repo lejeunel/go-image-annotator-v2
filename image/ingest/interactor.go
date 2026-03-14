@@ -1,10 +1,15 @@
 package ingest
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
+
+	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 )
 
 var errCtx = "ingesting image"
@@ -12,15 +17,16 @@ var errCtx = "ingesting image"
 type Interactor struct {
 	output       OutputPort
 	repo         Repo
-	artefactRepo ArtefactRepo
+	artefactRepo a.ArtefactRepo
 }
 
-func NewInteractor(repo Repo, artefactRepo ArtefactRepo, output OutputPort) *Interactor {
+func NewInteractor(repo Repo, artefactRepo a.ArtefactRepo, output OutputPort) *Interactor {
 	return &Interactor{output: output, repo: repo, artefactRepo: artefactRepo}
 }
 
 func (i *Interactor) Execute(r Request) {
-	if !i.collectionExists(r.Collection) {
+	collection := i.findCollectionByName(r.Collection)
+	if collection == nil {
 		return
 	}
 
@@ -33,31 +39,40 @@ func (i *Interactor) Execute(r Request) {
 		return
 	}
 
-	if err := i.artefactRepo.Store(data); err != nil {
+	artefactID := a.NewArtefactID()
+	if err := i.artefactRepo.Store(artefactID, data); err != nil {
 		i.output.ErrInternal(fmt.Errorf("%v: storing image data in artefact repository: %w", errCtx, e.ErrInternal))
 		return
 	}
 
-	i.output.Success(Response{Collection: r.Collection})
+	imageID := im.NewImageID()
+	if err := i.repo.IngestImage(imageID, collection.ID, artefactID); err != nil {
+		i.output.Success(Response{Collection: r.Collection})
+	}
+	i.output.ErrInternal(fmt.Errorf("%v: ingesting image meta-data: %w", errCtx, e.ErrInternal))
 
 }
 
-func (i *Interactor) collectionExists(name string) bool {
-	collectionExists, err := i.repo.CollectionExists(name)
-	baseErrMsg := fmt.Sprintf("%v: checking whether collection %v exists", errCtx, name)
-	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
-		return false
-	}
-	if !collectionExists {
+func (i *Interactor) findCollectionByName(name string) *clc.Collection {
+	collection, err := i.repo.FindCollectionByName(name)
+	baseErrMsg := fmt.Sprintf("%v: finding collection with name %v", errCtx, name)
+	switch {
+	case errors.Is(err, e.ErrNotFound):
 		i.output.ErrCollectionNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
-		return false
+		return nil
+	case errors.Is(err, e.ErrInternal):
+		i.output.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
+		return nil
 	}
-	return true
+	return collection
 
 }
 
 func (i *Interactor) labelsExist(labels []string) bool {
+	if len(labels) == 0 {
+		return true
+	}
+
 	for _, label := range labels {
 		baseErrMsg := fmt.Sprintf("%v: checking whether label %v exist", errCtx, label)
 		labelExists, err := i.repo.LabelExists(label)

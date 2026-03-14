@@ -1,19 +1,19 @@
 package read
 
 import (
-	c "github.com/lejeunel/go-image-annotator-v2/collection"
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type ReadRepo interface {
-	Find(string) (*c.Collection, error)
+	Find(string) (*clc.Collection, error)
 }
 
 type FakeReadRepo struct {
-	Collection c.Collection
+	Collection clc.Collection
 }
 
-func (r *FakeReadRepo) Find(name string) (*c.Collection, error) {
+func (r *FakeReadRepo) Find(name string) (*clc.Collection, error) {
 
 	if name == r.Collection.Name {
 		return &r.Collection, nil
@@ -24,7 +24,7 @@ func (r *FakeReadRepo) Find(name string) (*c.Collection, error) {
 
 type FakeInternalErrReadRepo struct{}
 
-func (r *FakeInternalErrReadRepo) Find(name string) (*c.Collection, error) {
+func (r *FakeInternalErrReadRepo) Find(name string) (*clc.Collection, error) {
 	return nil, e.ErrInternal
 
 }
