@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type ImageID uuid.UUID
+type ImageId uuid.UUID
 
-func NewImageID() ImageID {
-	return ImageID(uuid.New())
+func NewImageID() ImageId {
+	return ImageId(uuid.New())
 }

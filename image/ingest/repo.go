@@ -1,45 +1,19 @@
 package ingest
 
 import (
+	an "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
 	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
 	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
 )
 
 type Repo interface {
 	FindCollectionByName(string) (*clc.Collection, error)
-	LabelExists(string) (bool, error)
-	IngestImage(im.ImageID, clc.CollectionID, a.ArtefactID) error
-}
-
-type FakeRepo struct {
-	GotImage            bool
-	Err                 error
-	ErrOnFindCollection bool
-	ErrOnLabelExists    bool
-	ErrOnIngest         bool
-	CollectionExists_   bool
-	LabelExists_        bool
-}
-
-func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
-	if r.ErrOnFindCollection {
-		return nil, r.Err
-	}
-	if !r.CollectionExists_ {
-		return nil, e.ErrNotFound
-	}
-	return clc.NewCollection("a-collection"), nil
-}
-
-func (r *FakeRepo) LabelExists(name string) (bool, error) {
-	if r.ErrOnLabelExists {
-		return false, r.Err
-	}
-	return r.LabelExists_, nil
-}
-
-func (r *FakeRepo) IngestImage(im.ImageID, clc.CollectionID, a.ArtefactID) error {
-	return nil
+	FindLabelByName(string) (*lbl.Label, error)
+	IngestImage(im.ImageId, clc.CollectionId, a.ArtefactId) error
+	AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error
+	AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error
+	FindImageByHash(string) (*im.Image, error)
+	DeleteImage(im.ImageId) error
 }

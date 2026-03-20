@@ -11,13 +11,7 @@ type Interactor struct {
 }
 
 func (i *Interactor) Execute(r Request) {
-	isUsed, err := i.repo.IsUsed(r.Name)
-	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("checking for existence of label with name %v: %w", r.Name, e.ErrInternal))
-		return
-	}
-	if isUsed {
-		i.output.ErrDependency(fmt.Errorf("checking for existence of label with name %v: %w", r.Name, e.ErrDependency))
+	if ok := i.isUsed(r.Name); !ok {
 		return
 	}
 	if err := i.repo.Delete(r.Name); err != nil {
@@ -27,7 +21,21 @@ func (i *Interactor) Execute(r Request) {
 	i.output.Success()
 }
 
-func NewDeleteLabelInteractor(r Repo, o OutputPort) *Interactor {
+func (i *Interactor) isUsed(name string) bool {
+	isUsed, err := i.repo.IsUsed(name)
+	if err != nil {
+		i.output.ErrInternal(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrInternal))
+		return false
+	}
+	if isUsed {
+		i.output.ErrDependency(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrDependency))
+		return false
+	}
+	return true
+
+}
+
+func NewInteractor(r Repo, o OutputPort) *Interactor {
 	return &Interactor{
 		repo:   r,
 		output: o,

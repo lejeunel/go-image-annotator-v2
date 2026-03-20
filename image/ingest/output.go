@@ -6,4 +6,6 @@ type OutputPort interface {
 	ErrLabelNotFound(error)
 	ErrInvalidImageData(error)
 	ErrInternal(error)
+	ErrDuplicateImage(error)
+	ErrValidation(error)
 }

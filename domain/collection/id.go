@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type CollectionID uuid.UUID
+type CollectionId uuid.UUID
 
-func NewCollectionID() CollectionID {
-	return CollectionID(uuid.New())
+func NewCollectionID() CollectionId {
+	return CollectionId(uuid.New())
 }

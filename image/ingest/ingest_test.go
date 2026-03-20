@@ -1,53 +1,29 @@
 package ingest
 
 import (
-	"io"
 	"testing"
 
 	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
+	i "github.com/lejeunel/go-image-annotator-v2/domain/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type FakeReader struct {
-	Data   []byte
-	Offset int
-	Err    error
-}
-
-func (r FakeReader) Read(b []byte) (int, error) {
-	if r.Err != nil {
-		return 0, r.Err
-	}
-	if r.Offset >= len(r.Data) {
-		return 0, io.EOF
-	}
-	n := copy(b, r.Data[r.Offset:])
-	r.Offset += n
-	return n, nil
-}
-
-func TestIngestInNonExistingCollectionShouldFail(t *testing.T) {
+func TestNonExistingCollectionShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{CollectionExists_: false}, &a.FakeArtefactRepo{}, presenter)
+	itr := NewInteractor(&FakeRepo{MissingCollection: true}, &a.FakeArtefactRepo{}, presenter)
 	itr.Execute(Request{})
-	if !presenter.GotCollectionNotFoundErr {
-		t.Fatal("expected not found error, but go none")
-	}
-	if presenter.GotSuccess {
-		t.Fatal("expected no success")
+	if !presenter.GotCollectionNotFoundErr || presenter.GotSuccess {
+		t.Fatal("expected not found error")
 	}
 }
 
-func TestIngestInvalidImageDataShouldFail(t *testing.T) {
+func TestInvalidImageDataShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{CollectionExists_: true, LabelExists_: true}
+	repo := &FakeRepo{}
 	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Reader: &FakeReader{Err: e.ErrInternal}})
-	if !presenter.GotInvalidImageDataErr {
-		t.Fatal("expected invalid data error, but go none")
-	}
-	if presenter.GotSuccess {
-		t.Fatal("expected no success")
+	itr.Execute(Request{Reader: &i.FakeImageReader{Err: e.ErrInternal}})
+	if !presenter.GotInvalidImageDataErr || presenter.GotSuccess {
+		t.Fatal("expected invalid data error")
 	}
 }
 
@@ -55,60 +31,151 @@ func TestHandleInternalErrorOnCollectionExistsCheck(t *testing.T) {
 	presenter := &FakePresenter{}
 	itr := NewInteractor(&FakeRepo{ErrOnFindCollection: true, Err: e.ErrInternal}, &a.FakeArtefactRepo{}, presenter)
 	itr.Execute(Request{})
-	if !presenter.GotInternalErr {
-		t.Fatal("expected internal error, but got none")
+	if !presenter.GotInternalErr || presenter.GotSuccess {
+		t.Fatal("expected internal error")
 	}
 }
 
 func TestHandleArtefactRepoError(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{CollectionExists_: true, LabelExists_: true}
+	repo := &FakeRepo{}
 	itr := NewInteractor(repo, &a.FakeArtefactRepo{Err: e.ErrInternal}, presenter)
-	itr.Execute(Request{Reader: FakeReader{}})
-	if !presenter.GotInternalErr {
+	itr.Execute(Request{Reader: &i.FakeImageReader{}})
+	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatal("expected invalid data error")
-	}
-	if presenter.GotSuccess {
-		t.Fatal("expected no success")
 	}
 }
 
-func TestIngestImageWithNonExistingLabelShouldFail(t *testing.T) {
+func TestNonExistingLabelShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{LabelExists_: false, CollectionExists_: true}
+	repo := &FakeRepo{MissingLabel: true}
 	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Labels: []string{"a-label"}})
-	if !presenter.GotLabelNotFoundErr {
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, Labels: []string{"a-label"}})
+	if !presenter.GotLabelNotFoundErr || presenter.GotSuccess {
 		t.Fatal("expected label not found error, but go none")
 	}
-	if presenter.GotSuccess {
-		t.Fatal("expected no success")
-	}
-
 }
 
 func TestHandleLabelExistsInternalErr(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{CollectionExists_: true, ErrOnLabelExists: true, Err: e.ErrInternal}
+	repo := &FakeRepo{ErrOnLabelExists: true, Err: e.ErrInternal}
 	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Labels: []string{"a-label"}})
-	if !presenter.GotInternalErr {
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, Labels: []string{"a-label"}})
+	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatal("expected internal error")
-	}
-	if presenter.GotSuccess {
-		t.Fatal("expected no success")
 	}
 }
 
 func TestHandleIngestionInternalErr(t *testing.T) {
 	presenter := &FakePresenter{}
-	repo := &FakeRepo{CollectionExists_: true, LabelExists_: true, ErrOnIngest: true, Err: e.ErrInternal}
+	repo := &FakeRepo{ErrOnIngest: true, Err: e.ErrInternal}
 	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
-	itr.Execute(Request{Reader: FakeReader{}})
-	if !presenter.GotInternalErr {
+	itr.Execute(Request{Reader: &i.FakeImageReader{}})
+	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatal("expected internal error")
 	}
-	if presenter.GotSuccess {
-		t.Fatal("expected no success")
+}
+
+func TestHandleAddLabelInternalErr(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{ErrOnAddLabel: true, Err: e.ErrInternal}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, Labels: []string{"a-label"}})
+	if !presenter.GotInternalErr || presenter.GotSuccess {
+		t.Fatal("expected internal error")
+	}
+}
+
+func TestHandleValidationErrorOnAddLabel(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, Labels: []string{"a-label", "a-label"}})
+	if !presenter.GotValidationErr || presenter.GotSuccess {
+		t.Fatal("expected validation error")
+	}
+}
+
+func TestAddImageDuplicateHashShouldFail(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{HashAlreadyExists: true}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}})
+	if !presenter.GotDuplicateImage || presenter.GotSuccess {
+		t.Fatal("expected validation error")
+	}
+}
+
+func TestHandleDuplicateHashInternalErr(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{ErrOnFindHash: true, Err: e.ErrInternal}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}})
+	if !presenter.GotInternalErr || presenter.GotSuccess {
+		t.Fatal("expected internal error")
+	}
+}
+
+func TestAddImageWithTwoLabels(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, Labels: []string{"a-label", "another-label"}})
+	if !presenter.GotSuccess || repo.NumLabelsAdded != 2 {
+		t.Fatalf("expected to add two labels, but got %v", repo.NumLabelsAdded)
+	}
+}
+
+func TestNonExistingBBoxLabelShouldFail(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{MissingLabel: true}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, BoundingBoxes: []BoundingBoxRequest{{Label: "a-label"}}})
+	if !presenter.GotLabelNotFoundErr || presenter.GotSuccess {
+		t.Fatal("expected label not found error, but go none")
+	}
+}
+
+func TestHandleBoundingBoxValidationError(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{},
+		BoundingBoxes: []BoundingBoxRequest{{Label: "a-label", Xc: 10, Yc: 10, Width: -2, Height: -4}}})
+	if !presenter.GotValidationErr || presenter.GotSuccess {
+		t.Fatal("expected validation error")
+	}
+}
+
+func TestHandleAddBoundingBoxInternalErr(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{ErrOnAddBoundingBox: true, Err: e.ErrInternal}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{},
+		BoundingBoxes: []BoundingBoxRequest{{Label: "a-label", Xc: 10, Yc: 10, Width: 2, Height: 4}}})
+	if !presenter.GotInternalErr || presenter.GotSuccess {
+		t.Fatal("expected internal error")
+	}
+}
+
+func TestAddBoundingBoxToImage(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{}
+	itr := NewInteractor(repo, &a.FakeArtefactRepo{}, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{},
+		BoundingBoxes: []BoundingBoxRequest{{Label: "a-label", Xc: 10, Yc: 10, Width: 2, Height: 4}}})
+	if !presenter.GotSuccess || repo.NumBoundingboxesAdded != 1 {
+		t.Fatalf("expected to add one bounding box to repo, but got %v", repo.NumBoundingboxesAdded)
+	}
+}
+
+func TestInternalErrOnAddLabelMustDeleteImage(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{ErrOnAddLabel: true, Err: e.ErrInternal}
+	artefactRepo := &a.FakeArtefactRepo{}
+	itr := NewInteractor(repo, artefactRepo, presenter)
+	itr.Execute(Request{Reader: &i.FakeImageReader{}, Labels: []string{"a-label"}})
+	if repo.NumDeletedImages != 1 || artefactRepo.NumDeletedImages != 1 {
+		t.Fatal("expected to delete image")
 	}
 }

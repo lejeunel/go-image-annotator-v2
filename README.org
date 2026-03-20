@@ -1,0 +1,5 @@
+#+title: Readme
+
+* TODO Image domain object
+** TODO Add bounding box: check for range constraints
+

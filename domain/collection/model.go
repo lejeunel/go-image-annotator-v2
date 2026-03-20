@@ -1,11 +1,11 @@
 package collection
 
 type Collection struct {
-	ID          CollectionID
+	Id          CollectionId
 	Name        string
 	Description string
 }
 
 func NewCollection(name string) *Collection {
-	return &Collection{ID: NewCollectionID(), Name: name}
+	return &Collection{Id: NewCollectionID(), Name: name}
 }

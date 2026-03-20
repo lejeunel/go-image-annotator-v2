@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type ArtefactID uuid.UUID
+type ArtefactId uuid.UUID
 
-func NewArtefactID() ArtefactID {
-	return ArtefactID(uuid.New())
+func NewArtefactId() ArtefactId {
+	return ArtefactId(uuid.New())
 }
