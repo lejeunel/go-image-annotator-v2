@@ -7,8 +7,8 @@ import (
 )
 
 type Repo interface {
-	FindLabelByName(string) (*lbl.Label, error)
-	FindCollectionByName(string) (*clc.Collection, error)
+	FindLabelIdByName(string) (*lbl.LabelId, error)
+	FindCollectionIdByName(string) (*clc.CollectionId, error)
 	ImageIsInCollection(im.ImageId, clc.CollectionId) (bool, error)
 }
 
@@ -20,18 +20,18 @@ type FakeRepo struct {
 	ImageNotInCollection     bool
 }
 
-func (r FakeRepo) FindLabelByName(name string) (*lbl.Label, error) {
+func (r FakeRepo) FindLabelIdByName(name string) (*lbl.LabelId, error) {
 	if r.ErrOnFindLabel {
 		return nil, r.Err
 	}
-	return lbl.NewLabel(name), nil
+	return &lbl.LabelId{}, nil
 }
 
-func (r FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
+func (r FakeRepo) FindCollectionIdByName(name string) (*clc.CollectionId, error) {
 	if r.ErrOnFindCollection {
 		return nil, r.Err
 	}
-	return clc.NewCollection(name), nil
+	return &clc.CollectionId{}, nil
 }
 
 func (r FakeRepo) ImageIsInCollection(imageId im.ImageId, collectionId clc.CollectionId) (bool, error) {

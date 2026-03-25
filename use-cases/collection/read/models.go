@@ -1,10 +1,10 @@
 package read
 
-type ReadRequest struct {
+type Request struct {
 	Name string
 }
 
-type ReadResponse struct {
+type Response struct {
 	Name        string
 	Description string
 }

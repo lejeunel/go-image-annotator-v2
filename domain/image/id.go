@@ -6,6 +6,9 @@ import (
 
 type ImageId uuid.UUID
 
-func NewImageID() ImageId {
+func (id ImageId) String() string {
+	return uuid.UUID(id).String()
+}
+func NewImageId() ImageId {
 	return ImageId(uuid.New())
 }

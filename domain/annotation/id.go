@@ -4,8 +4,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type AnnotationID uuid.UUID
+type AnnotationId uuid.UUID
 
-func NewAnnotationID() AnnotationID {
-	return AnnotationID(uuid.New())
+func NewAnnotationId() AnnotationId {
+	return AnnotationId(uuid.New())
+}
+
+func (id AnnotationId) String() string {
+	return uuid.UUID(id).String()
 }

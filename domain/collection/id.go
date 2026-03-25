@@ -6,6 +6,10 @@ import (
 
 type CollectionId uuid.UUID
 
-func NewCollectionID() CollectionId {
+func NewCollectionId() CollectionId {
 	return CollectionId(uuid.New())
+}
+
+func (id CollectionId) String() string {
+	return uuid.UUID(id).String()
 }

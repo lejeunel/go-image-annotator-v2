@@ -6,6 +6,6 @@ type Collection struct {
 	Description string
 }
 
-func NewCollection(name string) *Collection {
-	return &Collection{Id: NewCollectionID(), Name: name}
+func NewCollection(name string) Collection {
+	return Collection{Id: NewCollectionId(), Name: name}
 }

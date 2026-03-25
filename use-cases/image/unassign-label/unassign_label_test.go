@@ -1,48 +1,51 @@
 package unassign_label
 
 import (
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
-	lbi "github.com/lejeunel/go-image-annotator-v2/domain/labeling"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"testing"
+
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 func TestHandleNotFoundErr(t *testing.T) {
 	presenter := &FakePresenter{}
-	labelingService := &lbi.FakeLabelingService{Err: e.ErrNotFound}
-	itr := NewInteractor(&FakeRepo{}, presenter, labelingService)
+	itr := NewInteractor(&FakeRepo{}, presenter, &im.FakeImageStore{Err: e.ErrNotFound})
 	itr.Execute(Request{})
 	if !presenter.GotNotFoundErr || presenter.GotSuccess {
 		t.Fatal("expected not found error")
 	}
 }
 
-func TestHandleDependencyErr(t *testing.T) {
-	presenter := &FakePresenter{}
-	labelingService := &lbi.FakeLabelingService{Err: e.ErrDependency}
-	itr := NewInteractor(&FakeRepo{}, presenter, labelingService)
-	itr.Execute(Request{})
-	if !presenter.GotDependencyErr || presenter.GotSuccess {
-		t.Fatal("expected dependency error")
-	}
-}
 func TestHandleInternalErr(t *testing.T) {
 	presenter := &FakePresenter{}
-	labelingService := &lbi.FakeLabelingService{Err: e.ErrInternal}
-	itr := NewInteractor(&FakeRepo{}, presenter, labelingService)
+	itr := NewInteractor(&FakeRepo{}, presenter, &im.FakeImageStore{Err: e.ErrInternal})
 	itr.Execute(Request{})
 	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatal("expected internal error")
 	}
 }
 
-func TestUnassignLabelToImage(t *testing.T) {
+func TestUnassignLabelNotAssignedToImageShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	repo := &FakeRepo{}
-	labelingService := lbi.NewLabelingService(&lbi.FakeRepo{})
-	itr := NewInteractor(repo, presenter, labelingService)
-	itr.Execute(Request{Label: "a-label", ImageId: im.NewImageID(), Collection: "a-collection"})
-	if !presenter.GotSuccess || !repo.RemovedLabel {
-		t.Fatal("expected to remove label")
+	image := im.NewImage(im.NewImageId(), clc.NewCollection("a-collection"))
+	itr := NewInteractor(repo, presenter, &im.FakeImageStore{Return: image})
+	itr.Execute(Request{Label: "label-not-assigned-to-image"})
+	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+		t.Fatal("expected not found error")
+	}
+}
+
+func TestHandleInternalErrOnRemoveLabelShouldFail(t *testing.T) {
+	presenter := &FakePresenter{}
+	image := im.NewImage(im.NewImageId(), clc.NewCollection("a-collection"))
+	image.AddLabel(lbl.NewLabel("a-label"))
+	repo := &FakeRepo{ErrOnRemoveLabel: true, Err: e.ErrInternal}
+	itr := NewInteractor(repo, presenter, &im.FakeImageStore{Return: image})
+	itr.Execute(Request{Label: "a-label"})
+	if presenter.GotSuccess || !presenter.GotInternalErr {
+		t.Fatal("expected internal error")
 	}
 }

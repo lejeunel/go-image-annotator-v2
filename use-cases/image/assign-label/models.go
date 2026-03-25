@@ -5,6 +5,9 @@ import (
 )
 
 type Response struct {
+	ImageId    im.ImageId
+	Collection string
+	Label      string
 }
 
 type Request struct {

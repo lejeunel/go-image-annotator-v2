@@ -2,7 +2,6 @@ package list
 
 import (
 	"errors"
-
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
@@ -10,19 +9,23 @@ import (
 type Interactor struct {
 	repo    Repo
 	output  OutputPort
-	service im.ImageService
+	service im.ImageStore
 }
 
 func (i *Interactor) Execute(r Request) {
-	filteringParams := &FilteringParams{Page: r.Page, PageSize: r.PageSize}
-
-	if ok := i.processCollectionName(r.CollectionName, filteringParams); !ok {
-		return
-	}
+	filteringParams := &FilteringParams{
+		Page:       r.Page,
+		PageSize:   r.PageSize,
+		Collection: r.CollectionName}
 
 	baseImages, err := i.repo.List(*filteringParams)
 	if err != nil {
-		i.output.ErrInternal(err)
+		switch {
+		case errors.Is(err, e.ErrNotFound):
+			i.output.ErrNotFound(err)
+		default:
+			i.output.ErrInternal(err)
+		}
 		return
 	}
 
@@ -56,24 +59,6 @@ func (i *Interactor) buildResponses(baseImages []*im.BaseImage) ([]*ImageRespons
 
 }
 
-func (i *Interactor) processCollectionName(collectionName *string, f *FilteringParams) bool {
-	if collectionName != nil {
-		collectionId, err := i.repo.FindCollectionIdByName(*collectionName)
-		if err != nil {
-			switch {
-			case errors.Is(err, e.ErrNotFound):
-				i.output.ErrNotFound(err)
-			default:
-				i.output.ErrInternal(err)
-			}
-			return false
-		}
-		f.CollectionId = collectionId
-	}
-	return true
-
-}
-
-func NewInteractor(r Repo, o OutputPort, s im.ImageService) *Interactor {
+func NewInteractor(r Repo, o OutputPort, s im.ImageStore) *Interactor {
 	return &Interactor{repo: r, output: o, service: s}
 }

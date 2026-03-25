@@ -1,12 +1,14 @@
 package ingest
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 
-	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
+	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
@@ -17,10 +19,10 @@ var errCtx = "ingesting image"
 type Interactor struct {
 	output       OutputPort
 	repo         Repo
-	artefactRepo a.ArtefactRepo
+	artefactRepo im.ArtefactRepo
 }
 
-func NewInteractor(repo Repo, artefactRepo a.ArtefactRepo, output OutputPort) *Interactor {
+func NewInteractor(repo Repo, artefactRepo im.ArtefactRepo, output OutputPort) *Interactor {
 	return &Interactor{output: output, repo: repo, artefactRepo: artefactRepo}
 }
 
@@ -30,12 +32,13 @@ func (i *Interactor) Execute(r Request) {
 		return
 	}
 
-	rawImage, ok := i.ingestRawData(r.Reader)
+	imageId := im.NewImageId()
+	ok = i.ingestRawData(imageId, r.Reader)
 	if !ok {
 		return
 	}
 
-	image, ok := i.createImage(*rawImage, *collection, r.Labels, r.BoundingBoxes)
+	image, ok := i.createImage(imageId, *collection, r.Labels, r.BoundingBoxes)
 	if !ok {
 		return
 	}
@@ -43,7 +46,7 @@ func (i *Interactor) Execute(r Request) {
 	ok = i.ingestImage(image)
 	if !ok {
 		i.repo.DeleteImage(image.Id)
-		i.artefactRepo.Delete(image.ArtefactId)
+		i.artefactRepo.Delete(image.Id)
 		return
 	}
 
@@ -51,28 +54,29 @@ func (i *Interactor) Execute(r Request) {
 
 }
 
-func (i *Interactor) ingestRawData(reader im.ImageReader) (*im.RawImage, bool) {
-	rawImage, err := reader.Read()
+func (i *Interactor) ingestRawData(id im.ImageId, reader im.ImageReader) bool {
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		i.output.ErrInvalidImageData(fmt.Errorf("%v: reading image data: %w", errCtx, e.ErrValidation))
-		return nil, false
+		return false
+	}
+	hash := fmt.Sprintf("%x", sha256.Sum256(data))
+
+	if i.duplicateImageExists(hash) {
+		return false
 	}
 
-	if i.duplicateImageExists(rawImage.Hash) {
-		return nil, false
-	}
-
-	if err := i.artefactRepo.Store(rawImage.ArtefactId, rawImage.Data); err != nil {
+	if err := i.artefactRepo.Store(id, data); err != nil {
 		i.output.ErrInternal(fmt.Errorf("%v: storing image data in artefact repository: %w", errCtx, e.ErrInternal))
-		return nil, false
+		return false
 	}
 
-	return rawImage, true
+	return true
 
 }
 
-func (i *Interactor) createImage(rawImage im.RawImage, collection clc.Collection, labelNames []string, bboxes []BoundingBoxRequest) (*im.Image, bool) {
-	image := im.NewImage(rawImage.Hash, collection, rawImage.ArtefactId)
+func (i *Interactor) createImage(id im.ImageId, collection clc.Collection, labelNames []string, bboxes []BoundingBoxRequest) (*im.Image, bool) {
+	image := im.NewImage(id, collection)
 
 	if ok := i.appendLabels(image, labelNames); !ok {
 		return nil, false
@@ -106,7 +110,8 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 		if !ok {
 			return false
 		}
-		if err := image.AddBoundingBox(bbox.Xc, bbox.Yc, bbox.Width, bbox.Height, *label); err != nil {
+		box_ := a.NewBoundingBox(bbox.Xc, bbox.Yc, bbox.Width, bbox.Height, *label)
+		if err := image.AddBoundingBox(*box_); err != nil {
 			i.output.ErrValidation(fmt.Errorf("%v: %w", errCtx, err))
 			return false
 		}
@@ -116,13 +121,13 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 }
 
 func (i *Interactor) ingestImage(image *im.Image) bool {
-	if err := i.repo.IngestImage(image.Id, image.Collection.Id, image.ArtefactId); err != nil {
+	if err := i.repo.IngestImage(image.Id, image.Collection.Id); err != nil {
 		i.output.ErrInternal(fmt.Errorf("%v: ingesting meta-data: %w", errCtx, e.ErrInternal))
 		return false
 	}
 
 	for _, label := range image.Labels {
-		if err := i.repo.AddLabelToImage(image.Id, image.Collection.Id, label.Id); err != nil {
+		if err := i.repo.AddLabelToImage(image.Id, image.Collection.Id, label.Label.Id); err != nil {
 			i.output.ErrInternal(fmt.Errorf("%v: ingesting label: %w", errCtx, e.ErrInternal))
 			return false
 		}

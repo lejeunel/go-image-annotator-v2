@@ -5,7 +5,7 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type ReadRepo interface {
+type Repo interface {
 	Find(string) (*clc.Collection, error)
 }
 

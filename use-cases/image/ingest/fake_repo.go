@@ -2,7 +2,6 @@ package ingest
 
 import (
 	an "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
 	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
@@ -34,7 +33,8 @@ func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 	if r.MissingCollection {
 		return nil, e.ErrNotFound
 	}
-	return clc.NewCollection("a-collection"), nil
+	c := clc.NewCollection("a-collection")
+	return &c, nil
 }
 
 func (r *FakeRepo) FindLabelByName(name string) (*lbl.Label, error) {
@@ -52,12 +52,12 @@ func (r *FakeRepo) FindImageByHash(hash string) (*im.Image, error) {
 		return nil, r.Err
 	}
 	if r.HashAlreadyExists {
-		return im.NewImage(hash, *clc.NewCollection("a-collection"), a.NewArtefactId()), nil
+		return im.NewImage(im.NewImageId(), clc.NewCollection("a-collection")), nil
 	}
 	return nil, e.ErrNotFound
 }
 
-func (r *FakeRepo) IngestImage(im.ImageId, clc.CollectionId, a.ArtefactId) error {
+func (r *FakeRepo) IngestImage(im.ImageId, clc.CollectionId) error {
 	if r.ErrOnIngest {
 		return r.Err
 	}

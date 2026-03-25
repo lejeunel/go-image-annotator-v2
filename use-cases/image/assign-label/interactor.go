@@ -6,18 +6,17 @@ import (
 	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
-	labeling "github.com/lejeunel/go-image-annotator-v2/domain/labeling"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
-	repo             Repo
-	output           OutputPort
-	labelCtxProvider labeling.LabelContextProvider
+	repo   Repo
+	output OutputPort
+	store  im.ImageStore
 }
 
 func (i *Interactor) Execute(r Request) {
-	ctx, err := i.labelCtxProvider.Init(r.ImageId, r.Collection, r.Label)
+	_, err := i.store.Find(im.BaseImage{ImageId: r.ImageId, Collection: r.Collection})
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
@@ -30,11 +29,7 @@ func (i *Interactor) Execute(r Request) {
 		return
 	}
 
-	if ok := i.addLabel(r.ImageId, ctx.CollectionId, ctx.LabelId); !ok {
-		return
-	}
-
-	i.output.Success(Response{})
+	i.output.Success(Response{ImageId: r.ImageId, Collection: r.Collection, Label: r.Label})
 }
 
 func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId, labelId lbl.LabelId) bool {
@@ -47,6 +42,6 @@ func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId,
 
 }
 
-func NewInteractor(repo Repo, output OutputPort, labelingService labeling.LabelContextProvider) *Interactor {
-	return &Interactor{repo: repo, output: output, labelCtxProvider: labelingService}
+func NewInteractor(repo Repo, output OutputPort, store im.ImageStore) *Interactor {
+	return &Interactor{repo: repo, output: output, store: store}
 }

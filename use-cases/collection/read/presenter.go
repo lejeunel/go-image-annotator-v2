@@ -1,19 +1,19 @@
 package read
 
-type ReadOutputPort interface {
-	Success(ReadResponse)
+type OutputPort interface {
+	Success(Response)
 	ErrNotFound(error)
 	ErrInternal(error)
 }
 
 type FakeReadPresenter struct {
-	Got            ReadResponse
+	Got            Response
 	GotNotFoundErr bool
 	GotInternalErr bool
 	GotSuccess     bool
 }
 
-func (p *FakeReadPresenter) Success(r ReadResponse) {
+func (p *FakeReadPresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
 }

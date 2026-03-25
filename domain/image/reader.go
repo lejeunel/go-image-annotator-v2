@@ -1,21 +1,31 @@
 package image
 
 import (
-	a "github.com/lejeunel/go-image-annotator-v2/domain/artefact"
+	"io"
 )
 
+type ArtefactReadRepo interface {
+	Get(ImageId) ([]byte, error)
+}
+
 type ImageReader interface {
-	Read() (*RawImage, error)
+	Read([]byte) (int, error)
 }
 
-type FakeImageReader struct {
-	Err error
+type FromStoreImageReader struct {
+	repo ArtefactReadRepo
+	id   ImageId
 }
 
-func (r FakeImageReader) Read() (*RawImage, error) {
-	if r.Err != nil {
-		return nil, r.Err
+func NewImageReader(id ImageId, repo ArtefactReadRepo) *FromStoreImageReader {
+	return &FromStoreImageReader{repo: repo, id: id}
+}
+func (r FromStoreImageReader) Read(buf []byte) (int, error) {
+	data, err := r.repo.Get(r.id)
+	if err != nil {
+		return 0, err
 	}
-	return &RawImage{ArtefactId: a.NewArtefactId()}, nil
+	n := copy(buf, data)
+	return n, io.EOF
 
 }

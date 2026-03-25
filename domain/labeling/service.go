@@ -9,37 +9,48 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type LabelingService struct {
+type LabelingCtx struct {
+	ImageId      im.ImageId
+	CollectionId clc.CollectionId
+	LabelId      lbl.LabelId
+}
+
+type LabelingCtxInitializer interface {
+	Init(imageId im.ImageId, collectionName string, labelName string) (*LabelingCtx, error)
+}
+
+type MyLabelingCtxProvider struct {
 	repo Repo
 }
 
-type LabelingCtx struct {
-	ImageId    im.ImageId
-	Collection *clc.Collection
-	Label      *lbl.Label
-}
-
-func (s *LabelingService) Init(imageId im.ImageId, collectionName string, labelName string) (*LabelingCtx, error) {
+func (s *MyLabelingCtxProvider) Init(imageId im.ImageId, collectionName string, labelName string) (*LabelingCtx, error) {
 	errCtx := "initializing labeling context"
-	label, err := s.repo.FindLabelByName(labelName)
+	labelId, err := s.repo.FindLabelIdByName(labelName)
 	if err != nil {
 		return nil, fmt.Errorf("%v: finding label %v: %w", errCtx, labelName, err)
 	}
-	collection, err := s.repo.FindCollectionByName(collectionName)
+	collectionId, err := s.repo.FindCollectionIdByName(collectionName)
 	if err != nil {
-		return nil, fmt.Errorf("%v: finding collection %v: %w", errCtx, collection, err)
+		return nil, fmt.Errorf("%v: finding collection %v: %w", errCtx, collectionName, err)
 	}
-	imageInCollection, err := s.repo.ImageIsInCollection(imageId, collection.Id)
+	if err := s.imageIsInCollection(imageId, *collectionId); err != nil {
+		return nil, fmt.Errorf("%v: checking whether image is in collection: %w", errCtx, err)
+	}
+	return &LabelingCtx{ImageId: imageId, CollectionId: *collectionId, LabelId: *labelId}, nil
+}
+
+func (s *MyLabelingCtxProvider) imageIsInCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
+	imageInCollection, err := s.repo.ImageIsInCollection(imageId, collectionId)
 	if err != nil {
-		return nil, fmt.Errorf("%v: checking whether image %v is member of collection %v: %w", errCtx, imageId, collectionName, e.ErrInternal)
+		return e.ErrInternal
 	}
 	if !imageInCollection {
-		return nil, fmt.Errorf("%v: checking whether image %v is member of collection %v: %w", errCtx, imageId, collectionName, e.ErrImageNotInCollection)
+		return fmt.Errorf("image not member of collection: %w", e.ErrDependency)
 	}
-	return &LabelingCtx{ImageId: imageId, Collection: collection, Label: label}, nil
+	return nil
 
 }
 
-func NewLabelingService(repo Repo) *LabelingService {
-	return &LabelingService{repo: repo}
+func NewLabelingService(repo Repo) *MyLabelingCtxProvider {
+	return &MyLabelingCtxProvider{repo: repo}
 }

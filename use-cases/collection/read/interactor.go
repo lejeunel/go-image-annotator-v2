@@ -5,7 +5,7 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-func (i *ReadInteractor) Execute(r ReadRequest) {
+func (i *Interactor) Execute(r Request) {
 	found, err := i.repo.Find(r.Name)
 	if err != nil {
 		switch {
@@ -17,15 +17,15 @@ func (i *ReadInteractor) Execute(r ReadRequest) {
 		return
 	}
 
-	i.output.Success(ReadResponse{Name: found.Name, Description: found.Description})
+	i.output.Success(Response{Name: found.Name, Description: found.Description})
 
 }
 
-type ReadInteractor struct {
-	repo   ReadRepo
-	output ReadOutputPort
+type Interactor struct {
+	repo   Repo
+	output OutputPort
 }
 
-func NewReadCollectionInteractor(r ReadRepo, o ReadOutputPort) *ReadInteractor {
-	return &ReadInteractor{repo: r, output: o}
+func NewInteractor(r Repo, o OutputPort) *Interactor {
+	return &Interactor{repo: r, output: o}
 }

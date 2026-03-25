@@ -2,4 +2,8 @@
 
 * TODO Image domain object
 ** TODO Add bounding box: check for range constraints
+* DONE Image listing
+* DONE Add bounding box
+* DONE Remove bounding box
+* TODO Update bounding box
 

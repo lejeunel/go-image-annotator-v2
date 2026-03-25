@@ -7,32 +7,20 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-func TestNonExistingCollectionShouldFail(t *testing.T) {
+func TestHandleNotFoundErrOnList(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{NonExistingCollection: true},
-		presenter, &im.FakeImageService{})
-	collectionName := "a-collection"
-	itr.Execute(Request{CollectionName: &collectionName})
+	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrNotFound},
+		presenter, &im.FakeImageStore{})
+	itr.Execute(Request{})
 	if !presenter.GotNotFoundErr || presenter.GotSuccess {
 		t.Fatalf("expected to get not found error")
-	}
-}
-
-func TestHandleInternalErrOnFindCollection(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{ErrOnFindCollection: true, Err: e.ErrInternal},
-		presenter, &im.FakeImageService{})
-	collectionName := "a-collection"
-	itr.Execute(Request{CollectionName: &collectionName})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
-		t.Fatalf("expected to get internal error")
 	}
 }
 
 func TestHandleInternalErrOnList(t *testing.T) {
 	presenter := &FakePresenter{}
 	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrInternal},
-		presenter, &im.FakeImageService{})
+		presenter, &im.FakeImageStore{})
 	itr.Execute(Request{})
 	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatalf("expected to get internal error")
@@ -41,7 +29,7 @@ func TestHandleInternalErrOnList(t *testing.T) {
 
 func TestHandleInternalErrOnImageBuild(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{}, presenter, &im.FakeImageService{Err: e.ErrInternal})
+	itr := NewInteractor(&FakeRepo{}, presenter, &im.FakeImageStore{Err: e.ErrInternal})
 	itr.Execute(Request{PageSize: 1})
 	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatalf("expected to get internal error")
@@ -50,7 +38,7 @@ func TestHandleInternalErrOnImageBuild(t *testing.T) {
 
 func TestHandleInternalErrOnCount(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal}, presenter, &im.FakeImageService{})
+	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal}, presenter, &im.FakeImageStore{})
 	itr.Execute(Request{})
 	if !presenter.GotInternalErr || presenter.GotSuccess {
 		t.Fatalf("expected to get internal error")
@@ -60,7 +48,7 @@ func TestHandleInternalErrOnCount(t *testing.T) {
 func TestListImages(t *testing.T) {
 	presenter := &FakePresenter{}
 	repo := &FakeRepo{}
-	itr := NewInteractor(repo, presenter, &im.FakeImageService{})
+	itr := NewInteractor(repo, presenter, &im.FakeImageStore{})
 	r := Request{Page: 1, PageSize: 2}
 	itr.Execute(r)
 	if !presenter.GotSuccess || (len(presenter.Got.Images) != r.PageSize) {
@@ -71,7 +59,7 @@ func TestListImages(t *testing.T) {
 func TestPaginationMetaData(t *testing.T) {
 	presenter := &FakePresenter{}
 	repo := &FakeRepo{Count_: 10}
-	itr := NewInteractor(repo, presenter, &im.FakeImageService{})
+	itr := NewInteractor(repo, presenter, &im.FakeImageStore{})
 	r := Request{Page: 1, PageSize: 2}
 	itr.Execute(r)
 	pg := presenter.Got.Pagination
@@ -83,7 +71,7 @@ func TestPaginationMetaData(t *testing.T) {
 func TestQueryCorrectPagination(t *testing.T) {
 	presenter := &FakePresenter{}
 	repo := &FakeRepo{Count_: 10}
-	itr := NewInteractor(repo, presenter, &im.FakeImageService{})
+	itr := NewInteractor(repo, presenter, &im.FakeImageStore{})
 	r := Request{Page: 1, PageSize: 2}
 	itr.Execute(r)
 	f := repo.GotFilters
