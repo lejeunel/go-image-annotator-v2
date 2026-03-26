@@ -13,3 +13,7 @@ func NewCollectionId() CollectionId {
 func (id CollectionId) String() string {
 	return uuid.UUID(id).String()
 }
+
+func (id CollectionId) IsNil() bool {
+	return uuid.UUID(id) == uuid.Nil
+}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	v "github.com/lejeunel/go-image-annotator-v2/validation"
 )
@@ -16,7 +17,7 @@ type Interactor struct {
 
 func (i *Interactor) checkDuplicate(name string) error {
 	errBaseMsg := "checking for duplicate label with name %v: %w"
-	alreadyExists, err := i.repo.Exists(name)
+	alreadyExists, err := i.repo.LabelWithNameExists(name)
 	if err != nil {
 		return fmt.Errorf(errBaseMsg, name, e.ErrInternal)
 	}
@@ -40,13 +41,14 @@ func (i *Interactor) Execute(r Request) {
 		return
 	}
 
-	if err := i.repo.Create(Model{Name: r.Name, Description: r.Description}); err != nil {
+	label := lbl.NewLabel(lbl.NewLabelID(), r.Name, lbl.WithDescription(r.Description))
+	if err := i.repo.Create(*label); err != nil {
 		i.output.ErrInternal(err)
 		return
 	}
 	i.output.Success(Response{Name: r.Name, Description: r.Description})
 }
 
-func NewCreateLabelInteractor(r Repo, v v.Validator, o OutputPort) *Interactor {
+func NewInteractor(r Repo, v v.Validator, o OutputPort) *Interactor {
 	return &Interactor{output: o, repo: r, validator: v}
 }

@@ -110,7 +110,7 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 		if !ok {
 			return false
 		}
-		box_ := a.NewBoundingBox(bbox.Xc, bbox.Yc, bbox.Width, bbox.Height, *label)
+		box_ := a.NewBoundingBox(a.NewAnnotationId(), bbox.Xc, bbox.Yc, bbox.Width, bbox.Height, *label)
 		if err := image.AddBoundingBox(*box_); err != nil {
 			i.output.ErrValidation(fmt.Errorf("%v: %w", errCtx, err))
 			return false

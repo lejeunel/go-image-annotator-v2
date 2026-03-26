@@ -30,7 +30,7 @@ func TestHandleInternalErr(t *testing.T) {
 func TestUnassignLabelNotAssignedToImageShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	repo := &FakeRepo{}
-	image := im.NewImage(im.NewImageId(), clc.NewCollection("a-collection"))
+	image := im.NewImage(im.NewImageId(), *clc.NewCollection("a-collection"))
 	itr := NewInteractor(repo, presenter, &im.FakeImageStore{Return: image})
 	itr.Execute(Request{Label: "label-not-assigned-to-image"})
 	if !presenter.GotNotFoundErr || presenter.GotSuccess {
@@ -40,8 +40,8 @@ func TestUnassignLabelNotAssignedToImageShouldFail(t *testing.T) {
 
 func TestHandleInternalErrOnRemoveLabelShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	image := im.NewImage(im.NewImageId(), clc.NewCollection("a-collection"))
-	image.AddLabel(lbl.NewLabel("a-label"))
+	image := im.NewImage(im.NewImageId(), *clc.NewCollection("a-collection"))
+	image.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	repo := &FakeRepo{ErrOnRemoveLabel: true, Err: e.ErrInternal}
 	itr := NewInteractor(repo, presenter, &im.FakeImageStore{Return: image})
 	itr.Execute(Request{Label: "a-label"})

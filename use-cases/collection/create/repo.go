@@ -1,39 +1,33 @@
 package create
 
 import (
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	"slices"
 )
 
 type CreateRepo interface {
-	Create(Model) error
-	Exists(string) (bool, error)
+	Create(clc.Collection) error
+	CollectionWithNameExists(string) (bool, error)
 }
 
 type FakeRepo struct {
+	Err   error
 	Names []string
-	Got   Model
+	Got   clc.Collection
 }
 
-func (r *FakeRepo) Create(m Model) error {
-	r.Got = m
+func (r *FakeRepo) Create(c clc.Collection) error {
+	if r.Err != nil {
+		return r.Err
+	}
+
+	r.Got = c
 	return nil
 }
 
-func (r *FakeRepo) Exists(name string) (bool, error) {
+func (r *FakeRepo) CollectionWithNameExists(name string) (bool, error) {
 	if slices.Contains(r.Names, name) {
 		return true, nil
 	}
 	return false, nil
-}
-
-type FakeErrRepo struct {
-	err error
-}
-
-func (r *FakeErrRepo) Create(m Model) error {
-	return r.err
-}
-
-func (r *FakeErrRepo) Exists(string) (bool, error) {
-	return false, r.err
 }

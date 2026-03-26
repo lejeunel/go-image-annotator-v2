@@ -2,10 +2,11 @@ package label
 
 import (
 	"github.com/google/uuid"
+	uuidw "github.com/lejeunel/go-image-annotator-v2/uuid"
 )
 
-type LabelId uuid.UUID
+type LabelId struct{ uuidw.UUIDWrapper[LabelId] }
 
 func NewLabelID() LabelId {
-	return LabelId(uuid.New())
+	return LabelId{uuidw.UUIDWrapper[LabelId]{UUID: uuid.New()}}
 }

@@ -6,6 +6,18 @@ type Label struct {
 	Description string
 }
 
-func NewLabel(name string) *Label {
-	return &Label{Id: NewLabelID(), Name: name}
+func NewLabel(id LabelId, name string, opts ...Option) *Label {
+	l := &Label{Id: id, Name: name}
+	for _, opt := range opts {
+		opt(l)
+	}
+	return l
+}
+
+type Option func(*Label)
+
+func WithDescription(d string) Option {
+	return func(l *Label) {
+		l.Description = d
+	}
 }

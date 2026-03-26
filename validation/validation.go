@@ -10,16 +10,12 @@ type Validator interface {
 	Validate(string) error
 }
 
-type FakeInvalidNameValidator struct{}
-
-func (v *FakeInvalidNameValidator) Validate(name string) error {
-	return e.ErrValidation
+type FakeNameValidator struct {
+	Err error
 }
 
-type FakeValidNameValidator struct{}
-
-func (v *FakeValidNameValidator) Validate(name string) error {
-	return nil
+func (v *FakeNameValidator) Validate(name string) error {
+	return v.Err
 }
 
 type NameValidator struct {

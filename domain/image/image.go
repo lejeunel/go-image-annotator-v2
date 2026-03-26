@@ -39,9 +39,8 @@ func (i *Image) AddLabel(l *lbl.Label) error {
 }
 
 func (i *Image) AddBoundingBox(box a.BoundingBox) error {
-	errCtx := "adding bounding box to image"
-	if box.Width <= 0 {
-		return fmt.Errorf("%v: checking whether width (%v) <= 0: %w", errCtx, box.Width, e.ErrValidation)
+	if err := a.ValidateBoundingBox(box.Xc, box.Yc, box.Width, box.Height); err != nil {
+		return fmt.Errorf("adding bounding box to image: %w", err)
 	}
 	i.BoundingBoxes = append(i.BoundingBoxes, &box)
 	return nil

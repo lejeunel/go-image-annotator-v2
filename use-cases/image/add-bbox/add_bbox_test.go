@@ -97,7 +97,7 @@ func TestAddBoundingBox(t *testing.T) {
 	repo := FakeRepo{}
 	imageId := im.NewImageId()
 	collection := clc.NewCollection("a-collection")
-	image := im.NewImage(imageId, collection)
+	image := im.NewImage(imageId, *collection)
 	label := "a-label"
 	x := float32(1.0)
 	y := float32(1.0)

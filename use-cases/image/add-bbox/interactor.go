@@ -29,7 +29,7 @@ func (i *Interactor) Execute(r Request) {
 		return
 	}
 
-	box := a.NewBoundingBox(r.Xc, r.Yc, r.Width, r.Height, *label)
+	box := a.NewBoundingBox(a.NewAnnotationId(), r.Xc, r.Yc, r.Width, r.Height, *label)
 	if ok := i.validateBox(image, *box); !ok {
 		return
 	}

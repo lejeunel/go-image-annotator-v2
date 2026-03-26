@@ -1,7 +1,9 @@
 package annotation
 
 import (
+	"fmt"
 	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type ImageLabel struct {
@@ -26,8 +28,17 @@ type BoundingBoxResponse struct {
 	Height float32
 }
 
-func NewBoundingBox(xc float32, yc float32, width float32, height float32, label lbl.Label) *BoundingBox {
-	return &BoundingBox{Id: NewAnnotationId(), Xc: xc, Yc: yc, Width: width, Height: height, Label: label}
+func NewBoundingBox(id AnnotationId, xc float32, yc float32, width float32, height float32, label lbl.Label) *BoundingBox {
+	return &BoundingBox{Id: id, Xc: xc, Yc: yc, Width: width, Height: height, Label: label}
+}
+
+func ValidateBoundingBox(xc float32, yc float32, width float32, height float32) error {
+	errCtx := "validating bounding box"
+	if width <= 0 {
+		return fmt.Errorf("%v: checking whether width (%v) <= 0: %w", errCtx, width, e.ErrValidation)
+	}
+	return nil
+
 }
 
 func NewImageLabel(label lbl.Label) *ImageLabel {

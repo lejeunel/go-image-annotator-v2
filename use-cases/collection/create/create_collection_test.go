@@ -7,28 +7,10 @@ import (
 	v "github.com/lejeunel/go-image-annotator-v2/validation"
 )
 
-func TestCreateCollection(t *testing.T) {
-	presenter := &FakePresenter{}
-	repo := &FakeRepo{}
-	itr := NewInteractor(repo, &v.FakeValidNameValidator{}, presenter)
-	name := "a-name"
-	desc := "a-description"
-	req := Request{Name: name, Description: desc}
-	wantp := Response{Name: name, Description: desc}
-	wantr := Model{Name: name, Description: desc}
-	itr.Execute(req)
-	if presenter.Got != wantp {
-		t.Fatalf("expected %v, got %v", wantp, presenter.Got)
-	}
-	if repo.Got != wantr {
-		t.Fatalf("expected %v, got %v", wantr, repo.Got)
-	}
-}
-
 func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 	name := "my-collection"
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{Names: []string{name}}, &v.FakeValidNameValidator{}, presenter)
+	itr := NewInteractor(&FakeRepo{Names: []string{name}}, &v.FakeNameValidator{}, presenter)
 	itr.Execute(Request{Name: name})
 	if !presenter.GotDuplicationErr {
 		t.Fatal("expected duplication error, but go none")
@@ -40,7 +22,7 @@ func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 
 func TestHandleInternalError(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeErrRepo{e.ErrInternal}, &v.FakeValidNameValidator{}, presenter)
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal}, &v.FakeNameValidator{}, presenter)
 	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
@@ -50,10 +32,29 @@ func TestHandleInternalError(t *testing.T) {
 func TestCreateCollectionWithInvalidNameShouldFail(t *testing.T) {
 	name := "my-collection%/"
 	presenter := &FakePresenter{}
-	validator := &v.FakeInvalidNameValidator{}
+	validator := &v.FakeNameValidator{Err: e.ErrValidation}
 	itr := NewInteractor(&FakeRepo{Names: []string{name}}, validator, presenter)
 	itr.Execute(Request{Name: name})
 	if !presenter.GotValidationErr {
 		t.Fatal("expected validation error, but go none")
+	}
+}
+
+func TestCreateCollection(t *testing.T) {
+	presenter := &FakePresenter{}
+	repo := &FakeRepo{}
+	itr := NewInteractor(repo, &v.FakeNameValidator{}, presenter)
+	name := "a-name"
+	desc := "a-description"
+	req := Request{Name: name, Description: desc}
+	wantp := Response{Name: name, Description: desc}
+	itr.Execute(req)
+	if presenter.Got != wantp {
+		t.Fatalf("expected %v, got %v", wantp, presenter.Got)
+	}
+	if repo.Got.Name != name || repo.Got.Description != desc || repo.Got.Id.IsNil() {
+		t.Fatalf("expected to create label with name %v, description %v, and non-nil id, got %v, %v, %v",
+			name, desc, repo.Got.Name, repo.Got.Description, repo.Got.Id)
+
 	}
 }

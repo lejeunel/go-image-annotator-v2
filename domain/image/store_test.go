@@ -14,7 +14,7 @@ import (
 
 func TestNonExistingCollectionShouldFail(t *testing.T) {
 	collection := clc.NewCollection("a-collection")
-	s := NewImageStore(&FakeRepo{MissingCollection: true, Collection: &collection},
+	s := NewImageStore(&FakeRepo{MissingCollection: true, Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if !errors.Is(err, e.ErrNotFound) {
@@ -25,7 +25,7 @@ func TestNonExistingCollectionShouldFail(t *testing.T) {
 func TestErrOnFindLabelShouldFail(t *testing.T) {
 	collection := clc.NewCollection("a-collection")
 	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindLabel: true,
-		Collection: &collection},
+		Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if err == nil {
@@ -35,7 +35,7 @@ func TestErrOnFindLabelShouldFail(t *testing.T) {
 
 func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
 	collection := clc.NewCollection("a-collection")
-	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindBoundingBoxes: true, Collection: &collection},
+	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindBoundingBoxes: true, Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if err == nil {
@@ -45,7 +45,7 @@ func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
 
 func TestErrOnExistsShouldFail(t *testing.T) {
 	collection := clc.NewCollection("a-collection")
-	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnExists: true, Collection: &collection},
+	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnExists: true, Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if err == nil {
@@ -54,12 +54,12 @@ func TestErrOnExistsShouldFail(t *testing.T) {
 }
 
 func TestFindImage(t *testing.T) {
-	label := lbl.NewLabel("a-label")
+	label := lbl.NewLabel(lbl.NewLabelID(), "a-label")
 	labels := []*a.ImageLabel{{Id: a.NewAnnotationId(), Label: *label}}
 	bboxes := []*a.BoundingBox{{Id: a.NewAnnotationId(), Label: *label}}
 	collection := clc.NewCollection("a-collection")
 	data := []byte("test-data")
-	s := NewImageStore(&FakeRepo{Collection: &collection, Labels: labels, BoundingBoxes: bboxes},
+	s := NewImageStore(&FakeRepo{Collection: collection, Labels: labels, BoundingBoxes: bboxes},
 		&FakeArtefactRepo{Data: data})
 	image, _ := s.Find(BaseImage{ImageId: NewImageId(), Collection: collection.Name})
 	if !(image.Collection.Id == collection.Id) {

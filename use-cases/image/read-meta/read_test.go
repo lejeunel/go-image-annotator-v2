@@ -29,8 +29,8 @@ func TestHandleInternalError(t *testing.T) {
 
 func TestFindImage(t *testing.T) {
 	presenter := &FakePresenter{}
-	existingImage := im.NewImage(im.NewImageId(), clc.NewCollection("a-collection"))
-	existingImage.AddLabel(lbl.NewLabel("a-label"))
+	existingImage := im.NewImage(im.NewImageId(), *clc.NewCollection("a-collection"))
+	existingImage.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: existingImage})
 	itr.Execute(Request{ImageId: existingImage.Id, Collection: existingImage.Collection.Name})
 	got := presenter.Got

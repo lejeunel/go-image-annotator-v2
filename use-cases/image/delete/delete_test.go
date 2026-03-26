@@ -33,8 +33,8 @@ func TestDeleteNonExistingLabelShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, clc.NewCollection(collectionName))
-	image.AddLabel(lbl.NewLabel("a-label"))
+	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	image.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrNotFound})
 	itr.Execute(Request{})
 	if presenter.GotSuccess || !(presenter.GotNotFoundErr) {
@@ -46,8 +46,8 @@ func TestHandleInternalErrOnRemoveLabel(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, clc.NewCollection(collectionName))
-	image.AddLabel(lbl.NewLabel("a-label"))
+	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	image.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrInternal})
 	itr.Execute(Request{})
 	if presenter.GotSuccess || !(presenter.GotInternalErr) {
@@ -59,8 +59,9 @@ func TestDeleteNonExistingBoxShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, clc.NewCollection(collectionName))
-	box := a.NewBoundingBox(1, 1, 1, 1, *lbl.NewLabel("a-label"))
+	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	box := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1,
+		*lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	image.AddBoundingBox(*box)
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrNotFound})
 	itr.Execute(Request{})
@@ -73,8 +74,8 @@ func TestHandleInternalErrOnDeleteBoxes(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, clc.NewCollection(collectionName))
-	box := a.NewBoundingBox(1, 1, 1, 1, *lbl.NewLabel("a-label"))
+	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	box := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, *lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	image.AddBoundingBox(*box)
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrInternal})
 	itr.Execute(Request{})
