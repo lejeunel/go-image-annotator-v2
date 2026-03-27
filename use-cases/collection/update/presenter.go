@@ -1,14 +1,14 @@
 package update
 
 type UpdateOutputPort interface {
-	Success(UpdateResponse)
+	Success(Response)
 	ErrDuplication(error)
 	ErrNotFound(error)
 	ErrInternal(error)
 }
 
 type FakePresenter struct {
-	Got               UpdateResponse
+	Got               Response
 	GotDuplicationErr bool
 	GotNotFoundErr    bool
 	GotInternalErr    bool
@@ -27,7 +27,7 @@ func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 
-func (p *FakePresenter) Success(r UpdateResponse) {
+func (p *FakePresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
 }

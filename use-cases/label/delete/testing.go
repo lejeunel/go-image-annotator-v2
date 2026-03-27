@@ -1,36 +1,47 @@
 package delete
 
-import "slices"
-
-type FakeErrRepo struct {
-	err error
-}
-
-func (r *FakeErrRepo) Delete(string) error {
-	return r.err
-}
-func (r *FakeErrRepo) IsUsed(string) (bool, error) {
-	return false, r.err
-}
-
 type FakeRepo struct {
-	Used []string
+	Err         error
+	IsUsed_     bool
+	IsMissing   bool
+	ErrOnDelete bool
+	ErrOnIsUsed bool
+	ErrOnExists bool
 }
 
 func (r *FakeRepo) Delete(string) error {
+	if r.Err != nil {
+		return r.Err
+	}
 	return nil
 }
 
 func (r *FakeRepo) IsUsed(n string) (bool, error) {
-	if slices.Contains(r.Used, n) {
+	if r.ErrOnIsUsed {
+		return false, r.Err
+	}
+	if r.IsUsed_ {
 		return true, nil
+
 	}
 	return false, nil
+}
+func (r *FakeRepo) Exists(n string) (bool, error) {
+	if r.ErrOnExists {
+		return false, r.Err
+	}
+	if r.IsMissing {
+		return false, nil
+	}
+
+	return true, nil
+
 }
 
 type FakePresenter struct {
 	GotDependencyErr bool
 	GotInternalErr   bool
+	GotNotFoundErr   bool
 	GotSuccess       bool
 }
 
@@ -40,6 +51,10 @@ func (p *FakePresenter) ErrDependency(error) {
 
 func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
+}
+
+func (p *FakePresenter) ErrNotFound(error) {
+	p.GotNotFoundErr = true
 }
 
 func (p *FakePresenter) Success() {

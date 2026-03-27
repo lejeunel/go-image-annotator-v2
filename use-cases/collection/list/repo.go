@@ -6,22 +6,31 @@ import (
 
 type Repo interface {
 	List(Request) ([]*clc.Collection, error)
+	Count() (int64, error)
 }
 
 type FakeRepo struct {
-	ReturnedSomething bool
+	Err        error
+	ErrOnCount bool
+	ErrOnList  bool
+	Count_     int
+}
+
+func (r *FakeRepo) Count() (int64, error) {
+	if r.ErrOnCount {
+		return 0, r.Err
+	}
+	return int64(r.Count_), nil
 }
 
 func (r *FakeRepo) List(req Request) ([]*clc.Collection, error) {
-	r.ReturnedSomething = true
-	return []*clc.Collection{}, nil
-}
+	if r.ErrOnList {
+		return nil, r.Err
+	}
 
-type FakeErrListRepo struct {
-	err error
-}
-
-func (r *FakeErrListRepo) List(req Request) ([]*clc.Collection, error) {
-	return nil, r.err
-
+	result := []*clc.Collection{}
+	for range req.PageSize {
+		result = append(result, clc.NewCollection(clc.NewCollectionId(), "a-collection"))
+	}
+	return result, nil
 }

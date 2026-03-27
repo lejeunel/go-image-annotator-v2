@@ -1,5 +1,9 @@
 package list
 
+import (
+	"github.com/lejeunel/go-image-annotator-v2/pagination"
+)
+
 type Request struct {
 	Page     int
 	PageSize int
@@ -11,5 +15,6 @@ type LabelResponse struct {
 }
 
 type ListResponse struct {
-	Labels []LabelResponse
+	Labels     []LabelResponse
+	Pagination pagination.Pagination
 }

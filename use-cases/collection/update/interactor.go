@@ -15,7 +15,7 @@ func NewUpdateCollectionInteractor(r Repo, o UpdateOutputPort) *Interactor {
 	return &Interactor{repo: r, output: o}
 }
 
-func (i *Interactor) Execute(r UpdateRequest) {
+func (i *Interactor) Execute(r Request) {
 
 	if !i.sourceExists(r.Name) {
 		return
@@ -25,12 +25,12 @@ func (i *Interactor) Execute(r UpdateRequest) {
 		return
 	}
 
-	if err := i.repo.Update(UpdateModel{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
+	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
 		i.output.ErrInternal(fmt.Errorf("updating collection %v: %w", r.Name, e.ErrInternal))
 		return
 	}
 
-	i.output.Success(UpdateResponse{Name: r.NewName, Description: r.NewDescription})
+	i.output.Success(Response{Name: r.NewName, Description: r.NewDescription})
 }
 
 func (i *Interactor) sourceExists(name string) bool {

@@ -10,7 +10,7 @@ func TestUpdateNonExistingCollectionShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	non_existing_name := "non-existing-name"
 	itr := NewUpdateCollectionInteractor(&FakeRepo{}, presenter)
-	itr.Execute(UpdateRequest{Name: non_existing_name, NewName: "new-name"})
+	itr.Execute(Request{Name: non_existing_name, NewName: "new-name"})
 	if !presenter.GotNotFoundErr {
 		t.Fatal("expected not found error, but got none")
 	}
@@ -27,9 +27,9 @@ func TestUpdateCollection(t *testing.T) {
 	presenter := &FakePresenter{}
 	repo := &FakeRepo{Names: []string{name}}
 	itr := NewUpdateCollectionInteractor(repo, presenter)
-	req := UpdateRequest{Name: name, NewName: new_name, NewDescription: new_description}
-	wantr := UpdateModel{Name: name, NewName: new_name, NewDescription: new_description}
-	wantp := UpdateResponse{Name: new_name, Description: new_description}
+	req := Request{Name: name, NewName: new_name, NewDescription: new_description}
+	wantr := Model{Name: name, NewName: new_name, NewDescription: new_description}
+	wantp := Response{Name: new_name, Description: new_description}
 	itr.Execute(req)
 	if presenter.Got != wantp {
 		t.Fatalf("expected %v, got %v", wantp, presenter.Got)
@@ -47,7 +47,7 @@ func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 	name := "name"
 	existing_name := "existing-name"
 	itr := NewUpdateCollectionInteractor(&FakeRepo{Names: []string{name, existing_name}}, presenter)
-	itr.Execute(UpdateRequest{Name: name, NewName: existing_name})
+	itr.Execute(Request{Name: name, NewName: existing_name})
 	if !presenter.GotDuplicationErr {
 		t.Fatal("expected duplication error, but got none")
 	}
@@ -59,7 +59,7 @@ func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 func TestHandleInternalError(t *testing.T) {
 	presenter := &FakePresenter{}
 	itr := NewUpdateCollectionInteractor(&FakeErrRepo{e.ErrInternal}, presenter)
-	itr.Execute(UpdateRequest{})
+	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}

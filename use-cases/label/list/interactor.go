@@ -1,5 +1,9 @@
 package list
 
+import (
+	"github.com/lejeunel/go-image-annotator-v2/pagination"
+)
+
 func (i *Interactor) Execute(r Request) {
 	found, err := i.repo.List(r)
 	if err != nil {
@@ -7,7 +11,15 @@ func (i *Interactor) Execute(r Request) {
 		return
 	}
 
-	response := ListResponse{}
+	count, err := i.repo.Count()
+	if err != nil {
+		i.output.ErrInternal(err)
+		return
+	}
+
+	response := ListResponse{
+		Pagination: pagination.New(int64(r.Page), r.PageSize, count),
+	}
 	for _, f := range found {
 		response.Labels = append(response.Labels, LabelResponse{Name: f.Name, Description: f.Description})
 	}

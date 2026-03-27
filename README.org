@@ -6,5 +6,21 @@
 * DONE Add bounding box
 * DONE Remove bounding box
 * DONE Update bounding box
-* TODO Import image (without annotations)
-* TODO Import image with annotations (needs source collection)
+* TODO Import existing image into collection (without annotations)
+* TODO Import image into collection with annotations (needs source collection)
+* TODO SQLite repositories
+** TODO Labels
+*** DONE create
+*** DONE find
+*** TODO delete
+**** DONE exists
+**** TODO is used
+this needs to implement annotation first
+**** DONE delete
+*** DONE update
+*** DONE list
+** TODO Collections
+*** DONE create
+*** DONE find
+*** DONE delete
+*** DONE update

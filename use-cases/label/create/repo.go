@@ -7,7 +7,7 @@ import (
 
 type Repo interface {
 	Create(lbl.Label) error
-	LabelWithNameExists(string) (bool, error)
+	Exists(string) (bool, error)
 }
 
 type FakeRepo struct {
@@ -23,7 +23,7 @@ func (r *FakeRepo) Create(l lbl.Label) error {
 	r.Got = l
 	return nil
 }
-func (r *FakeRepo) LabelWithNameExists(name string) (bool, error) {
+func (r *FakeRepo) Exists(name string) (bool, error) {
 	if slices.Contains(r.Names, name) {
 		return true, nil
 	}

@@ -29,7 +29,7 @@ func (i *Interactor) Execute(r Request) {
 }
 
 func (i *Interactor) create(r Request) bool {
-	collection := clc.NewCollection(r.Name, clc.WithDescription(r.Description))
+	collection := clc.NewCollection(clc.NewCollectionId(), r.Name, clc.WithDescription(r.Description))
 	if err := i.repo.Create(*collection); err != nil {
 		switch {
 		case errors.Is(err, e.ErrDuplicate):
@@ -58,7 +58,7 @@ func (i *Interactor) validate(name string) bool {
 
 func (i *Interactor) isDuplicate(name string) bool {
 	errBaseMsg := fmt.Sprintf("checking for duplicate collection with name %v", name)
-	alreadyExists, err := i.repo.CollectionWithNameExists(name)
+	alreadyExists, err := i.repo.Exists(name)
 	if err != nil {
 		i.output.ErrInternal(fmt.Errorf("%v: %w", errBaseMsg, e.ErrInternal))
 		return true

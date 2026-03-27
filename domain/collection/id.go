@@ -2,18 +2,13 @@ package collection
 
 import (
 	"github.com/google/uuid"
+	uuidw "github.com/lejeunel/go-image-annotator-v2/uuid"
 )
 
-type CollectionId uuid.UUID
+type CollectionId struct {
+	uuidw.UUIDWrapper[CollectionId]
+}
 
 func NewCollectionId() CollectionId {
-	return CollectionId(uuid.New())
-}
-
-func (id CollectionId) String() string {
-	return uuid.UUID(id).String()
-}
-
-func (id CollectionId) IsNil() bool {
-	return uuid.UUID(id) == uuid.Nil
+	return CollectionId{uuidw.UUIDWrapper[CollectionId]{UUID: uuid.New()}}
 }

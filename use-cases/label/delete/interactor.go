@@ -2,6 +2,7 @@ package delete
 
 import (
 	"fmt"
+
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
@@ -14,11 +15,27 @@ func (i *Interactor) Execute(r Request) {
 	if ok := i.isUsed(r.Name); !ok {
 		return
 	}
+	if ok := i.exists(r.Name); !ok {
+		return
+	}
+
 	if err := i.repo.Delete(r.Name); err != nil {
 		i.output.ErrInternal(err)
 		return
 	}
 	i.output.Success()
+}
+func (i *Interactor) exists(name string) bool {
+	exists, err := i.repo.Exists(name)
+	if err != nil {
+		i.output.ErrInternal(err)
+		return false
+	}
+	if !exists {
+		i.output.ErrNotFound(e.ErrNotFound)
+		return false
+	}
+	return true
 }
 
 func (i *Interactor) isUsed(name string) bool {

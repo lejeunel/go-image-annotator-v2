@@ -33,7 +33,7 @@ func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 	if r.MissingCollection {
 		return nil, e.ErrNotFound
 	}
-	c := clc.NewCollection("a-collection")
+	c := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	return c, nil
 }
 
@@ -52,7 +52,7 @@ func (r *FakeRepo) FindImageByHash(hash string) (*im.Image, error) {
 		return nil, r.Err
 	}
 	if r.HashAlreadyExists {
-		return im.NewImage(im.NewImageId(), *clc.NewCollection("a-collection")), nil
+		return im.NewImage(im.NewImageId(), *clc.NewCollection(clc.NewCollectionId(), "a-collection")), nil
 	}
 	return nil, e.ErrNotFound
 }

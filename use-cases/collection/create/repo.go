@@ -7,7 +7,7 @@ import (
 
 type CreateRepo interface {
 	Create(clc.Collection) error
-	CollectionWithNameExists(string) (bool, error)
+	Exists(string) (bool, error)
 }
 
 type FakeRepo struct {
@@ -25,7 +25,7 @@ func (r *FakeRepo) Create(c clc.Collection) error {
 	return nil
 }
 
-func (r *FakeRepo) CollectionWithNameExists(name string) (bool, error) {
+func (r *FakeRepo) Exists(name string) (bool, error) {
 	if slices.Contains(r.Names, name) {
 		return true, nil
 	}

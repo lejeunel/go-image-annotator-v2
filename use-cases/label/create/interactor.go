@@ -17,7 +17,7 @@ type Interactor struct {
 
 func (i *Interactor) checkDuplicate(name string) error {
 	errBaseMsg := "checking for duplicate label with name %v: %w"
-	alreadyExists, err := i.repo.LabelWithNameExists(name)
+	alreadyExists, err := i.repo.Exists(name)
 	if err != nil {
 		return fmt.Errorf(errBaseMsg, name, e.ErrInternal)
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 func TestNonExistingCollectionShouldFail(t *testing.T) {
-	collection := clc.NewCollection("a-collection")
+	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	s := NewImageStore(&FakeRepo{MissingCollection: true, Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
@@ -23,7 +23,7 @@ func TestNonExistingCollectionShouldFail(t *testing.T) {
 }
 
 func TestErrOnFindLabelShouldFail(t *testing.T) {
-	collection := clc.NewCollection("a-collection")
+	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindLabel: true,
 		Collection: collection},
 		&FakeArtefactRepo{})
@@ -34,7 +34,7 @@ func TestErrOnFindLabelShouldFail(t *testing.T) {
 }
 
 func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
-	collection := clc.NewCollection("a-collection")
+	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindBoundingBoxes: true, Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
@@ -44,7 +44,7 @@ func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
 }
 
 func TestErrOnExistsShouldFail(t *testing.T) {
-	collection := clc.NewCollection("a-collection")
+	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnExists: true, Collection: collection},
 		&FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
@@ -57,7 +57,7 @@ func TestFindImage(t *testing.T) {
 	label := lbl.NewLabel(lbl.NewLabelID(), "a-label")
 	labels := []*a.ImageLabel{{Id: a.NewAnnotationId(), Label: *label}}
 	bboxes := []*a.BoundingBox{{Id: a.NewAnnotationId(), Label: *label}}
-	collection := clc.NewCollection("a-collection")
+	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	data := []byte("test-data")
 	s := NewImageStore(&FakeRepo{Collection: collection, Labels: labels, BoundingBoxes: bboxes},
 		&FakeArtefactRepo{Data: data})

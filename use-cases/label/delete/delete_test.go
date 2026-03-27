@@ -7,16 +7,41 @@ import (
 )
 
 func TestDeleteLabelWithAssociatedResourcesShouldFail(t *testing.T) {
-
-	name := "my-collection"
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{Used: []string{name}}, presenter)
-	itr.Execute(Request{Name: name})
+	itr := NewInteractor(&FakeRepo{IsUsed_: true}, presenter)
+	itr.Execute(Request{})
 	if !presenter.GotDependencyErr {
 		t.Fatal("expected dependency error, but got none")
 	}
 	if presenter.GotSuccess {
 		t.Fatal("expected no success")
+	}
+}
+
+func TestHandleInternalErrOnIsUsed(t *testing.T) {
+	presenter := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal, ErrOnIsUsed: true}, presenter)
+	itr.Execute(Request{})
+	if presenter.GotSuccess || !presenter.GotInternalErr {
+		t.Fatal("expected internal error")
+	}
+}
+
+func TestHandleInternalErrOnExists(t *testing.T) {
+	presenter := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal, ErrOnExists: true}, presenter)
+	itr.Execute(Request{})
+	if presenter.GotSuccess || !presenter.GotInternalErr {
+		t.Fatal("expected internal error")
+	}
+}
+
+func TestDeletingMissingLabelShouldFail(t *testing.T) {
+	presenter := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{IsMissing: true}, presenter)
+	itr.Execute(Request{})
+	if presenter.GotSuccess || !presenter.GotNotFoundErr {
+		t.Fatal("expected not found error")
 	}
 }
 
@@ -33,7 +58,7 @@ func TestDeleteLabel(t *testing.T) {
 
 func TestHandleInternalError(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeErrRepo{e.ErrInternal}, presenter)
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal}, presenter)
 	itr.Execute(Request{})
 	if !presenter.GotInternalErr {
 		t.Fatal("expected internal error, but got none")

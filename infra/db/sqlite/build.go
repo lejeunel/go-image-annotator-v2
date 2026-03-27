@@ -22,7 +22,6 @@ func NewSQLiteConnection(path string) *sqlx.DB {
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
 	db.SetConnMaxLifetime(5 * time.Minute)
-	setPragma(db.DB, "foreign_keys", "ON")
 	setPragma(db.DB, "journal_mode", "WAL")
 	setPragma(db.DB, "synchronous", "NORMAL")
 	setPragma(db.DB, "busy_timeout", "5000")

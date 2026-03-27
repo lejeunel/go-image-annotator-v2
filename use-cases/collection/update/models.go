@@ -1,17 +1,17 @@
 package update
 
-type UpdateRequest struct {
+type Request struct {
 	Name           string
 	NewName        string
 	NewDescription string
 }
 
-type UpdateResponse struct {
+type Response struct {
 	Name        string
 	Description string
 }
 
-type UpdateModel struct {
+type Model struct {
 	Name           string
 	NewName        string
 	NewDescription string

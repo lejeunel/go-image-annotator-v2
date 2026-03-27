@@ -6,8 +6,8 @@ type Collection struct {
 	Description string
 }
 
-func NewCollection(name string, opts ...Option) *Collection {
-	c := &Collection{Id: NewCollectionId(), Name: name}
+func NewCollection(id CollectionId, name string, opts ...Option) *Collection {
+	c := &Collection{Id: id, Name: name}
 	for _, opt := range opts {
 		opt(c)
 	}

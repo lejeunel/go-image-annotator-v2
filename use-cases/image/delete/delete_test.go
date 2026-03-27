@@ -33,7 +33,7 @@ func TestDeleteNonExistingLabelShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
 	image.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrNotFound})
 	itr.Execute(Request{})
@@ -46,7 +46,7 @@ func TestHandleInternalErrOnRemoveLabel(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
 	image.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrInternal})
 	itr.Execute(Request{})
@@ -59,7 +59,7 @@ func TestDeleteNonExistingBoxShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
 	box := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1,
 		*lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	image.AddBoundingBox(*box)
@@ -74,7 +74,7 @@ func TestHandleInternalErrOnDeleteBoxes(t *testing.T) {
 	presenter := &FakePresenter{}
 	id := im.NewImageId()
 	collectionName := "a-collection"
-	image := im.NewImage(id, *clc.NewCollection(collectionName))
+	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
 	box := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, *lbl.NewLabel(lbl.NewLabelID(), "a-label"))
 	image.AddBoundingBox(*box)
 	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveAnnotation: true, Err: e.ErrInternal})

@@ -7,16 +7,16 @@ import (
 )
 
 type Repo interface {
-	Update(UpdateModel) error
+	Update(Model) error
 	Exists(string) (bool, error)
 }
 
 type FakeRepo struct {
 	Names []string
-	Got   UpdateModel
+	Got   Model
 }
 
-func (r *FakeRepo) Update(m UpdateModel) error {
+func (r *FakeRepo) Update(m Model) error {
 	r.Got = m
 	return nil
 }
@@ -31,7 +31,7 @@ type FakeErrRepo struct {
 	err error
 }
 
-func (r *FakeErrRepo) Update(m UpdateModel) error {
+func (r *FakeErrRepo) Update(m Model) error {
 	return e.ErrInternal
 }
 
