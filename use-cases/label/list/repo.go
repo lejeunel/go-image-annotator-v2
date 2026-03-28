@@ -31,7 +31,7 @@ func (r *FakeRepo) List(req Request) ([]*l.Label, error) {
 
 	result := []*l.Label{}
 	for range req.PageSize {
-		result = append(result, l.NewLabel(l.NewLabelID(), "a-label"))
+		result = append(result, l.NewLabel(l.NewLabelId(), "a-label"))
 	}
 	return result, nil
 

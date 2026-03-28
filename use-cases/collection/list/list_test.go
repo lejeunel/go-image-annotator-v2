@@ -6,22 +6,22 @@ import (
 )
 
 func TestHandleInternalErrOnCount(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal}, presenter)
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error, but got none")
 	}
 }
 
 func TestHandleInternalErrOnList(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrInternal}, presenter)
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrInternal})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}
-	if presenter.GotSuccess {
+	if p.GotSuccess {
 		t.Fatalf("expected to get no success")
 	}
 }
@@ -32,11 +32,11 @@ func TestListCollection(t *testing.T) {
 	page := 1
 
 	repo := &FakeRepo{Count_: count}
-	presenter := &FakePresenter{}
-	itr := NewInteractor(repo, presenter)
+	p := &FakePresenter{}
+	itr := NewInteractor(repo)
 	req := Request{PageSize: pageSize, Page: page}
-	itr.Execute(req)
-	got := presenter.Got
+	itr.Execute(req, p)
+	got := p.Got
 	if len(got.Collections) != pageSize {
 		t.Fatalf("expected to retrieve %v collections, got %v", pageSize, len(got.Collections))
 	}

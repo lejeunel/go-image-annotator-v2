@@ -1,0 +1,13 @@
+package import_shallow
+
+import (
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+)
+
+type Repo interface {
+	ImageExists(im.ImageId) (bool, error)
+	FindCollection(string) (*clc.Collection, error)
+	ImageExistsInCollection(im.ImageId, clc.CollectionId) (bool, error)
+	ImportImage(im.ImageId, clc.CollectionId) error
+}

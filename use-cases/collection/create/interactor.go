@@ -10,33 +10,32 @@ import (
 )
 
 type Interactor struct {
-	output    OutputPort
 	repo      CreateRepo
 	validator v.Validator
 }
 
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 
-	if ok := i.validate(r.Name); !ok {
+	if ok := i.validate(r.Name, out); !ok {
 		return
 	}
 
-	if ok := i.create(r); !ok {
+	if ok := i.create(r, out); !ok {
 		return
 	}
 
-	i.output.Success(Response{Name: r.Name, Description: r.Description})
+	out.Success(Response{Name: r.Name, Description: r.Description})
 }
 
-func (i *Interactor) create(r Request) bool {
+func (i *Interactor) create(r Request, out OutputPort) bool {
 	collection := clc.NewCollection(clc.NewCollectionId(), r.Name, clc.WithDescription(r.Description))
 	if err := i.repo.Create(*collection); err != nil {
 		switch {
 		case errors.Is(err, e.ErrDuplicate):
-			i.output.ErrDuplication(err)
+			out.ErrDuplication(err)
 			return false
 		default:
-			i.output.ErrInternal(err)
+			out.ErrInternal(err)
 			return false
 		}
 	}
@@ -44,32 +43,32 @@ func (i *Interactor) create(r Request) bool {
 
 }
 
-func (i *Interactor) validate(name string) bool {
+func (i *Interactor) validate(name string, out OutputPort) bool {
 	if err := i.validator.Validate(name); err != nil {
-		i.output.ErrValidation(err)
+		out.ErrValidation(err)
 		return false
 	}
-	if i.isDuplicate(name) {
+	if i.isDuplicate(name, out) {
 		return false
 	}
 	return true
 
 }
 
-func (i *Interactor) isDuplicate(name string) bool {
+func (i *Interactor) isDuplicate(name string, out OutputPort) bool {
 	errBaseMsg := fmt.Sprintf("checking for duplicate collection with name %v", name)
 	alreadyExists, err := i.repo.Exists(name)
 	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("%v: %w", errBaseMsg, e.ErrInternal))
+		out.ErrInternal(fmt.Errorf("%v: %w", errBaseMsg, e.ErrInternal))
 		return true
 	}
 	if alreadyExists {
-		i.output.ErrDuplication(fmt.Errorf("%v: %w", errBaseMsg, e.ErrDuplicate))
+		out.ErrDuplication(fmt.Errorf("%v: %w", errBaseMsg, e.ErrDuplicate))
 		return true
 	}
 	return false
 }
 
-func NewInteractor(r CreateRepo, v v.Validator, o OutputPort) *Interactor {
-	return &Interactor{output: o, repo: r, validator: v}
+func NewInteractor(r CreateRepo, v v.Validator) *Interactor {
+	return &Interactor{repo: r, validator: v}
 }

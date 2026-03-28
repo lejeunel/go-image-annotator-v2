@@ -7,6 +7,6 @@ import (
 
 type LabelId struct{ uuidw.UUIDWrapper[LabelId] }
 
-func NewLabelID() LabelId {
+func NewLabelId() LabelId {
 	return LabelId{uuidw.UUIDWrapper[LabelId]{UUID: uuid.New()}}
 }

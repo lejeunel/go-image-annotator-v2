@@ -11,22 +11,17 @@ type Repo interface {
 
 type FakeRepo struct {
 	Label l.Label
+	Err   error
 }
 
 func (r *FakeRepo) Find(name string) (*l.Label, error) {
+	if r.Err != nil {
+		return nil, r.Err
+	}
 
 	if name == r.Label.Name {
 		return &r.Label, nil
 	}
 	return nil, e.ErrNotFound
-
-}
-
-type FakeErrRepo struct {
-	err error
-}
-
-func (r *FakeErrRepo) Find(name string) (*l.Label, error) {
-	return nil, r.err
 
 }

@@ -44,7 +44,7 @@ func (r *FakeRepo) FindLabelByName(name string) (*lbl.Label, error) {
 	if r.MissingLabel {
 		return nil, e.ErrNotFound
 	}
-	return lbl.NewLabel(lbl.NewLabelID(), name), nil
+	return lbl.NewLabel(lbl.NewLabelId(), name), nil
 }
 
 func (r *FakeRepo) FindImageByHash(hash string) (*im.Image, error) {

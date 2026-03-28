@@ -1,6 +1,6 @@
 package delete
 
-type DeleteOutputPort interface {
+type OutputPort interface {
 	ErrDependency(error)
 	ErrInternal(error)
 	ErrNotFound(error)

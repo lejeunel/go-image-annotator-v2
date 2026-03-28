@@ -7,25 +7,24 @@ import (
 )
 
 type Interactor struct {
-	output OutputPort
-	repo   Repo
+	repo Repo
 }
 
-func NewInteractor(output OutputPort, repo Repo) *Interactor {
-	return &Interactor{output: output, repo: repo}
+func NewInteractor(repo Repo) *Interactor {
+	return &Interactor{repo: repo}
 }
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 	if err := i.repo.RemoveAnnotation(r.Id); err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			i.output.ErrNotFound(e.ErrNotFound)
+			out.ErrNotFound(e.ErrNotFound)
 			return
 		default:
-			i.output.ErrInternal(e.ErrInternal)
+			out.ErrInternal(e.ErrInternal)
 			return
 		}
 	}
 
-	i.output.Success(Response{})
+	out.Success(Response{})
 
 }

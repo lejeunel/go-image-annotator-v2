@@ -4,16 +4,16 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/pagination"
 )
 
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 	found, err := i.repo.List(r)
 	if err != nil {
-		i.output.ErrInternal(err)
+		out.ErrInternal(err)
 		return
 	}
 
 	count, err := i.repo.Count()
 	if err != nil {
-		i.output.ErrInternal(err)
+		out.ErrInternal(err)
 		return
 	}
 
@@ -23,15 +23,14 @@ func (i *Interactor) Execute(r Request) {
 	for _, f := range found {
 		response.Labels = append(response.Labels, LabelResponse{Name: f.Name, Description: f.Description})
 	}
-	i.output.Success(response)
+	out.Success(response)
 
 }
 
 type Interactor struct {
-	repo   Repo
-	output OutputPort
+	repo Repo
 }
 
-func NewInteractor(r Repo, o OutputPort) *Interactor {
-	return &Interactor{repo: r, output: o}
+func NewInteractor(r Repo) *Interactor {
+	return &Interactor{repo: r}
 }

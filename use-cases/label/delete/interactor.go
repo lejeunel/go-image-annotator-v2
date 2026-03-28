@@ -7,54 +7,50 @@ import (
 )
 
 type Interactor struct {
-	repo   Repo
-	output OutputPort
+	repo Repo
 }
 
-func (i *Interactor) Execute(r Request) {
-	if ok := i.isUsed(r.Name); !ok {
+func (i *Interactor) Execute(r Request, out OutputPort) {
+	if ok := i.isUsed(r.Name, out); !ok {
 		return
 	}
-	if ok := i.exists(r.Name); !ok {
+	if ok := i.exists(r.Name, out); !ok {
 		return
 	}
 
 	if err := i.repo.Delete(r.Name); err != nil {
-		i.output.ErrInternal(err)
+		out.ErrInternal(err)
 		return
 	}
-	i.output.Success()
+	out.Success()
 }
-func (i *Interactor) exists(name string) bool {
+func (i *Interactor) exists(name string, out OutputPort) bool {
 	exists, err := i.repo.Exists(name)
 	if err != nil {
-		i.output.ErrInternal(err)
+		out.ErrInternal(err)
 		return false
 	}
 	if !exists {
-		i.output.ErrNotFound(e.ErrNotFound)
+		out.ErrNotFound(e.ErrNotFound)
 		return false
 	}
 	return true
 }
 
-func (i *Interactor) isUsed(name string) bool {
+func (i *Interactor) isUsed(name string, out OutputPort) bool {
 	isUsed, err := i.repo.IsUsed(name)
 	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrInternal))
+		out.ErrInternal(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrInternal))
 		return false
 	}
 	if isUsed {
-		i.output.ErrDependency(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrDependency))
+		out.ErrDependency(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrDependency))
 		return false
 	}
 	return true
 
 }
 
-func NewInteractor(r Repo, o OutputPort) *Interactor {
-	return &Interactor{
-		repo:   r,
-		output: o,
-	}
+func NewInteractor(r Repo) *Interactor {
+	return &Interactor{repo: r}
 }

@@ -1,6 +1,6 @@
 package list
 
-type ListOutputPort interface {
+type OutputPort interface {
 	Success(ListResponse)
 	ErrInternal(error)
 }

@@ -19,8 +19,18 @@ func TestInternalErrOnCollectionUpdateShouldFail(t *testing.T) {
 func TestUpdateCollection(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
 	collection, _ := createCollection(repo, "a-collection")
-	err := repo.Update(u.Model{Name: collection.Name, NewName: "new-collection-name", NewDescription: "new-description"})
+	newName := "new-collection-name"
+	newDesc := "new-description"
+	err := repo.Update(u.Model{Name: collection.Name, NewName: newName, NewDescription: newDesc})
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
+	}
+	r, err := repo.Find(newName)
+	if err != nil {
+		t.Fatalf("expected to retrieve updated, got %v", err)
+	}
+	if (r.Name != newName) || (r.Description != newDesc) {
+		t.Fatalf("expected to updated fields to name %v and description %v, got %v and %v",
+			newName, newDesc, r.Name, r.Description)
 	}
 }

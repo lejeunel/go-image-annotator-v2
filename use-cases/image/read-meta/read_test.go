@@ -10,31 +10,31 @@ import (
 )
 
 func TestHandleNotFoundError(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{Err: e.ErrNotFound})
-	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection"})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{Err: e.ErrNotFound})
+	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection"}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected to get not found error")
 	}
 }
 
 func TestHandleInternalError(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{Err: e.ErrInternal})
-	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection"})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{Err: e.ErrInternal})
+	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection"}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected to get internal error")
 	}
 }
 
 func TestFindImage(t *testing.T) {
-	presenter := &FakePresenter{}
+	p := &FakePresenter{}
 	existingImage := im.NewImage(im.NewImageId(), *clc.NewCollection(clc.NewCollectionId(), "a-collection"))
-	existingImage.AddLabel(lbl.NewLabel(lbl.NewLabelID(), "a-label"))
-	itr := NewInteractor(presenter, &im.FakeImageStore{Return: existingImage})
-	itr.Execute(Request{ImageId: existingImage.Id, Collection: existingImage.Collection.Name})
-	got := presenter.Got
-	if !presenter.GotSuccess {
+	existingImage.AddLabel(lbl.NewLabel(lbl.NewLabelId(), "a-label"))
+	itr := NewInteractor(&im.FakeImageStore{Return: existingImage})
+	itr.Execute(Request{ImageId: existingImage.Id, Collection: existingImage.Collection.Name}, p)
+	got := p.Got
+	if !p.GotSuccess {
 		t.Fatalf("expected to get success")
 	}
 	if !(got.Id == existingImage.Id) || !(got.Collection == existingImage.Collection.Name) || !(len(got.Labels) == 1) {

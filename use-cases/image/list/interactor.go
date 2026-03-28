@@ -8,11 +8,10 @@ import (
 
 type Interactor struct {
 	repo    Repo
-	output  OutputPort
 	service im.ImageStore
 }
 
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 	filteringParams := &FilteringParams{
 		Page:       r.Page,
 		PageSize:   r.PageSize,
@@ -22,35 +21,35 @@ func (i *Interactor) Execute(r Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			i.output.ErrNotFound(err)
+			out.ErrNotFound(err)
 		default:
-			i.output.ErrInternal(err)
+			out.ErrInternal(err)
 		}
 		return
 	}
 
 	count, err := i.repo.Count(*filteringParams)
 	if err != nil {
-		i.output.ErrInternal(err)
+		out.ErrInternal(err)
 		return
 	}
 
-	imageResponses, ok := i.buildResponses(baseImages)
+	imageResponses, ok := i.buildResponses(baseImages, out)
 	if !ok {
 		return
 	}
 
-	i.output.Success(Response{Images: imageResponses,
+	out.Success(Response{Images: imageResponses,
 		Pagination: Pagination{Page: r.Page, PageSize: r.PageSize, Total: *count, TotalPages: *count / r.PageSize}})
 
 }
 
-func (i *Interactor) buildResponses(baseImages []*im.BaseImage) ([]*ImageResponse, bool) {
+func (i *Interactor) buildResponses(baseImages []*im.BaseImage, out OutputPort) ([]*ImageResponse, bool) {
 	images := []*ImageResponse{}
 	for _, baseImage := range baseImages {
 		image, err := i.service.Find(*baseImage)
 		if err != nil {
-			i.output.ErrInternal(err)
+			out.ErrInternal(err)
 			return nil, false
 		}
 		images = append(images, &ImageResponse{ImageId: image.Id, Collection: image.Collection.Name})
@@ -59,6 +58,6 @@ func (i *Interactor) buildResponses(baseImages []*im.BaseImage) ([]*ImageRespons
 
 }
 
-func NewInteractor(r Repo, o OutputPort, s im.ImageStore) *Interactor {
-	return &Interactor{repo: r, output: o, service: s}
+func NewInteractor(r Repo, s im.ImageStore) *Interactor {
+	return &Interactor{repo: r, service: s}
 }

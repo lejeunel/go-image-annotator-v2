@@ -6,19 +6,19 @@ import (
 )
 
 func TestHandleInternalErrOnList(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrInternal}, presenter)
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrInternal})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error, but got none")
 	}
 }
 
 func TestHandleInternalErrOnCount(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal}, presenter)
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error, but got none")
 	}
 }
@@ -28,13 +28,13 @@ func TestListLabel(t *testing.T) {
 	pageSize := 2
 	page := 1
 	repo := &FakeRepo{Count_: count}
-	presenter := &FakePresenter{}
-	itr := NewInteractor(repo, presenter)
-	itr.Execute(Request{PageSize: pageSize, Page: page})
-	if len(presenter.Got.Labels) != pageSize {
-		t.Fatalf("expected to retrieve %v labels, got %v", pageSize, len(presenter.Got.Labels))
+	p := &FakePresenter{}
+	itr := NewInteractor(repo)
+	itr.Execute(Request{PageSize: pageSize, Page: page}, p)
+	if len(p.Got.Labels) != pageSize {
+		t.Fatalf("expected to retrieve %v labels, got %v", pageSize, len(p.Got.Labels))
 	}
-	got := presenter.Got
+	got := p.Got
 	if int(got.Pagination.TotalRecords) != count {
 		t.Fatalf("expected to retrieve count of %v, got %v", count, got.Pagination.TotalRecords)
 	}

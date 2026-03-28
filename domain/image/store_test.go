@@ -54,7 +54,7 @@ func TestErrOnExistsShouldFail(t *testing.T) {
 }
 
 func TestFindImage(t *testing.T) {
-	label := lbl.NewLabel(lbl.NewLabelID(), "a-label")
+	label := lbl.NewLabel(lbl.NewLabelId(), "a-label")
 	labels := []*a.ImageLabel{{Id: a.NewAnnotationId(), Label: *label}}
 	bboxes := []*a.BoundingBox{{Id: a.NewAnnotationId(), Label: *label}}
 	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")

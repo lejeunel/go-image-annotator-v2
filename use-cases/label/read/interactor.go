@@ -5,27 +5,26 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 	found, err := i.repo.Find(r.Name)
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			i.output.ErrNotFound(err)
+			out.ErrNotFound(err)
 		default:
-			i.output.ErrInternal(err)
+			out.ErrInternal(err)
 		}
 		return
 	}
 
-	i.output.Success(Response{Name: found.Name, Description: found.Description})
+	out.Success(Response{Name: found.Name, Description: found.Description})
 
 }
 
 type Interactor struct {
-	repo   Repo
-	output OutputPort
+	repo Repo
 }
 
-func NewReadInteractor(r Repo, o OutputPort) *Interactor {
-	return &Interactor{repo: r, output: o}
+func NewInteractor(r Repo) *Interactor {
+	return &Interactor{repo: r}
 }

@@ -13,45 +13,45 @@ type Interactor struct {
 	store  im.ImageStore
 }
 
-func (i *Interactor) Execute(r Request) {
-	image, ok := i.findImage(r.ImageId, r.Collection)
+func (i *Interactor) Execute(r Request, out OutputPort) {
+	image, ok := i.findImage(r.ImageId, r.Collection, out)
 	if !ok {
 		return
 	}
 
-	if ok := i.removeLabel(*image, r.Label); !ok {
+	if ok := i.removeLabel(*image, r.Label, out); !ok {
 		return
 	}
 
-	i.output.Success(Response{})
+	out.Success(Response{})
 
 }
 
-func (i *Interactor) findImage(imageId im.ImageId, collection string) (*im.Image, bool) {
+func (i *Interactor) findImage(imageId im.ImageId, collection string, out OutputPort) (*im.Image, bool) {
 	image, err := i.store.Find(im.BaseImage{ImageId: imageId, Collection: collection})
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			i.output.ErrNotFound(err)
+			out.ErrNotFound(err)
 			return nil, false
 		case errors.Is(err, e.ErrDependency):
-			i.output.ErrDependency(err)
+			out.ErrDependency(err)
 			return nil, false
 		default:
-			i.output.ErrInternal(err)
+			out.ErrInternal(err)
 			return nil, false
 		}
 	}
 	return image, true
 }
 
-func (i *Interactor) removeLabel(image im.Image, label string) bool {
+func (i *Interactor) removeLabel(image im.Image, label string, out OutputPort) bool {
 	removed := 0
 	for _, imageLabel := range image.Labels {
 		if imageLabel.Label.Name == label {
 			err := i.repo.RemoveLabel(image.Id, image.Collection.Id, imageLabel.Label.Id)
 			if err != nil {
-				i.output.ErrInternal(err)
+				out.ErrInternal(err)
 				return false
 			}
 			removed += 1
@@ -59,13 +59,13 @@ func (i *Interactor) removeLabel(image im.Image, label string) bool {
 	}
 
 	if removed == 0 {
-		i.output.ErrNotFound(e.ErrNotFound)
+		out.ErrNotFound(e.ErrNotFound)
 		return false
 	}
 	return true
 
 }
 
-func NewInteractor(repo Repo, output OutputPort, store im.ImageStore) *Interactor {
-	return &Interactor{repo: repo, output: output, store: store}
+func NewInteractor(repo Repo, store im.ImageStore) *Interactor {
+	return &Interactor{repo: repo, store: store}
 }

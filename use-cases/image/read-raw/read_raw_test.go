@@ -9,30 +9,30 @@ import (
 )
 
 func TestNonExistingImageShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &FakeRepo{Err: e.ErrNotFound})
-	itr.Execute(Request{ImageId: im.NewImageId()})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Err: e.ErrNotFound})
+	itr.Execute(Request{ImageId: im.NewImageId()}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected to get not found error")
 	}
 }
 
 func TestHandleInternalErr(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &FakeRepo{Err: e.ErrInternal})
-	itr.Execute(Request{ImageId: im.NewImageId()})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal})
+	itr.Execute(Request{ImageId: im.NewImageId()}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected to get internal error")
 	}
 }
 
 func TestReadOriginalBytes(t *testing.T) {
-	presenter := &FakePresenter{}
+	p := &FakePresenter{}
 	data := []byte("test-data")
-	itr := NewInteractor(presenter, &FakeRepo{Data: data})
-	itr.Execute(Request{ImageId: im.NewImageId()})
-	gotData := presenter.Got.Data
-	if !presenter.GotSuccess || !bytes.Equal(gotData, data) {
+	itr := NewInteractor(&FakeRepo{Data: data})
+	itr.Execute(Request{ImageId: im.NewImageId()}, p)
+	gotData := p.Got.Data
+	if !p.GotSuccess || !bytes.Equal(gotData, data) {
 		t.Fatalf("expected to retrieve input data (%v), got %v", data, gotData)
 	}
 }

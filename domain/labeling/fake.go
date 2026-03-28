@@ -14,5 +14,5 @@ func (s *FakeLabelingCtxProvider) Init(imageId im.ImageId, collectionName string
 	if s.Err != nil {
 		return nil, s.Err
 	}
-	return &LabelingCtx{ImageId: im.NewImageId(), CollectionId: clc.NewCollectionId(), LabelId: lbl.NewLabelID()}, nil
+	return &LabelingCtx{ImageId: im.NewImageId(), CollectionId: clc.NewCollectionId(), LabelId: lbl.NewLabelId()}, nil
 }

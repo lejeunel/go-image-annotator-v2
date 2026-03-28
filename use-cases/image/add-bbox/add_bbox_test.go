@@ -9,91 +9,91 @@ import (
 )
 
 func TestNonExistingImageStoreResourceShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{Err: e.ErrNotFound}, &FakeRepo{})
-	itr.Execute(Request{})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{Err: e.ErrNotFound}, &FakeRepo{})
+	itr.Execute(Request{}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected to get not found error")
 	}
 }
 
 func TestInternalErrInImageStoreShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{Err: e.ErrInternal}, &FakeRepo{})
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{Err: e.ErrInternal}, &FakeRepo{})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected internal error")
 	}
 }
 
 func TestInternalErrOnImageRetrievalShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{Err: e.ErrInternal}, &FakeRepo{})
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{Err: e.ErrInternal}, &FakeRepo{})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected internal error")
 	}
 }
 
 func TestNotFoundErrOnImageRetrievalShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{Err: e.ErrNotFound}, &FakeRepo{})
-	itr.Execute(Request{})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{Err: e.ErrNotFound}, &FakeRepo{})
+	itr.Execute(Request{}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected not found error")
 	}
 }
 
 func TestNotFoundErrOnFindLabelShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{}, &FakeRepo{ErrOnFindLabel: true, Err: e.ErrNotFound})
-	itr.Execute(Request{})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{}, &FakeRepo{ErrOnFindLabel: true, Err: e.ErrNotFound})
+	itr.Execute(Request{}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected not found error")
 	}
 }
 
 func TestInternalErrOnFindLabelShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{}, &FakeRepo{ErrOnFindLabel: true, Err: e.ErrInternal})
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{}, &FakeRepo{ErrOnFindLabel: true, Err: e.ErrInternal})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected internal error")
 	}
 }
 
 func TestValidationErrOnAddBoxShouldFail(t *testing.T) {
 	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{}, &FakeRepo{})
+	itr := NewInteractor(&im.FakeImageStore{}, &FakeRepo{})
 	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection", Label: "a-label",
-		Xc: 1, Yc: 1, Width: -999, Height: 3})
+		Xc: 1, Yc: 1, Width: -999, Height: 3}, presenter)
 	if !presenter.GotValidationErr || presenter.GotSuccess {
 		t.Fatalf("expected validation error")
 	}
 }
 
 func TestNotFoundErrOnAddBoxShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{}, &FakeRepo{ErrOnAdd: true, Err: e.ErrNotFound})
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{}, &FakeRepo{ErrOnAdd: true, Err: e.ErrNotFound})
 	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection", Label: "a-label",
-		Xc: 1, Yc: 1, Width: 3, Height: 3})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+		Xc: 1, Yc: 1, Width: 3, Height: 3}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected not found error")
 	}
 }
 
 func TestInternalErrOnAddBoxShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &im.FakeImageStore{}, &FakeRepo{ErrOnAdd: true, Err: e.ErrInternal})
+	p := &FakePresenter{}
+	itr := NewInteractor(&im.FakeImageStore{}, &FakeRepo{ErrOnAdd: true, Err: e.ErrInternal})
 	itr.Execute(Request{ImageId: im.NewImageId(), Collection: "a-collection", Label: "a-label",
-		Xc: 1, Yc: 1, Width: 3, Height: 3})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+		Xc: 1, Yc: 1, Width: 3, Height: 3}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected internal error")
 	}
 }
 
 func TestAddBoundingBox(t *testing.T) {
-	presenter := &FakePresenter{}
+	p := &FakePresenter{}
 	repo := FakeRepo{}
 	imageId := im.NewImageId()
 	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
@@ -103,10 +103,10 @@ func TestAddBoundingBox(t *testing.T) {
 	y := float32(1.0)
 	width := float32(3.0)
 	height := float32(3.0)
-	itr := NewInteractor(presenter, &im.FakeImageStore{Return: image}, &repo)
+	itr := NewInteractor(&im.FakeImageStore{Return: image}, &repo)
 	itr.Execute(Request{ImageId: imageId, Collection: "a-collection", Label: label,
-		Xc: x, Yc: y, Width: width, Height: height})
-	if !presenter.GotSuccess {
+		Xc: x, Yc: y, Width: width, Height: height}, p)
+	if !p.GotSuccess {
 		t.Fatalf("expected success")
 	}
 	if repo.GotImageId != imageId {

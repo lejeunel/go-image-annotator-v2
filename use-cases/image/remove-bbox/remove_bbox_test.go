@@ -8,31 +8,31 @@ import (
 )
 
 func TestNonExistingBoxShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &FakeRepo{Err: e.ErrNotFound})
-	itr.Execute(Request{})
-	if !presenter.GotNotFoundErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Err: e.ErrNotFound})
+	itr.Execute(Request{}, p)
+	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatalf("expected to get not found error")
 	}
 }
 
 func TestInternalErrShouldFail(t *testing.T) {
-	presenter := &FakePresenter{}
-	itr := NewInteractor(presenter, &FakeRepo{Err: e.ErrInternal})
-	itr.Execute(Request{})
-	if !presenter.GotInternalErr || presenter.GotSuccess {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal})
+	itr.Execute(Request{}, p)
+	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatalf("expected internal error")
 	}
 }
 
 func TestRemoveBox(t *testing.T) {
-	presenter := &FakePresenter{}
+	p := &FakePresenter{}
 	repo := &FakeRepo{}
-	itr := NewInteractor(presenter, repo)
+	itr := NewInteractor(repo)
 	annotationId := a.NewAnnotationId()
-	itr.Execute(Request{Id: annotationId})
-	if !presenter.GotSuccess || !(repo.Got == annotationId) {
+	itr.Execute(Request{Id: annotationId}, p)
+	if !p.GotSuccess || !(repo.Got == annotationId) {
 		t.Fatalf("expected to remove annotation, got success %v and annotation id %v, wanted %v",
-			presenter.GotSuccess, repo.Got.String(), annotationId.String())
+			p.GotSuccess, repo.Got.String(), annotationId.String())
 	}
 }

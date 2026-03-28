@@ -7,55 +7,54 @@ import (
 )
 
 type Interactor struct {
-	output UpdateOutputPort
-	repo   Repo
+	repo Repo
 }
 
-func NewUpdateCollectionInteractor(r Repo, o UpdateOutputPort) *Interactor {
-	return &Interactor{repo: r, output: o}
+func NewInteractor(r Repo) *Interactor {
+	return &Interactor{repo: r}
 }
 
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 
-	if !i.sourceExists(r.Name) {
+	if !i.sourceExists(r.Name, out) {
 		return
 	}
 
-	if i.destinationExists(r.NewName) {
+	if i.destinationExists(r.NewName, out) {
 		return
 	}
 
 	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
-		i.output.ErrInternal(fmt.Errorf("updating collection %v: %w", r.Name, e.ErrInternal))
+		out.ErrInternal(fmt.Errorf("updating collection %v: %w", r.Name, e.ErrInternal))
 		return
 	}
 
-	i.output.Success(Response{Name: r.NewName, Description: r.NewDescription})
+	out.Success(Response{Name: r.NewName, Description: r.NewDescription})
 }
 
-func (i *Interactor) sourceExists(name string) bool {
+func (i *Interactor) sourceExists(name string, out OutputPort) bool {
 	baseErrMsg := fmt.Sprintf("updating collection %v: checking whether it exists", name)
 	exists, err := i.repo.Exists(name)
 	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
+		out.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
 		return true
 	}
 	if exists {
 		return true
 	}
-	i.output.ErrNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
+	out.ErrNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
 	return false
 }
 
-func (i *Interactor) destinationExists(name string) bool {
+func (i *Interactor) destinationExists(name string, out OutputPort) bool {
 	baseErrMsg := fmt.Sprintf("updating collection to name %v: checking whether it exists", name)
 	exists, err := i.repo.Exists(name)
 	if err != nil {
-		i.output.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
+		out.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
 		return true
 	}
 	if exists {
-		i.output.ErrDuplication(fmt.Errorf("%v: %w", baseErrMsg, e.ErrDuplicate))
+		out.ErrDuplication(fmt.Errorf("%v: %w", baseErrMsg, e.ErrDuplicate))
 		return true
 	}
 	return false

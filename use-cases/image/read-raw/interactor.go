@@ -9,26 +9,25 @@ import (
 )
 
 type Interactor struct {
-	output OutputPort
-	repo   im.ArtefactReadRepo
+	repo im.ArtefactReadRepo
 }
 
-func (i *Interactor) Execute(r Request) {
+func (i *Interactor) Execute(r Request, out OutputPort) {
 	data, err := io.ReadAll(im.NewImageReader(r.ImageId, i.repo))
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			i.output.ErrNotFound(err)
+			out.ErrNotFound(err)
 		default:
-			i.output.ErrInternal(err)
+			out.ErrInternal(err)
 		}
 		return
 	}
 
-	i.output.Success(Response{Data: data})
+	out.Success(Response{Data: data})
 
 }
 
-func NewInteractor(output OutputPort, repo im.ArtefactReadRepo) *Interactor {
-	return &Interactor{output: output, repo: repo}
+func NewInteractor(repo im.ArtefactReadRepo) *Interactor {
+	return &Interactor{repo: repo}
 }
