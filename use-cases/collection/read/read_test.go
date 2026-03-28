@@ -1,14 +1,16 @@
 package read
 
 import (
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	"testing"
+
+	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 func TestReadCollection(t *testing.T) {
 	name := "my-collection"
 	desc := "a-description"
-	repo := &FakeReadRepo{Collection: clc.Collection{Name: name, Description: desc}}
+	repo := &FakeRepo{Collection: clc.Collection{Name: name, Description: desc}}
 	p := &FakeReadPresenter{}
 	itr := NewInteractor(repo)
 	req := Request{Name: name}
@@ -20,7 +22,7 @@ func TestReadCollection(t *testing.T) {
 }
 
 func TestReadNonExistingCollectionShouldFail(t *testing.T) {
-	repo := &FakeReadRepo{Collection: clc.Collection{Name: "my-collection", Description: "a-description"}}
+	repo := &FakeRepo{Collection: clc.Collection{Name: "my-collection", Description: "a-description"}}
 	p := &FakeReadPresenter{}
 	itr := NewInteractor(repo)
 	req := Request{Name: "non-existing-collection"}
@@ -35,7 +37,7 @@ func TestReadNonExistingCollectionShouldFail(t *testing.T) {
 
 func TestHandleInternalError(t *testing.T) {
 	p := &FakeReadPresenter{}
-	itr := NewInteractor(&FakeInternalErrReadRepo{})
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal})
 	itr.Execute(Request{}, p)
 	if !p.GotInternalErr {
 		t.Fatal("expected internal error, but got none")

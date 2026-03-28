@@ -13,9 +13,8 @@ import (
 )
 
 func TestNonExistingCollectionShouldFail(t *testing.T) {
-	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
-	s := NewImageStore(&FakeRepo{MissingCollection: true, Collection: collection},
-		&FakeArtefactRepo{})
+	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{MissingCollection: true},
+		&FakeAnnotationRepo{}, &FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected error not found, got %v", err)
@@ -23,10 +22,8 @@ func TestNonExistingCollectionShouldFail(t *testing.T) {
 }
 
 func TestErrOnFindLabelShouldFail(t *testing.T) {
-	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
-	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindLabel: true,
-		Collection: collection},
-		&FakeArtefactRepo{})
+	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{},
+		&FakeAnnotationRepo{ErrOnFindImageLabel: true, Err: e.ErrInternal}, &FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if err == nil {
 		t.Fatalf("expected error, got %v", err)
@@ -34,9 +31,8 @@ func TestErrOnFindLabelShouldFail(t *testing.T) {
 }
 
 func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
-	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
-	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnFindBoundingBoxes: true, Collection: collection},
-		&FakeArtefactRepo{})
+	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{},
+		&FakeAnnotationRepo{ErrOnFindBoundingBoxes: true, Err: e.ErrInternal}, &FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if err == nil {
 		t.Fatalf("expected error, got %v", err)
@@ -44,9 +40,8 @@ func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
 }
 
 func TestErrOnExistsShouldFail(t *testing.T) {
-	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
-	s := NewImageStore(&FakeRepo{Err: e.ErrInternal, ErrOnExists: true, Collection: collection},
-		&FakeArtefactRepo{})
+	s := NewImageStore(&FakeImageRepo{ErrOnExists: true, Err: e.ErrInternal}, &FakeCollectionRepo{},
+		&FakeAnnotationRepo{ErrOnFindBoundingBoxes: true, Err: e.ErrInternal}, &FakeArtefactRepo{})
 	_, err := s.Find(BaseImage{NewImageId(), "a-collection"})
 	if err == nil {
 		t.Fatal("expected error")
@@ -59,8 +54,9 @@ func TestFindImage(t *testing.T) {
 	bboxes := []*a.BoundingBox{{Id: a.NewAnnotationId(), Label: *label}}
 	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 	data := []byte("test-data")
-	s := NewImageStore(&FakeRepo{Collection: collection, Labels: labels, BoundingBoxes: bboxes},
-		&FakeArtefactRepo{Data: data})
+
+	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{Collection: *collection},
+		&FakeAnnotationRepo{Labels: labels, BoundingBoxes: bboxes}, &FakeArtefactRepo{Data: data})
 	image, _ := s.Find(BaseImage{ImageId: NewImageId(), Collection: collection.Name})
 	if !(image.Collection.Id == collection.Id) {
 		t.Fatalf("expected to retrieve image in collection %v, got %v ",

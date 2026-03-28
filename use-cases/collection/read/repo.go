@@ -6,25 +6,22 @@ import (
 )
 
 type Repo interface {
-	Find(string) (*clc.Collection, error)
+	FindCollectionByName(string) (*clc.Collection, error)
 }
 
-type FakeReadRepo struct {
+type FakeRepo struct {
+	Err        error
 	Collection clc.Collection
 }
 
-func (r *FakeReadRepo) Find(name string) (*clc.Collection, error) {
+func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
+	if r.Err != nil {
+		return nil, r.Err
+	}
 
 	if name == r.Collection.Name {
 		return &r.Collection, nil
 	}
 	return nil, e.ErrNotFound
-
-}
-
-type FakeInternalErrReadRepo struct{}
-
-func (r *FakeInternalErrReadRepo) Find(name string) (*clc.Collection, error) {
-	return nil, e.ErrInternal
 
 }

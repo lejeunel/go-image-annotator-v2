@@ -7,12 +7,21 @@ import (
 	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
 )
 
-type Repo interface {
+type CollectionRepo interface {
 	FindCollectionByName(string) (*clc.Collection, error)
+}
+
+type LabelRepo interface {
 	FindLabelByName(string) (*lbl.Label, error)
-	IngestImage(im.ImageId, clc.CollectionId) error
+}
+
+type AnnotationRepo interface {
 	AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error
 	AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error
+}
+
+type ImageRepo interface {
+	AddImageToCollection(im.ImageId, clc.CollectionId) error
 	FindImageByHash(string) (*im.Image, error)
-	DeleteImage(im.ImageId) error
+	Delete(im.ImageId) error
 }

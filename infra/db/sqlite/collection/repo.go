@@ -30,9 +30,8 @@ func (r *SQLiteCollectionRepo) Create(c clc.Collection) error {
 	}
 
 	return nil
-
 }
-func (r *SQLiteCollectionRepo) Find(name string) (*clc.Collection, error) {
+func (r *SQLiteCollectionRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 
 	row := Row{}
 	err := r.Db.Get(&row,

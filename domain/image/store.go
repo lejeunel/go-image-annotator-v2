@@ -11,17 +11,19 @@ type ImageStore interface {
 }
 
 type MyImageStore struct {
-	repo         Repo
-	artefactRepo ArtefactRepo
+	collectionRepo CollectionRepo
+	annotationRepo AnnotationRepo
+	imageRepo      ImageRepo
+	artefactRepo   ArtefactRepo
 }
 
 func (s *MyImageStore) Find(base BaseImage) (*Image, error) {
-	collection, err := s.repo.FindCollectionByName(base.Collection)
+	collection, err := s.collectionRepo.FindCollectionByName(base.Collection)
 	if err != nil {
 		return nil, fmt.Errorf("fetching collection by name (%v): %w", base.Collection, err)
 	}
 
-	ok, err := s.repo.ImageExistsInCollection(base.ImageId, base.Collection)
+	ok, err := s.imageRepo.ImageExistsInCollection(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("checking whether image %v exists in collection %v: %w",
 			base.ImageId.String(), base.Collection, err)
@@ -32,12 +34,12 @@ func (s *MyImageStore) Find(base BaseImage) (*Image, error) {
 
 	}
 
-	labels, err := s.repo.FindLabels(base.ImageId, collection.Id)
+	labels, err := s.annotationRepo.FindLabels(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("fetching labels: %w", err)
 	}
 
-	boxes, err := s.repo.FindBoundingBoxes(base.ImageId, collection.Id)
+	boxes, err := s.annotationRepo.FindBoundingBoxes(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("fetching bounding boxes: %w", err)
 	}
@@ -48,6 +50,10 @@ func (s *MyImageStore) Find(base BaseImage) (*Image, error) {
 
 }
 
-func NewImageStore(repo Repo, artefactRepo ArtefactRepo) *MyImageStore {
-	return &MyImageStore{repo: repo, artefactRepo: artefactRepo}
+func NewImageStore(imageRepo ImageRepo, collectionRepo CollectionRepo,
+	annotationRepo AnnotationRepo, artefactRepo ArtefactRepo) *MyImageStore {
+	return &MyImageStore{imageRepo: imageRepo,
+		collectionRepo: collectionRepo,
+		annotationRepo: annotationRepo,
+		artefactRepo:   artefactRepo}
 }

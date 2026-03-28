@@ -14,13 +14,18 @@
 *** DONE find
 *** TODO delete
 **** DONE exists
-**** TODO is used
-this needs to implement annotation first
+**** TODO IsUsed
 **** DONE delete
 *** DONE update
 *** DONE list
 ** TODO Collections
 *** DONE create
 *** DONE find
-*** DONE delete
+*** TODO delete
+**** TODO IsPopulated
 *** DONE update
+** TODO
+*** DONE AddImageToCollection(im.ImageId, clc.CollectionId) error
+*** DONE ImageExistsInCollection(ImageId, string) (bool, error)
+*** TODO FindImageByHash(string) (*im.Image, error)
+*** TODO Delete(im.ImageId) error

@@ -17,12 +17,19 @@ import (
 var errCtx = "ingesting image"
 
 type Interactor struct {
-	repo         Repo
-	artefactRepo im.ArtefactRepo
+	imageRepo      ImageRepo
+	collectionRepo CollectionRepo
+	annotationRepo AnnotationRepo
+	labelRepo      LabelRepo
+	artefactRepo   im.ArtefactRepo
 }
 
-func NewInteractor(repo Repo, artefactRepo im.ArtefactRepo) *Interactor {
-	return &Interactor{repo: repo, artefactRepo: artefactRepo}
+func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
+	labelRepo LabelRepo, annotationRepo AnnotationRepo,
+	artefactRepo im.ArtefactRepo) *Interactor {
+	return &Interactor{imageRepo: imageRepo, collectionRepo: collectionRepo,
+		annotationRepo: annotationRepo, labelRepo: labelRepo,
+		artefactRepo: artefactRepo}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -44,7 +51,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 	ok = i.ingestImage(image, out)
 	if !ok {
-		i.repo.DeleteImage(image.Id)
+		i.imageRepo.Delete(image.Id)
 		i.artefactRepo.Delete(image.Id)
 		return
 	}
@@ -121,20 +128,20 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 }
 
 func (i *Interactor) ingestImage(image *im.Image, out OutputPort) bool {
-	if err := i.repo.IngestImage(image.Id, image.Collection.Id); err != nil {
+	if err := i.imageRepo.AddImageToCollection(image.Id, image.Collection.Id); err != nil {
 		out.ErrInternal(fmt.Errorf("%v: ingesting meta-data: %w", errCtx, e.ErrInternal))
 		return false
 	}
 
 	for _, label := range image.Labels {
-		if err := i.repo.AddLabelToImage(image.Id, image.Collection.Id, label.Label.Id); err != nil {
+		if err := i.annotationRepo.AddLabelToImage(image.Id, image.Collection.Id, label.Label.Id); err != nil {
 			out.ErrInternal(fmt.Errorf("%v: ingesting label: %w", errCtx, e.ErrInternal))
 			return false
 		}
 	}
 
 	for _, box := range image.BoundingBoxes {
-		if err := i.repo.AddBoundingBoxToImage(image.Id, image.Collection.Id, *box); err != nil {
+		if err := i.annotationRepo.AddBoundingBoxToImage(image.Id, image.Collection.Id, *box); err != nil {
 			out.ErrInternal(fmt.Errorf("%v: ingesting bounding box: %w", errCtx, e.ErrInternal))
 			return false
 		}
@@ -144,7 +151,7 @@ func (i *Interactor) ingestImage(image *im.Image, out OutputPort) bool {
 }
 
 func (i *Interactor) findCollectionByName(name string, out OutputPort) (*clc.Collection, bool) {
-	collection, err := i.repo.FindCollectionByName(name)
+	collection, err := i.collectionRepo.FindCollectionByName(name)
 	baseErrMsg := fmt.Sprintf("%v: finding collection with name %v", errCtx, name)
 	switch {
 	case errors.Is(err, e.ErrNotFound):
@@ -160,7 +167,7 @@ func (i *Interactor) findCollectionByName(name string, out OutputPort) (*clc.Col
 
 func (i *Interactor) findLabelByName(name string, out OutputPort) (*lbl.Label, bool) {
 	baseErrMsg := fmt.Sprintf("%v: fetching label %v", errCtx, name)
-	label, err := i.repo.FindLabelByName(name)
+	label, err := i.labelRepo.FindLabelByName(name)
 	switch {
 	case errors.Is(err, e.ErrNotFound):
 		out.ErrLabelNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
@@ -176,7 +183,7 @@ func (i *Interactor) findLabelByName(name string, out OutputPort) (*lbl.Label, b
 func (i *Interactor) duplicateImageExists(hash string, out OutputPort) bool {
 
 	errCtx_ := fmt.Sprintf("%v: searching for duplicate image using hash", errCtx)
-	duplicateImage, err := i.repo.FindImageByHash(hash)
+	duplicateImage, err := i.imageRepo.FindImageByHash(hash)
 	switch {
 	case errors.Is(e.ErrNotFound, err):
 		return false

@@ -10,7 +10,7 @@ import (
 func TestRetrieveNonExistingShouldFail(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
 	createLabel(repo, "a-label")
-	_, err := repo.Find("non-existing-label")
+	_, err := repo.FindLabelbyName("non-existing-label")
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
 	}
@@ -20,7 +20,7 @@ func TestInternalErrOnFindShouldFail(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
 	createLabel(repo, "a-label")
 	repo.Db.Close()
-	_, err := repo.Find("a-label")
+	_, err := repo.FindLabelbyName("a-label")
 	if !errors.Is(err, e.ErrInternal) {
 		t.Fatalf("expected internal error, got %v", err)
 	}
@@ -29,7 +29,7 @@ func TestInternalErrOnFindShouldFail(t *testing.T) {
 func TestRetrieve(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
 	label, _ := createLabel(repo, "a-label")
-	r, err := repo.Find("a-label")
+	r, err := repo.FindLabelbyName("a-label")
 	if err != nil {
 		t.Fatalf("expected no error on find, got %v", err)
 	}

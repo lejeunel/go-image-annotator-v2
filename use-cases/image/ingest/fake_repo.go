@@ -8,25 +8,37 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type FakeRepo struct {
-	GotImage              bool
-	Err                   error
-	ErrOnFindCollection   bool
-	ErrOnLabelExists      bool
-	ErrOnIngest           bool
-	ErrOnAddLabel         bool
-	ErrOnFindHash         bool
-	ErrOnAddBoundingBox   bool
-	ErrOnDeleteImage      bool
-	MissingCollection     bool
-	MissingLabel          bool
-	HashAlreadyExists     bool
-	NumLabelsAdded        int
-	NumBoundingboxesAdded int
-	NumDeletedImages      int
+type FakeCollectionRepo struct {
+	Err                 error
+	ErrOnFindCollection bool
+	MissingCollection   bool
 }
 
-func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
+type FakeLabelRepo struct {
+	Err              error
+	ErrOnLabelExists bool
+	MissingLabel     bool
+}
+
+type FakeAnnotationRepo struct {
+	Err                   error
+	ErrOnAddBoundingBox   bool
+	ErrOnAddLabel         bool
+	NumLabelsAdded        int
+	NumBoundingboxesAdded int
+}
+
+type FakeImageRepo struct {
+	Err               error
+	GotImage          bool
+	ErrOnIngest       bool
+	ErrOnFindHash     bool
+	ErrOnDeleteImage  bool
+	HashAlreadyExists bool
+	NumDeletedImages  int
+}
+
+func (r *FakeCollectionRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 	if r.ErrOnFindCollection {
 		return nil, r.Err
 	}
@@ -37,7 +49,7 @@ func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 	return c, nil
 }
 
-func (r *FakeRepo) FindLabelByName(name string) (*lbl.Label, error) {
+func (r *FakeLabelRepo) FindLabelByName(name string) (*lbl.Label, error) {
 	if r.ErrOnLabelExists {
 		return nil, r.Err
 	}
@@ -47,7 +59,7 @@ func (r *FakeRepo) FindLabelByName(name string) (*lbl.Label, error) {
 	return lbl.NewLabel(lbl.NewLabelId(), name), nil
 }
 
-func (r *FakeRepo) FindImageByHash(hash string) (*im.Image, error) {
+func (r *FakeImageRepo) FindImageByHash(hash string) (*im.Image, error) {
 	if r.ErrOnFindHash {
 		return nil, r.Err
 	}
@@ -57,14 +69,7 @@ func (r *FakeRepo) FindImageByHash(hash string) (*im.Image, error) {
 	return nil, e.ErrNotFound
 }
 
-func (r *FakeRepo) IngestImage(im.ImageId, clc.CollectionId) error {
-	if r.ErrOnIngest {
-		return r.Err
-	}
-	return nil
-}
-
-func (r *FakeRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error {
+func (r *FakeAnnotationRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error {
 	if r.ErrOnAddLabel {
 		return r.Err
 	}
@@ -72,7 +77,7 @@ func (r *FakeRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) er
 	return nil
 }
 
-func (r *FakeRepo) AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error {
+func (r *FakeAnnotationRepo) AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error {
 	if r.ErrOnAddBoundingBox {
 		return r.Err
 	}
@@ -80,10 +85,17 @@ func (r *FakeRepo) AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.Boundi
 	return nil
 }
 
-func (r *FakeRepo) DeleteImage(im.ImageId) error {
+func (r *FakeImageRepo) Delete(im.ImageId) error {
 	if r.ErrOnDeleteImage {
 		return r.Err
 	}
 	r.NumDeletedImages += 1
+	return nil
+}
+
+func (r *FakeImageRepo) AddImageToCollection(im.ImageId, clc.CollectionId) error {
+	if r.ErrOnIngest {
+		return r.Err
+	}
 	return nil
 }

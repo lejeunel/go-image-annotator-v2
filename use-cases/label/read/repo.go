@@ -6,7 +6,7 @@ import (
 )
 
 type Repo interface {
-	Find(string) (*l.Label, error)
+	FindLabelByName(string) (*l.Label, error)
 }
 
 type FakeRepo struct {
@@ -14,7 +14,7 @@ type FakeRepo struct {
 	Err   error
 }
 
-func (r *FakeRepo) Find(name string) (*l.Label, error) {
+func (r *FakeRepo) FindLabelByName(name string) (*l.Label, error) {
 	if r.Err != nil {
 		return nil, r.Err
 	}

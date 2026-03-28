@@ -6,7 +6,7 @@ import (
 )
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	found, err := i.repo.Find(r.Name)
+	found, err := i.repo.FindCollectionByName(r.Name)
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):

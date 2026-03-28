@@ -6,32 +6,47 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-type Repo interface {
-	FindLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
-	FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
+type CollectionRepo interface {
 	FindCollectionByName(string) (*clc.Collection, error)
-	ImageExistsInCollection(ImageId, string) (bool, error)
 }
 
-type FakeRepo struct {
+type AnnotationRepo interface {
+	FindLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
+	FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
+}
+
+type ImageRepo interface {
+	ImageExistsInCollection(ImageId, clc.CollectionId) (bool, error)
+}
+
+type FakeCollectionRepo struct {
+	Err                 error
+	MissingCollection   bool
+	ErrOnFindCollection bool
+	Collection          clc.Collection
+}
+
+type FakeAnnotationRepo struct {
 	Err                    error
-	ErrOnFindLabel         bool
+	ErrOnFindImageLabel    bool
 	ErrOnFindBoundingBoxes bool
-	ErrOnExists            bool
-	MissingCollection      bool
-	Collection             *clc.Collection
 	Labels                 []*a.ImageLabel
 	BoundingBoxes          []*a.BoundingBox
 }
 
-func (r *FakeRepo) ImageExistsInCollection(imageId ImageId, collectionName string) (bool, error) {
+type FakeImageRepo struct {
+	Err         error
+	ErrOnExists bool
+}
+
+func (r *FakeImageRepo) ImageExistsInCollection(imageId ImageId, collectionId clc.CollectionId) (bool, error) {
 	if r.ErrOnExists {
 		return false, r.Err
 	}
 	return true, nil
 }
 
-func (r *FakeRepo) FindBoundingBoxes(imageId ImageId, collectionId clc.CollectionId) ([]*a.BoundingBox, error) {
+func (r *FakeAnnotationRepo) FindBoundingBoxes(imageId ImageId, collectionId clc.CollectionId) ([]*a.BoundingBox, error) {
 	if r.ErrOnFindBoundingBoxes {
 		return nil, r.Err
 	}
@@ -41,8 +56,8 @@ func (r *FakeRepo) FindBoundingBoxes(imageId ImageId, collectionId clc.Collectio
 	return nil, nil
 }
 
-func (r *FakeRepo) FindLabels(imageId ImageId, collectionId clc.CollectionId) ([]*a.ImageLabel, error) {
-	if r.ErrOnFindLabel {
+func (r *FakeAnnotationRepo) FindLabels(imageId ImageId, collectionId clc.CollectionId) ([]*a.ImageLabel, error) {
+	if r.ErrOnFindImageLabel {
 		return nil, r.Err
 	}
 	if r.Labels != nil {
@@ -51,12 +66,12 @@ func (r *FakeRepo) FindLabels(imageId ImageId, collectionId clc.CollectionId) ([
 	return nil, nil
 }
 
-func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
+func (r *FakeCollectionRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 	if r.MissingCollection {
 		return nil, e.ErrNotFound
 	}
-	if r.Collection != nil {
-		return r.Collection, nil
+	if r.ErrOnFindCollection {
+		return nil, r.Err
 	}
-	return nil, nil
+	return &r.Collection, nil
 }
