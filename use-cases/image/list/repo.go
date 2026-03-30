@@ -4,26 +4,20 @@ import (
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 )
 
-type FilteringParams struct {
-	Collection *string
-	PageSize   int
-	Page       int
-}
-
 type Repo interface {
-	List(FilteringParams) ([]*im.BaseImage, error)
-	Count(FilteringParams) (*int, error)
+	List(im.FilteringParams) ([]*im.BaseImage, error)
+	Count(im.CountingParams) (*int64, error)
 }
 
 type FakeRepo struct {
-	GotFilters FilteringParams
+	GotFilters im.FilteringParams
 	Err        error
-	Count_     int
+	Count_     int64
 	ErrOnList  bool
 	ErrOnCount bool
 }
 
-func (r *FakeRepo) List(f FilteringParams) ([]*im.BaseImage, error) {
+func (r *FakeRepo) List(f im.FilteringParams) ([]*im.BaseImage, error) {
 	if r.ErrOnList {
 		return nil, r.Err
 	}
@@ -39,7 +33,7 @@ func (r *FakeRepo) List(f FilteringParams) ([]*im.BaseImage, error) {
 	return result, nil
 
 }
-func (r *FakeRepo) Count(f FilteringParams) (*int, error) {
+func (r *FakeRepo) Count(f im.CountingParams) (*int64, error) {
 	if r.ErrOnCount {
 		return nil, r.Err
 	}

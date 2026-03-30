@@ -24,8 +24,17 @@
 *** TODO delete
 **** TODO IsPopulated
 *** DONE update
-** TODO
+** DONE Images
 *** DONE AddImageToCollection(im.ImageId, clc.CollectionId) error
 *** DONE ImageExistsInCollection(ImageId, string) (bool, error)
-*** TODO FindImageByHash(string) (*im.Image, error)
-*** TODO Delete(im.ImageId) error
+*** DONE FindImageIdByHash(string) (*im.Image, error)
+*** DONE Delete(im.ImageId) error
+*** DONE RemoveImageFromCollection
+** TODO Annotations
+*** TODO FindLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
+*** TODO FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
+*** TODO AddBoundingBox(im.ImageId, clc.CollectionId, a.BoundingBox) error
+*** TODO FindLabelByName(string) (*lbl.Label, error)
+*** TODO UpdateBoundingBox(Updatables) error
+*** TODO RemoveLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
+*** TODO RemoveAnnotation(a.AnnotationId) error

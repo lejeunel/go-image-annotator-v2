@@ -82,3 +82,27 @@ func TestHandleInternalErrOnDeleteBoxes(t *testing.T) {
 		t.Fatalf("expected internal error")
 	}
 }
+
+func TestInternalErrOnRemoveImageFromCollectionShouldFail(t *testing.T) {
+	p := &FakePresenter{}
+	id := im.NewImageId()
+	collectionName := "a-collection"
+	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
+	itr := NewInteractor(&im.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveImage: true, Err: e.ErrNotFound})
+	itr.Execute(Request{}, p)
+	if p.GotSuccess || !(p.GotInternalErr) {
+		t.Fatalf("expected internal error")
+	}
+}
+
+func TestRemoveImageFromCollection(t *testing.T) {
+	p := &FakePresenter{}
+	id := im.NewImageId()
+	collectionName := "a-collection"
+	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
+	itr := NewInteractor(&im.FakeImageStore{Return: image}, &FakeRepo{})
+	itr.Execute(Request{}, p)
+	if !p.GotSuccess {
+		t.Fatalf("expected success")
+	}
+}

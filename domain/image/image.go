@@ -26,6 +26,7 @@ type Image struct {
 	Labels        []*an.ImageLabel
 	BoundingBoxes []*an.BoundingBox
 	Reader        ImageReader
+	Hash          string
 }
 
 func (i *Image) AddLabel(l *lbl.Label) error {

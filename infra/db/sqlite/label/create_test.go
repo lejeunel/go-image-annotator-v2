@@ -27,9 +27,17 @@ func TestInternalErrOnCreateShouldFail(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	_, err := createLabel(NewTestSQLiteLabelRepo(), "a-label")
+	repo := NewTestSQLiteLabelRepo()
+	_, err := createLabel(repo, "a-label")
 	if err != nil {
 		t.Fatalf("expected no error on create but got %v", err)
+	}
+	count, err := repo.Count()
+	if err != nil {
+		t.Fatalf("expected no error on count, got %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("expected count of 1, got %v", count)
 	}
 
 }

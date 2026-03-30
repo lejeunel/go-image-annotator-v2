@@ -2,13 +2,13 @@ package image
 
 import (
 	"github.com/google/uuid"
+	uuidw "github.com/lejeunel/go-image-annotator-v2/uuid"
 )
 
-type ImageId uuid.UUID
-
-func (id ImageId) String() string {
-	return uuid.UUID(id).String()
+type ImageId struct {
+	uuidw.UUIDWrapper[ImageId]
 }
+
 func NewImageId() ImageId {
-	return ImageId(uuid.New())
+	return ImageId{uuidw.UUIDWrapper[ImageId]{UUID: uuid.New()}}
 }

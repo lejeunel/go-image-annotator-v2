@@ -1,7 +1,6 @@
 package ingest
 
 import (
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +16,7 @@ import (
 var errCtx = "ingesting image"
 
 type Interactor struct {
+	hasher         Hasher
 	imageRepo      ImageRepo
 	collectionRepo CollectionRepo
 	annotationRepo AnnotationRepo
@@ -26,10 +26,10 @@ type Interactor struct {
 
 func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
 	labelRepo LabelRepo, annotationRepo AnnotationRepo,
-	artefactRepo im.ArtefactRepo) *Interactor {
+	artefactRepo im.ArtefactRepo, hasher Hasher) *Interactor {
 	return &Interactor{imageRepo: imageRepo, collectionRepo: collectionRepo,
 		annotationRepo: annotationRepo, labelRepo: labelRepo,
-		artefactRepo: artefactRepo}
+		artefactRepo: artefactRepo, hasher: hasher}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -39,17 +39,25 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	}
 
 	imageId := im.NewImageId()
-	ok = i.ingestRawData(imageId, r.Reader, out)
-	if !ok {
-		return
-	}
-
 	image, ok := i.createImage(imageId, *collection, r.Labels, r.BoundingBoxes, out)
 	if !ok {
 		return
 	}
 
-	ok = i.ingestImage(image, out)
+	data, err := io.ReadAll(r.Reader)
+	if err != nil {
+		out.ErrInvalidImageData(fmt.Errorf("%v: reading image data: %w", errCtx, e.ErrValidation))
+		return
+	}
+
+	hash := i.hasher.Hash(data)
+
+	ok = i.ingestRawData(imageId, data, hash, out)
+	if !ok {
+		return
+	}
+
+	ok = i.ingestImage(image, hash, out)
 	if !ok {
 		i.imageRepo.Delete(image.Id)
 		i.artefactRepo.Delete(image.Id)
@@ -60,13 +68,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 }
 
-func (i *Interactor) ingestRawData(id im.ImageId, reader im.ImageReader, out OutputPort) bool {
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		out.ErrInvalidImageData(fmt.Errorf("%v: reading image data: %w", errCtx, e.ErrValidation))
-		return false
-	}
-	hash := fmt.Sprintf("%x", sha256.Sum256(data))
+func (i *Interactor) ingestRawData(id im.ImageId, data []byte, hash string, out OutputPort) bool {
 
 	if i.duplicateImageExists(hash, out) {
 		return false
@@ -127,9 +129,14 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 
 }
 
-func (i *Interactor) ingestImage(image *im.Image, out OutputPort) bool {
+func (i *Interactor) ingestImage(image *im.Image, hash string, out OutputPort) bool {
+	if err := i.imageRepo.AddImage(image.Id, hash); err != nil {
+		out.ErrInternal(fmt.Errorf("%v: adding image: %w", errCtx, e.ErrInternal))
+		return false
+	}
+
 	if err := i.imageRepo.AddImageToCollection(image.Id, image.Collection.Id); err != nil {
-		out.ErrInternal(fmt.Errorf("%v: ingesting meta-data: %w", errCtx, e.ErrInternal))
+		out.ErrInternal(fmt.Errorf("%v: adding image to collection %v: %w", errCtx, image.Collection.Name, e.ErrInternal))
 		return false
 	}
 
@@ -183,12 +190,12 @@ func (i *Interactor) findLabelByName(name string, out OutputPort) (*lbl.Label, b
 func (i *Interactor) duplicateImageExists(hash string, out OutputPort) bool {
 
 	errCtx_ := fmt.Sprintf("%v: searching for duplicate image using hash", errCtx)
-	duplicateImage, err := i.imageRepo.FindImageByHash(hash)
+	duplicateId, err := i.imageRepo.FindImageIdByHash(hash)
 	switch {
 	case errors.Is(e.ErrNotFound, err):
 		return false
-	case err == nil:
-		out.ErrDuplicateImage(fmt.Errorf("%v: found duplicate with id: %v: %w", errCtx_, duplicateImage.Id, e.ErrValidation))
+	case duplicateId != nil:
+		out.ErrDuplicateImage(fmt.Errorf("%v: found duplicate with id: %v: %w", errCtx_, duplicateId, e.ErrValidation))
 		return true
 	default:
 		out.ErrInternal(fmt.Errorf("%v: %w", errCtx_, e.ErrInternal))

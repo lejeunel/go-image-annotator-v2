@@ -17,8 +17,15 @@ CREATE TABLE IF NOT EXISTS collections (
 );
 CREATE UNIQUE INDEX idx_collections_name ON collections(name);
 
+CREATE TABLE IF NOT EXISTS images (
+    id varchar(36),
+    hash varchar(128),
+    PRIMARY KEY (id)
+);
+CREATE UNIQUE INDEX idx_images_hash ON images(hash);
+
 CREATE TABLE IF NOT EXISTS images_collections (
-  image_id varchar(36),
+  image_id varchar(36) REFERENCES images(id),
   collection_id varchar(36) REFERENCES collections(id),
   PRIMARY KEY (image_id, collection_id)
 );
@@ -27,4 +34,5 @@ CREATE TABLE IF NOT EXISTS images_collections (
 
 DROP TABLE labels;
 DROP TABLE collections;
+DROP TABLE images_collections;
 DROP TABLE images;

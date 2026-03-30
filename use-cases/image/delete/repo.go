@@ -7,21 +7,22 @@ import (
 )
 
 type Repo interface {
-	Delete(im.ImageId) error
+	RemoveImageFromCollection(im.ImageId, clc.CollectionId) error
 	RemoveAnnotation(im.ImageId, clc.CollectionId, a.AnnotationId) error
 }
 
 type FakeRepo struct {
 	Err                   error
-	DeletedId             im.ImageId
+	RemovedImageId        im.ImageId
+	ErrOnRemoveImage      bool
 	ErrOnRemoveAnnotation bool
 }
 
-func (r *FakeRepo) Delete(id im.ImageId) error {
+func (r *FakeRepo) RemoveImageFromCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
 	if r.Err != nil {
 		return r.Err
 	}
-	r.DeletedId = id
+	r.RemovedImageId = imageId
 	return nil
 }
 

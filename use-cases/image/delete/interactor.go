@@ -31,6 +31,13 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
+	if err := i.repo.RemoveImageFromCollection(image.Id, image.Collection.Id); err != nil {
+		out.ErrInternal(fmt.Errorf("removing image %v from collection %v: %w",
+			image.Id, image.Collection.Name, e.ErrInternal))
+		return
+
+	}
+
 	out.Success(Response{})
 }
 func (i *Interactor) deleteBoundingBoxes(image im.Image, out OutputPort) bool {

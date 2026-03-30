@@ -1,6 +1,8 @@
 package sqlite
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
@@ -26,6 +28,24 @@ func (r *SQLiteImageRepo) AddImageToCollection(imageId im.ImageId, collectionId 
 
 	return nil
 }
+func (r *SQLiteImageRepo) Count(f im.CountingParams) (*int64, error) {
+	var count int64
+
+	var query string
+	var err error
+	if f.Collection != nil {
+		query = "SELECT COUNT(*) FROM images_collections WHERE collection_id=(SELECT id FROM collections WHERE name=$1)"
+		err = r.Db.QueryRow(query, f.Collection).Scan(&count)
+	} else {
+		query = "SELECT COUNT(*) FROM images"
+		err = r.Db.QueryRow(query).Scan(&count)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("%v: %w", err, e.ErrInternal)
+	}
+	return &count, nil
+
+}
 func (r *SQLiteImageRepo) ImageExistsInCollection(imageId im.ImageId, collectionId clc.CollectionId) (bool, error) {
 	var count int64
 	query := "SELECT COUNT(*) FROM images_collections WHERE image_id=$1 AND collection_id=$2"
@@ -36,6 +56,41 @@ func (r *SQLiteImageRepo) ImageExistsInCollection(imageId im.ImageId, collection
 
 	return count > 0, nil
 }
+func (r *SQLiteImageRepo) AddImage(imageId im.ImageId, hash string) error {
+	query := "INSERT INTO images (id, hash) VALUES ($1,$2)"
+	_, err := r.Db.Exec(query, imageId.String(), hash)
+	if err != nil {
+		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+	}
+	return nil
+}
+func (r *SQLiteImageRepo) FindImageIdByHash(hash string) (*im.ImageId, error) {
+	var imageId im.ImageId
+	err := r.Db.Get(&imageId, "SELECT id FROM images WHERE hash = $1", hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, e.ErrNotFound
+		}
+		return nil, e.ErrInternal
+	}
+	return &imageId, nil
+}
+func (r *SQLiteImageRepo) Delete(id im.ImageId) error {
+	_, err := r.Db.Exec("DELETE FROM images WHERE id = $1", id)
+	if err != nil {
+		return e.ErrInternal
+	}
+	return nil
+}
+func (r *SQLiteImageRepo) RemoveImageFromCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
+	_, err := r.Db.Exec("DELETE FROM images_collections WHERE image_id = $1 AND collection_id = $2",
+		imageId, collectionId)
+	if err != nil {
+		return e.ErrInternal
+	}
+	return nil
+}
+
 func NewSQLiteImageRepo(db *sqlx.DB) *SQLiteImageRepo {
 	return &SQLiteImageRepo{Db: db}
 }

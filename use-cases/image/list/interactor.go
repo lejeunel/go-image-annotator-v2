@@ -12,7 +12,7 @@ type Interactor struct {
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	filteringParams := &FilteringParams{
+	filteringParams := &im.FilteringParams{
 		Page:       r.Page,
 		PageSize:   r.PageSize,
 		Collection: r.CollectionName}
@@ -28,7 +28,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	count, err := i.repo.Count(*filteringParams)
+	count, err := i.repo.Count(im.CountingParams{Collection: filteringParams.Collection})
 	if err != nil {
 		out.ErrInternal(err)
 		return
@@ -40,7 +40,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	}
 
 	out.Success(Response{Images: imageResponses,
-		Pagination: Pagination{Page: r.Page, PageSize: r.PageSize, Total: *count, TotalPages: *count / r.PageSize}})
+		Pagination: Pagination{Page: r.Page, PageSize: r.PageSize, Total: *count, TotalPages: *count / int64(r.PageSize)}})
 
 }
 

@@ -8,6 +8,54 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
+type FakeHasher struct {
+	Hash_ string
+}
+
+func (h *FakeHasher) Hash([]byte) string {
+	return h.Hash_
+
+}
+
+type FakePresenter struct {
+	Got                      *Response
+	GotSuccess               bool
+	GotCollectionNotFoundErr bool
+	GotLabelNotFoundErr      bool
+	GotInvalidImageDataErr   bool
+	GotDuplicateImage        bool
+	GotInternalErr           bool
+	GotValidationErr         bool
+}
+
+func (p *FakePresenter) Success(r Response) {
+	p.Got = &r
+	p.GotSuccess = true
+}
+func (p *FakePresenter) ErrCollectionNotFound(error) {
+	p.GotCollectionNotFoundErr = true
+}
+
+func (p *FakePresenter) ErrInvalidImageData(error) {
+	p.GotInvalidImageDataErr = true
+}
+
+func (p *FakePresenter) ErrInternal(error) {
+	p.GotInternalErr = true
+}
+
+func (p *FakePresenter) ErrLabelNotFound(error) {
+	p.GotLabelNotFoundErr = true
+}
+
+func (p *FakePresenter) ErrValidation(error) {
+	p.GotValidationErr = true
+}
+
+func (p *FakePresenter) ErrDuplicateImage(error) {
+	p.GotDuplicateImage = true
+}
+
 type FakeCollectionRepo struct {
 	Err                 error
 	ErrOnFindCollection bool
@@ -29,13 +77,15 @@ type FakeAnnotationRepo struct {
 }
 
 type FakeImageRepo struct {
-	Err               error
-	GotImage          bool
-	ErrOnIngest       bool
-	ErrOnFindHash     bool
-	ErrOnDeleteImage  bool
-	HashAlreadyExists bool
-	NumDeletedImages  int
+	Err                       error
+	GotImage                  bool
+	GotHash                   string
+	ErrOnAddImageToCollection bool
+	ErrOnAddImage             bool
+	ErrOnFindHash             bool
+	ErrOnDeleteImage          bool
+	HashAlreadyExists         bool
+	NumDeletedImages          int
 }
 
 func (r *FakeCollectionRepo) FindCollectionByName(name string) (*clc.Collection, error) {
@@ -59,12 +109,13 @@ func (r *FakeLabelRepo) FindLabelByName(name string) (*lbl.Label, error) {
 	return lbl.NewLabel(lbl.NewLabelId(), name), nil
 }
 
-func (r *FakeImageRepo) FindImageByHash(hash string) (*im.Image, error) {
+func (r *FakeImageRepo) FindImageIdByHash(hash string) (*im.ImageId, error) {
 	if r.ErrOnFindHash {
 		return nil, r.Err
 	}
 	if r.HashAlreadyExists {
-		return im.NewImage(im.NewImageId(), *clc.NewCollection(clc.NewCollectionId(), "a-collection")), nil
+		existingId := im.NewImageId()
+		return &existingId, nil
 	}
 	return nil, e.ErrNotFound
 }
@@ -94,8 +145,16 @@ func (r *FakeImageRepo) Delete(im.ImageId) error {
 }
 
 func (r *FakeImageRepo) AddImageToCollection(im.ImageId, clc.CollectionId) error {
-	if r.ErrOnIngest {
+	if r.ErrOnAddImageToCollection {
 		return r.Err
 	}
+	return nil
+}
+
+func (r *FakeImageRepo) AddImage(imageId im.ImageId, hash string) error {
+	if r.ErrOnAddImage {
+		return r.Err
+	}
+	r.GotHash = hash
 	return nil
 }

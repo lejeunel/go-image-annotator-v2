@@ -2,23 +2,11 @@ package sqlite
 
 import (
 	"errors"
-	"testing"
-
 	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
-	s "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
-	cr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
+	"testing"
 )
-
-func TestInternalErrOnCreateShouldFail(t *testing.T) {
-	repo := NewTestSQLiteImageRepo()
-	repo.Db.Close()
-	err := repo.AddImageToCollection(im.NewImageId(), clc.NewCollectionId())
-	if !errors.Is(err, e.ErrInternal) {
-		t.Fatalf("expected internal error, got %v", err)
-	}
-}
 
 func TestInternalErrOnImageIsInCollectionShouldFail(t *testing.T) {
 	repo := NewTestSQLiteImageRepo()
@@ -29,24 +17,48 @@ func TestInternalErrOnImageIsInCollectionShouldFail(t *testing.T) {
 	}
 }
 
-func TestAddImageInCollection(t *testing.T) {
-	db := s.NewSQLiteDB(":memory:")
-	collectionRepo := cr.NewSQLiteCollectionRepo(db)
-	imageRepo := NewSQLiteImageRepo(db)
-
-	collectionId := clc.NewCollectionId()
-	collectionRepo.Create(*clc.NewCollection(collectionId, "a-collection"))
-
-	imageId := im.NewImageId()
-	err := imageRepo.AddImageToCollection(imageId, collectionId)
+func TestCountAddedImageToCollection(t *testing.T) {
+	repos := NewImageTestRepos()
+	collection := "a-collection"
+	AddImageToCollection(repos, collection, "")
+	count, err := repos.Image.Count(im.CountingParams{Collection: &collection})
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no error when counting images in collection, got %v", err)
 	}
-	isAdded, err := imageRepo.ImageExistsInCollection(imageId, collectionId)
+	if *count != 1 {
+		t.Fatalf("expected that one image is added to collection, got %v", *count)
+	}
+}
+
+func TestCountAllImagesWhenAddingImageToCollection(t *testing.T) {
+	repos := NewImageTestRepos()
+	AddImageToCollection(repos, "a-collection", "")
+	count, err := repos.Image.Count(im.CountingParams{})
+	if err != nil {
+		t.Fatalf("expected no error when counting images in collection, got %v", err)
+	}
+	if *count != 1 {
+		t.Fatalf("expected that one image is added to collection, got %v", *count)
+	}
+}
+
+func TestAddedImageToCollectionExists(t *testing.T) {
+	repos := NewImageTestRepos()
+	imageId, collectionId, _ := AddImageToCollection(repos, "a-collectxion", "the-hash")
+	isAdded, err := repos.Image.ImageExistsInCollection(*imageId, *collectionId)
 	if err != nil {
 		t.Fatalf("expected no error when checking existence of image in collection, got %v", err)
 	}
 	if !isAdded {
 		t.Fatal("expected that image is added to collection")
+	}
+}
+
+func TestInternalErrOnCreateShouldFail(t *testing.T) {
+	repo := NewTestSQLiteImageRepo()
+	repo.Db.Close()
+	err := repo.AddImageToCollection(im.NewImageId(), clc.NewCollectionId())
+	if !errors.Is(err, e.ErrInternal) {
+		t.Fatalf("expected internal error, got %v", err)
 	}
 }
