@@ -4,16 +4,17 @@ import (
 	"errors"
 	"fmt"
 
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
-	service im.ImageStore
+	service st.ImageStore
 	repo    Repo
 }
 
-func NewInteractor(service im.ImageStore, repo Repo) *Interactor {
+func NewInteractor(service st.ImageStore, repo Repo) *Interactor {
 	return &Interactor{service: service, repo: repo}
 }
 

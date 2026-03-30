@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	s "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
 )
@@ -28,7 +29,7 @@ func (r *SQLiteImageRepo) AddImageToCollection(imageId im.ImageId, collectionId 
 
 	return nil
 }
-func (r *SQLiteImageRepo) Count(f im.CountingParams) (*int64, error) {
+func (r *SQLiteImageRepo) Count(f ist.CountingParams) (*int64, error) {
 	var count int64
 
 	var query string

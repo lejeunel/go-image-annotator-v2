@@ -3,18 +3,19 @@ package add_bbox
 import (
 	"errors"
 
-	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
-	imageStore im.ImageStore
+	imageStore st.ImageStore
 	repo       Repo
 }
 
-func NewInteractor(imageStore im.ImageStore, repo Repo) *Interactor {
+func NewInteractor(imageStore st.ImageStore, repo Repo) *Interactor {
 	return &Interactor{repo: repo, imageStore: imageStore}
 }
 func (i *Interactor) Execute(r Request, out OutputPort) {

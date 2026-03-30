@@ -1,23 +1,21 @@
-package image
+package artefact_store
 
 import (
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	"io"
 )
+import ()
 
 type ArtefactReadRepo interface {
-	Get(ImageId) ([]byte, error)
-}
-
-type ImageReader interface {
-	Read([]byte) (int, error)
+	Get(im.ImageId) ([]byte, error)
 }
 
 type FromStoreImageReader struct {
 	repo ArtefactReadRepo
-	id   ImageId
+	id   im.ImageId
 }
 
-func NewImageReader(id ImageId, repo ArtefactReadRepo) *FromStoreImageReader {
+func NewImageReader(id im.ImageId, repo ArtefactReadRepo) *FromStoreImageReader {
 	return &FromStoreImageReader{repo: repo, id: id}
 }
 func (r FromStoreImageReader) Read(buf []byte) (int, error) {

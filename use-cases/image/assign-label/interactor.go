@@ -3,15 +3,16 @@ package assign_label
 import (
 	"errors"
 
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
 	repo  Repo
-	store im.ImageStore
+	store st.ImageStore
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -74,6 +75,6 @@ func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId,
 
 }
 
-func NewInteractor(repo Repo, store im.ImageStore) *Interactor {
+func NewInteractor(repo Repo, store st.ImageStore) *Interactor {
 	return &Interactor{repo: repo, store: store}
 }

@@ -1,23 +1,24 @@
-package image
+package image_store
 
 import (
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	"io"
 )
 
 type FakeImageStore struct {
 	Err    error
-	Got    BaseImage
-	Return *Image
+	Got    im.BaseImage
+	Return *im.Image
 }
 
-func (s *FakeImageStore) Find(baseImage BaseImage) (*Image, error) {
+func (s *FakeImageStore) Find(baseImage im.BaseImage) (*im.Image, error) {
 	if s.Err != nil {
 		return nil, s.Err
 	}
 	if s.Return != nil {
 		return s.Return, nil
 	}
-	return &Image{}, nil
+	return &im.Image{}, nil
 }
 
 type FakeImageReader struct {

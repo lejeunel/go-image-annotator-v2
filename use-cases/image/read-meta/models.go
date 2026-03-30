@@ -1,8 +1,8 @@
 package read_meta
 
 import (
-	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 )
 
 type Request struct {

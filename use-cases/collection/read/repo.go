@@ -1,7 +1,7 @@
 package read
 
 import (
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 

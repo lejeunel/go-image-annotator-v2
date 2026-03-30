@@ -1,4 +1,4 @@
-package image
+package image_store
 
 type FilteringParams struct {
 	Collection *string

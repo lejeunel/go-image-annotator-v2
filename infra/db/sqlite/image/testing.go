@@ -1,8 +1,8 @@
 package sqlite
 
 import (
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	s "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
 	cr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
 )

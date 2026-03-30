@@ -7,10 +7,11 @@ import (
 
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 
-	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 )
 
 var errCtx = "ingesting image"
@@ -21,12 +22,12 @@ type Interactor struct {
 	collectionRepo CollectionRepo
 	annotationRepo AnnotationRepo
 	labelRepo      LabelRepo
-	artefactRepo   im.ArtefactRepo
+	artefactRepo   ast.ArtefactRepo
 }
 
 func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
 	labelRepo LabelRepo, annotationRepo AnnotationRepo,
-	artefactRepo im.ArtefactRepo, hasher Hasher) *Interactor {
+	artefactRepo ast.ArtefactRepo, hasher Hasher) *Interactor {
 	return &Interactor{imageRepo: imageRepo, collectionRepo: collectionRepo,
 		annotationRepo: annotationRepo, labelRepo: labelRepo,
 		artefactRepo: artefactRepo, hasher: hasher}

@@ -1,15 +1,16 @@
 package ingest
 
 import (
-	an "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	"io"
 )
 
 type Request struct {
 	Collection    string
 	Labels        []string
 	BoundingBoxes []BoundingBoxRequest
-	Reader        im.ImageReader
+	Reader        io.Reader
 }
 
 type Response struct {

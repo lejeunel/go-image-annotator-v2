@@ -2,17 +2,18 @@ package list
 
 import (
 	"errors"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
 	repo    Repo
-	service im.ImageStore
+	service ist.ImageStore
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	filteringParams := &im.FilteringParams{
+	filteringParams := &ist.FilteringParams{
 		Page:       r.Page,
 		PageSize:   r.PageSize,
 		Collection: r.CollectionName}
@@ -28,7 +29,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	count, err := i.repo.Count(im.CountingParams{Collection: filteringParams.Collection})
+	count, err := i.repo.Count(ist.CountingParams{Collection: filteringParams.Collection})
 	if err != nil {
 		out.ErrInternal(err)
 		return
@@ -58,6 +59,6 @@ func (i *Interactor) buildResponses(baseImages []*im.BaseImage, out OutputPort) 
 
 }
 
-func NewInteractor(r Repo, s im.ImageStore) *Interactor {
+func NewInteractor(r Repo, s ist.ImageStore) *Interactor {
 	return &Interactor{repo: r, service: s}
 }

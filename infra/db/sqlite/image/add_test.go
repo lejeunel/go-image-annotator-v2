@@ -2,8 +2,9 @@ package sqlite
 
 import (
 	"errors"
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"testing"
 )
@@ -21,7 +22,7 @@ func TestCountAddedImageToCollection(t *testing.T) {
 	repos := NewImageTestRepos()
 	collection := "a-collection"
 	AddImageToCollection(repos, collection, "")
-	count, err := repos.Image.Count(im.CountingParams{Collection: &collection})
+	count, err := repos.Image.Count(ist.CountingParams{Collection: &collection})
 	if err != nil {
 		t.Fatalf("expected no error when counting images in collection, got %v", err)
 	}
@@ -33,7 +34,7 @@ func TestCountAddedImageToCollection(t *testing.T) {
 func TestCountAllImagesWhenAddingImageToCollection(t *testing.T) {
 	repos := NewImageTestRepos()
 	AddImageToCollection(repos, "a-collection", "")
-	count, err := repos.Image.Count(im.CountingParams{})
+	count, err := repos.Image.Count(ist.CountingParams{})
 	if err != nil {
 		t.Fatalf("expected no error when counting images in collection, got %v", err)
 	}

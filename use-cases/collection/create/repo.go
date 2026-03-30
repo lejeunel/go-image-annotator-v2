@@ -1,7 +1,7 @@
 package create
 
 import (
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	"slices"
 )
 

@@ -1,8 +1,9 @@
-package image
+package image_store
 
 import (
-	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
@@ -26,14 +27,14 @@ type FakeImageRepo struct {
 	ErrOnExists bool
 }
 
-func (r *FakeImageRepo) ImageExistsInCollection(imageId ImageId, collectionId clc.CollectionId) (bool, error) {
+func (r *FakeImageRepo) ImageExistsInCollection(imageId im.ImageId, collectionId clc.CollectionId) (bool, error) {
 	if r.ErrOnExists {
 		return false, r.Err
 	}
 	return true, nil
 }
 
-func (r *FakeAnnotationRepo) FindBoundingBoxes(imageId ImageId, collectionId clc.CollectionId) ([]*a.BoundingBox, error) {
+func (r *FakeAnnotationRepo) FindBoundingBoxes(imageId im.ImageId, collectionId clc.CollectionId) ([]*a.BoundingBox, error) {
 	if r.ErrOnFindBoundingBoxes {
 		return nil, r.Err
 	}
@@ -43,7 +44,7 @@ func (r *FakeAnnotationRepo) FindBoundingBoxes(imageId ImageId, collectionId clc
 	return nil, nil
 }
 
-func (r *FakeAnnotationRepo) FindLabels(imageId ImageId, collectionId clc.CollectionId) ([]*a.ImageLabel, error) {
+func (r *FakeAnnotationRepo) FindLabels(imageId im.ImageId, collectionId clc.CollectionId) ([]*a.ImageLabel, error) {
 	if r.ErrOnFindImageLabel {
 		return nil, r.Err
 	}

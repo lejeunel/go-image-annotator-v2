@@ -1,7 +1,7 @@
 package sqlite
 
 import (
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	"testing"
 )

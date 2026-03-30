@@ -1,7 +1,7 @@
 package assign_label
 
 import (
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 )
 
 type Response struct {

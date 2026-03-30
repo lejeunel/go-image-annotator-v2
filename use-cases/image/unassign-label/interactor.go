@@ -3,14 +3,15 @@ package unassign_label
 import (
 	"errors"
 
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
 	repo   Repo
 	output OutputPort
-	store  im.ImageStore
+	store  st.ImageStore
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -66,6 +67,6 @@ func (i *Interactor) removeLabel(image im.Image, label string, out OutputPort) b
 
 }
 
-func NewInteractor(repo Repo, store im.ImageStore) *Interactor {
+func NewInteractor(repo Repo, store st.ImageStore) *Interactor {
 	return &Interactor{repo: repo, store: store}
 }

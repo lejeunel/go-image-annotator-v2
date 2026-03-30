@@ -4,16 +4,16 @@ import (
 	"errors"
 	"io"
 
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
-	repo im.ArtefactReadRepo
+	repo ast.ArtefactReadRepo
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	data, err := io.ReadAll(im.NewImageReader(r.ImageId, i.repo))
+	data, err := io.ReadAll(ast.NewImageReader(r.ImageId, i.repo))
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
@@ -28,6 +28,6 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 }
 
-func NewInteractor(repo im.ArtefactReadRepo) *Interactor {
+func NewInteractor(repo ast.ArtefactReadRepo) *Interactor {
 	return &Interactor{repo: repo}
 }

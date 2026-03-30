@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/jmoiron/sqlx"
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	s "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/update"

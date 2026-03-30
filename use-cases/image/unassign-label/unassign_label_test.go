@@ -3,15 +3,16 @@ package unassign_label
 import (
 	"testing"
 
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 func TestHandleNotFoundErr(t *testing.T) {
 	p := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{}, &im.FakeImageStore{Err: e.ErrNotFound})
+	itr := NewInteractor(&FakeRepo{}, &st.FakeImageStore{Err: e.ErrNotFound})
 	itr.Execute(Request{}, p)
 	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatal("expected not found error")
@@ -20,7 +21,7 @@ func TestHandleNotFoundErr(t *testing.T) {
 
 func TestHandleInternalErr(t *testing.T) {
 	p := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{}, &im.FakeImageStore{Err: e.ErrInternal})
+	itr := NewInteractor(&FakeRepo{}, &st.FakeImageStore{Err: e.ErrInternal})
 	itr.Execute(Request{}, p)
 	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error")
@@ -31,7 +32,7 @@ func TestUnassignLabelNotAssignedToImageShouldFail(t *testing.T) {
 	p := &FakePresenter{}
 	repo := &FakeRepo{}
 	image := im.NewImage(im.NewImageId(), *clc.NewCollection(clc.NewCollectionId(), "a-collection"))
-	itr := NewInteractor(repo, &im.FakeImageStore{Return: image})
+	itr := NewInteractor(repo, &st.FakeImageStore{Return: image})
 	itr.Execute(Request{Label: "label-not-assigned-to-image"}, p)
 	if !p.GotNotFoundErr || p.GotSuccess {
 		t.Fatal("expected not found error")
@@ -43,7 +44,7 @@ func TestHandleInternalErrOnRemoveLabelShouldFail(t *testing.T) {
 	image := im.NewImage(im.NewImageId(), *clc.NewCollection(clc.NewCollectionId(), "a-collection"))
 	image.AddLabel(lbl.NewLabel(lbl.NewLabelId(), "a-label"))
 	repo := &FakeRepo{ErrOnRemoveLabel: true, Err: e.ErrInternal}
-	itr := NewInteractor(repo, &im.FakeImageStore{Return: image})
+	itr := NewInteractor(repo, &st.FakeImageStore{Return: image})
 	itr.Execute(Request{Label: "a-label"}, p)
 	if p.GotSuccess || !p.GotInternalErr {
 		t.Fatal("expected internal error")

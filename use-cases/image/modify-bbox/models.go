@@ -1,8 +1,8 @@
 package modify_bbox
 
 import (
-	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 )
 
 type Updatables struct {

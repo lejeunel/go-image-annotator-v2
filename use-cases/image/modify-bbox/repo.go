@@ -1,7 +1,7 @@
 package modify_bbox
 
 import (
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 )
 
 type Repo interface {

@@ -2,15 +2,16 @@ package read_meta
 
 import (
 	"errors"
-	im "github.com/lejeunel/go-image-annotator-v2/domain/image"
+	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 type Interactor struct {
-	service im.ImageStore
+	service st.ImageStore
 }
 
-func NewInteractor(service im.ImageStore) *Interactor {
+func NewInteractor(service st.ImageStore) *Interactor {
 	return &Interactor{service: service}
 }
 

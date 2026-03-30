@@ -2,11 +2,12 @@ package image
 
 import (
 	"fmt"
+	"io"
 
-	a "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	an "github.com/lejeunel/go-image-annotator-v2/domain/annotation"
-	clc "github.com/lejeunel/go-image-annotator-v2/domain/collection"
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
@@ -25,7 +26,7 @@ type Image struct {
 	Collection    clc.Collection
 	Labels        []*an.ImageLabel
 	BoundingBoxes []*an.BoundingBox
-	Reader        ImageReader
+	Reader        io.Reader
 	Hash          string
 }
 

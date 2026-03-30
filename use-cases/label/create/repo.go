@@ -1,7 +1,7 @@
 package create
 
 import (
-	lbl "github.com/lejeunel/go-image-annotator-v2/domain/label"
+	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	"slices"
 )
 
