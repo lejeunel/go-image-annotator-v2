@@ -18,11 +18,11 @@
 **** DONE delete
 *** DONE update
 *** DONE list
-** TODO Collections
+** DONE Collections
 *** DONE create
 *** DONE find
-*** TODO delete
-**** TODO IsPopulated
+*** DONE delete
+**** DONE IsPopulated
 *** DONE update
 ** DONE Images
 *** DONE AddImageToCollection(im.ImageId, clc.CollectionId) error

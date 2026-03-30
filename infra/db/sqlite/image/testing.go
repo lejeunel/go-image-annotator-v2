@@ -20,7 +20,7 @@ func NewImageTestRepos() ImageTestingRepos {
 
 func AddImageToCollection(repos ImageTestingRepos, collectionName string, hash string) (*im.ImageId, *clc.CollectionId, error) {
 	collectionId := clc.NewCollectionId()
-	repos.Collection.Create(*clc.NewCollection(collectionId, "a-collection"))
+	repos.Collection.Create(*clc.NewCollection(collectionId, collectionName))
 	imageId := im.NewImageId()
 	repos.Image.AddImage(imageId, "the-hash")
 

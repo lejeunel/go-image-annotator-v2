@@ -62,3 +62,27 @@ func TestInternalErrOnCreateShouldFail(t *testing.T) {
 		t.Fatalf("expected internal error, got %v", err)
 	}
 }
+
+func TestInternalErrOnIsCollectionPopulatedShouldFail(t *testing.T) {
+	repos := NewImageTestRepos()
+	collectionName := "a-collection"
+	AddImageToCollection(repos, collectionName, "the-hash")
+	repos.Image.Db.Close()
+	_, err := repos.Collection.IsPopulated(collectionName)
+	if !errors.Is(err, e.ErrInternal) {
+		t.Fatalf("expected internal error, got %v", err)
+	}
+}
+
+func TestIsCollectionPopulated(t *testing.T) {
+	repos := NewImageTestRepos()
+	collectionName := "a-collection"
+	AddImageToCollection(repos, collectionName, "the-hash")
+	isPopulated, err := repos.Collection.IsPopulated(collectionName)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if !(*isPopulated) {
+		t.Fatal("expected populated collection, got")
+	}
+}

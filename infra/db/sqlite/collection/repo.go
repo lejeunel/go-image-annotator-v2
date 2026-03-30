@@ -79,6 +79,19 @@ func (r *SQLiteCollectionRepo) Update(m update.Model) error {
 
 	return nil
 }
+func (r *SQLiteCollectionRepo) IsPopulated(name string) (*bool, error) {
+	var count int64
+
+	var query string
+	var err error
+	query = "SELECT COUNT(*) FROM images_collections WHERE collection_id=(SELECT id FROM collections WHERE name=$1)"
+	err = r.Db.QueryRow(query, name).Scan(&count)
+	if err != nil {
+		return nil, fmt.Errorf("%v: %w", err, e.ErrInternal)
+	}
+	isPopulated := count > 0
+	return &isPopulated, nil
+}
 
 func NewSQLiteCollectionRepo(db *sqlx.DB) *SQLiteCollectionRepo {
 	return &SQLiteCollectionRepo{Db: db}
