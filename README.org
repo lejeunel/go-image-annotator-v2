@@ -12,9 +12,9 @@
 ** TODO Labels
 *** DONE create
 *** DONE find
-*** TODO delete
+*** DONE delete
 **** DONE exists
-**** TODO IsUsed
+**** DONE IsUsed
 **** DONE delete
 *** DONE update
 *** DONE list
@@ -31,10 +31,9 @@
 *** DONE Delete(im.ImageId) error
 *** DONE RemoveImageFromCollection
 ** TODO Annotations
-*** TODO FindLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
-*** TODO FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
+*** DONE AddImageLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
+*** DONE FindImageLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
+*** DONE RemoveAnnotation(a.AnnotationId) error
 *** TODO AddBoundingBox(im.ImageId, clc.CollectionId, a.BoundingBox) error
-*** TODO FindLabelByName(string) (*lbl.Label, error)
+*** TODO FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
 *** TODO UpdateBoundingBox(Updatables) error
-*** TODO RemoveLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
-*** TODO RemoveAnnotation(a.AnnotationId) error

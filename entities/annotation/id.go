@@ -2,14 +2,13 @@ package annotation
 
 import (
 	"github.com/google/uuid"
+	uuidw "github.com/lejeunel/go-image-annotator-v2/uuid"
 )
 
-type AnnotationId uuid.UUID
-
-func NewAnnotationId() AnnotationId {
-	return AnnotationId(uuid.New())
+type AnnotationId struct {
+	uuidw.UUIDWrapper[AnnotationId]
 }
 
-func (id AnnotationId) String() string {
-	return uuid.UUID(id).String()
+func NewAnnotationId() AnnotationId {
+	return AnnotationId{uuidw.UUIDWrapper[AnnotationId]{UUID: uuid.New()}}
 }

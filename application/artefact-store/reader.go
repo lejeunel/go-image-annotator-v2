@@ -6,10 +6,6 @@ import (
 )
 import ()
 
-type ArtefactReadRepo interface {
-	Get(im.ImageId) ([]byte, error)
-}
-
 type FromStoreImageReader struct {
 	repo ArtefactReadRepo
 	id   im.ImageId

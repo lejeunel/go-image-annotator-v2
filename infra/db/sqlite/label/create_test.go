@@ -8,7 +8,7 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
-func createLabel(repo *SQLiteLabelRepo, name string) (*lbl.Label, error) {
+func CreateLabel(repo *SQLiteLabelRepo, name string) (*lbl.Label, error) {
 	label := lbl.NewLabel(lbl.NewLabelId(), name, lbl.WithDescription("a-description"))
 	if err := repo.Create(*label); err != nil {
 		return nil, err
@@ -20,15 +20,15 @@ func createLabel(repo *SQLiteLabelRepo, name string) (*lbl.Label, error) {
 func TestInternalErrOnCreateShouldFail(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
 	repo.Db.Close()
-	_, err := createLabel(repo, "a-label")
+	_, err := CreateLabel(repo, "a-label")
 	if !errors.Is(err, e.ErrInternal) {
 		t.Fatalf("expected internal error, got %v", err)
 	}
 }
 
-func TestCreate(t *testing.T) {
+func TestCreateAddsCount(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
-	_, err := createLabel(repo, "a-label")
+	_, err := CreateLabel(repo, "a-label")
 	if err != nil {
 		t.Fatalf("expected no error on create but got %v", err)
 	}

@@ -30,6 +30,18 @@ CREATE TABLE IF NOT EXISTS images_collections (
   PRIMARY KEY (image_id, collection_id)
 );
 
+CREATE TABLE IF NOT EXISTS annotations (
+  id varchar(36),
+  image_id varchar(36) REFERENCES images(id),
+  collection_id varchar(36) REFERENCES collections(id),
+  label_id varchar(36) REFERENCES labels(id),
+  type varchar(15),
+  coordinates varchar(100),
+  PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_annotations_image_collection ON annotations(id,image_id,collection_id,label_id);
+
 -- +goose Down
 
 DROP TABLE labels;

@@ -11,7 +11,7 @@ type CollectionRepo interface {
 }
 
 type AnnotationRepo interface {
-	FindLabels(im.ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
+	FindImageLabels(im.ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
 	FindBoundingBoxes(im.ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
 }
 

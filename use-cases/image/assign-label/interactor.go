@@ -66,7 +66,7 @@ func (i *Interactor) findImage(imageId im.ImageId, collection string, out Output
 }
 
 func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId, labelId lbl.LabelId, out OutputPort) bool {
-	err := i.repo.AddLabel(imageId, collectionId, labelId)
+	err := i.repo.AddImageLabel(imageId, collectionId, labelId)
 	if err != nil {
 		out.ErrInternal(err)
 		return false

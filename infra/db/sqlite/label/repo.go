@@ -115,6 +115,19 @@ func (r *SQLiteLabelRepo) Exists(name string) (bool, error) {
 	return exists, nil
 }
 
+func (r *SQLiteLabelRepo) IsUsed(name string) (*bool, error) {
+	var count int64
+	query := "SELECT COUNT(*) FROM annotations WHERE label_id=(SELECT id FROM labels WHERE name=$1)"
+	err := r.Db.QueryRow(query, name).Scan(&count)
+	if err != nil {
+		return nil, e.ErrInternal
+	}
+
+	isUsed := count > 0
+	return &isUsed, nil
+
+}
+
 func NewSQLiteLabelRepo(db *sqlx.DB) *SQLiteLabelRepo {
 	return &SQLiteLabelRepo{Db: db}
 }

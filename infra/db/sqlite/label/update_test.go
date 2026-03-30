@@ -18,7 +18,7 @@ func TestInternalErrOnLabelUpdateShouldFail(t *testing.T) {
 
 func TestUpdateLabel(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
-	label, _ := createLabel(repo, "a-label")
+	label, _ := CreateLabel(repo, "a-label")
 	newName := "new-label-name"
 	newDesc := "new-description"
 	err := repo.Update(u.Model{Name: label.Name, NewName: newName, NewDescription: newDesc})

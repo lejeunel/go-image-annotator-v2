@@ -18,7 +18,7 @@ func TestInternalErrOnLabelCountShouldFail(t *testing.T) {
 
 func TestCountLabels(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
-	createLabel(repo, "a-label")
+	CreateLabel(repo, "a-label")
 	count, _ := repo.Count()
 	if count != 1 {
 		t.Fatalf("expected label count %v, got %v", 1, count)
@@ -36,8 +36,8 @@ func TestInternalErrOnLabelListShouldFail(t *testing.T) {
 
 func TestListLabels(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
-	firstLabel, _ := createLabel(repo, "a-label")
-	secondLabel, _ := createLabel(repo, "another-label")
+	firstLabel, _ := CreateLabel(repo, "a-label")
+	secondLabel, _ := CreateLabel(repo, "another-label")
 	labels, err := repo.List(l.Request{Page: 1, PageSize: 2})
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)

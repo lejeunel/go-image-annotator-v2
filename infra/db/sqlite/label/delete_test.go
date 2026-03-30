@@ -8,7 +8,7 @@ import (
 
 func TestCreatedLabelExists(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
-	label, _ := createLabel(repo, "a-label")
+	label, _ := CreateLabel(repo, "a-label")
 	exists, _ := repo.Exists(label.Name)
 	if !exists {
 		t.Fatal("expected that created label exists")
@@ -42,7 +42,7 @@ func TestInternalErrOnDeleteShouldFail(t *testing.T) {
 
 func TestDeleteLabel(t *testing.T) {
 	repo := NewTestSQLiteLabelRepo()
-	label, _ := createLabel(repo, "a-label")
+	label, _ := CreateLabel(repo, "a-label")
 	err := repo.Delete(label.Name)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)

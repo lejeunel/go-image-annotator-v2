@@ -36,7 +36,7 @@ func (s *MyImageStore) Find(base im.BaseImage) (*im.Image, error) {
 
 	}
 
-	labels, err := s.annotationRepo.FindLabels(base.ImageId, collection.Id)
+	labels, err := s.annotationRepo.FindImageLabels(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("fetching labels: %w", err)
 	}

@@ -44,7 +44,7 @@ func (r *FakeAnnotationRepo) FindBoundingBoxes(imageId im.ImageId, collectionId 
 	return nil, nil
 }
 
-func (r *FakeAnnotationRepo) FindLabels(imageId im.ImageId, collectionId clc.CollectionId) ([]*a.ImageLabel, error) {
+func (r *FakeAnnotationRepo) FindImageLabels(imageId im.ImageId, collectionId clc.CollectionId) ([]*a.ImageLabel, error) {
 	if r.ErrOnFindImageLabel {
 		return nil, r.Err
 	}
@@ -62,4 +62,20 @@ func (r *FakeCollectionRepo) FindCollectionByName(name string) (*clc.Collection,
 		return nil, r.Err
 	}
 	return &r.Collection, nil
+}
+
+type FakeImageStore struct {
+	Err    error
+	Got    im.BaseImage
+	Return *im.Image
+}
+
+func (s *FakeImageStore) Find(baseImage im.BaseImage) (*im.Image, error) {
+	if s.Err != nil {
+		return nil, s.Err
+	}
+	if s.Return != nil {
+		return s.Return, nil
+	}
+	return &im.Image{}, nil
 }

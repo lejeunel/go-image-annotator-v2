@@ -8,7 +8,7 @@ import (
 )
 
 type Repo interface {
-	AddLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
+	AddImageLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
 	FindLabel(string) (*lbl.Label, error)
 }
 
@@ -35,7 +35,7 @@ func (r *FakeRepo) FindLabel(string) (*lbl.Label, error) {
 	return &r.ReturnLabel, nil
 }
 
-func (r *FakeRepo) AddLabel(imageId im.ImageId, collectionId clc.CollectionId, labelId lbl.LabelId) error {
+func (r *FakeRepo) AddImageLabel(imageId im.ImageId, collectionId clc.CollectionId, labelId lbl.LabelId) error {
 	if r.ErrOnAddLabel {
 		return r.Err
 	}
