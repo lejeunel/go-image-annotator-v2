@@ -28,6 +28,14 @@ type BoundingBoxResponse struct {
 	Height float32
 }
 
+type BoundingBoxUpdatables struct {
+	LabelId lbl.LabelId
+	Xc      float32
+	Yc      float32
+	Width   float32
+	Height  float32
+}
+
 func NewBoundingBox(id AnnotationId, xc float32, yc float32, width float32, height float32, label lbl.Label) *BoundingBox {
 	return &BoundingBox{Id: id, Xc: xc, Yc: yc, Width: width, Height: height, Label: label}
 }

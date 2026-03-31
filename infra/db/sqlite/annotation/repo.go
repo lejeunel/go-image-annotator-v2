@@ -116,6 +116,44 @@ func (r *SQLiteAnnotationRepo) FindBoundingBoxes(imageId i.ImageId, collectionId
 	return boxes, nil
 }
 
+func (r *SQLiteAnnotationRepo) UpdateBoundingBoxLabel(id a.AnnotationId, labelId l.LabelId) error {
+	query := "UPDATE annotations SET label_id=$1 WHERE id=$2"
+	_, err := r.Db.Exec(query, labelId, id)
+
+	if err != nil {
+		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+	}
+
+	return nil
+
+}
+
+func (r *SQLiteAnnotationRepo) UpdateBoundingBoxCoordinates(id a.AnnotationId, xc, yc, width, height float32) error {
+	if err := a.ValidateBoundingBox(xc, yc, width, height); err != nil {
+		return fmt.Errorf("updating bounding box coordinates: %w", err)
+	}
+
+	coordsBytes, _ := json.Marshal(BoundingBoxSpecs{Xc: xc, Yc: yc, Width: width, Height: height})
+	coordsString := string(coordsBytes)
+	query := "UPDATE annotations SET coordinates=$1 WHERE id=$2"
+	_, err := r.Db.Exec(query, coordsString, id)
+	if err != nil {
+		return fmt.Errorf("updating bounding box coordinates: %v: %w", err, e.ErrInternal)
+	}
+	return nil
+}
+
+func (r *SQLiteAnnotationRepo) UpdateBoundingBox(id a.AnnotationId, u a.BoundingBoxUpdatables) error {
+	if err := r.UpdateBoundingBoxLabel(id, u.LabelId); err != nil {
+		return err
+	}
+
+	if err := r.UpdateBoundingBoxCoordinates(id, u.Xc, u.Yc, u.Width, u.Height); err != nil {
+		return err
+	}
+	return nil
+
+}
 func NewSQLiteAnnotationRepo(db *sqlx.DB) *SQLiteAnnotationRepo {
 	return &SQLiteAnnotationRepo{Db: db}
 }

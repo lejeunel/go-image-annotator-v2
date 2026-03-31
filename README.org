@@ -30,10 +30,10 @@
 *** DONE FindImageIdByHash(string) (*im.Image, error)
 *** DONE Delete(im.ImageId) error
 *** DONE RemoveImageFromCollection
-** TODO Annotations
+** DONE Annotations
 *** DONE AddImageLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
 *** DONE FindImageLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)
 *** DONE RemoveAnnotation(a.AnnotationId) error
-*** TODO AddBoundingBox(im.ImageId, clc.CollectionId, a.BoundingBox) error
-*** TODO FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
-*** TODO UpdateBoundingBox(Updatables) error
+*** DONE AddBoundingBox(im.ImageId, clc.CollectionId, a.BoundingBox) error
+*** DONE FindBoundingBoxes(ImageId, clc.CollectionId) ([]*a.BoundingBox, error)
+*** DONE UpdateBoundingBox(Updatables) error

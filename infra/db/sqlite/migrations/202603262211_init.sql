@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS annotations (
   PRIMARY KEY (id)
 );
 
-CREATE INDEX idx_annotations_image_collection ON annotations(id,image_id,collection_id,label_id);
+CREATE INDEX idx_annotations_image_collection ON annotations(image_id,collection_id);
 
 -- +goose Down
 
