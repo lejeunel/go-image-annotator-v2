@@ -16,19 +16,21 @@ import (
 )
 
 type LabelServer struct {
-	Find   read.Interactor
-	Create create.Interactor
-	Delete delete.Interactor
-	List   list.Interactor
+	Find            read.Interactor
+	Create          create.Interactor
+	Delete          delete.Interactor
+	List            list.Interactor
+	DefaultPageSize int
 }
 
 func NewHTTPLabelServer(db *sqlx.DB) *LabelServer {
 	repo := infra.NewSQLiteLabelRepo(db)
 	return &LabelServer{
-		Find:   *read.NewInteractor(repo),
-		Create: *create.NewInteractor(repo, validation.NewNameValidator()),
-		Delete: *delete.NewInteractor(repo),
-		List:   *list.NewInteractor(repo),
+		Find:            *read.NewInteractor(repo),
+		Create:          *create.NewInteractor(repo, validation.NewNameValidator()),
+		Delete:          *delete.NewInteractor(repo),
+		List:            *list.NewInteractor(repo),
+		DefaultPageSize: 20,
 	}
 }
 
@@ -45,9 +47,8 @@ func (s *Server) CreateLabel(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	body, err := json.DecodeJSON[models.NewLabel](r)
-	if err != nil {
-		json.WriteError(w, http.StatusBadRequest, "invalid request body")
+	body, ok := json.DecodeJSONOrFail[models.NewLabel](w, r)
+	if !ok {
 		return
 	}
 
@@ -59,7 +60,7 @@ func (s *Server) DeleteLabelByName(w http.ResponseWriter, r *http.Request, name 
 
 }
 func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams) {
-	req := list.Request{Page: 1, PageSize: 20}
+	req := list.Request{Page: 1, PageSize: s.Label.DefaultPageSize}
 	if p := params.Page; p != nil {
 		req.Page = *p
 	}
