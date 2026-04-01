@@ -7,6 +7,7 @@
         buildInputs = with pkgs; [
           gopls
           gotest
+          oapi-codegen
         ];
       };
     };

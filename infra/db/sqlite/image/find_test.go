@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"errors"
 	"testing"
 
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
@@ -31,7 +32,8 @@ func TestRetrieveImageIdByNonExistingHashShouldFail(t *testing.T) {
 	hash := "the-hash"
 	repo.AddImage(imageId, hash)
 	_, err := repo.FindImageIdByHash("non-existing-hash")
-	if err != e.ErrNotFound {
+
+	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
 	}
 }
@@ -40,7 +42,7 @@ func TestRetrieveImageIdByInternalErrShouldFail(t *testing.T) {
 	repo := NewTestSQLiteImageRepo()
 	repo.Db.Close()
 	_, err := repo.FindImageIdByHash("")
-	if err != e.ErrInternal {
+	if !errors.Is(err, e.ErrInternal) {
 		t.Fatalf("expected internal error, got %v", err)
 	}
 }

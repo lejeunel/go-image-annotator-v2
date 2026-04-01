@@ -7,7 +7,7 @@ import (
 
 type Repo interface {
 	ImageExists(im.ImageId) (bool, error)
-	FindCollection(string) (*clc.Collection, error)
+	FindCollectionByName(string) (*clc.Collection, error)
 	ImageExistsInCollection(im.ImageId, clc.CollectionId) (bool, error)
-	ImportImage(im.ImageId, clc.CollectionId) error
+	AddImageToCollection(im.ImageId, clc.CollectionId) error
 }

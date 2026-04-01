@@ -52,7 +52,7 @@ func (r *FakeRepo) ImageExists(imageId im.ImageId) (bool, error) {
 	return true, nil
 }
 
-func (r *FakeRepo) FindCollection(name string) (*clc.Collection, error) {
+func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 	if r.ErrOnFindCollection {
 		return nil, r.Err
 	}
@@ -69,7 +69,7 @@ func (r *FakeRepo) ImageExistsInCollection(imageId im.ImageId, collectionId clc.
 	return false, nil
 }
 
-func (r *FakeRepo) ImportImage(imageId im.ImageId, collectionId clc.CollectionId) error {
+func (r *FakeRepo) AddImageToCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
 	if r.ErrOnImport {
 		return r.Err
 	}

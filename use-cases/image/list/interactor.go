@@ -8,8 +8,12 @@ import (
 )
 
 type Interactor struct {
-	repo    Repo
-	service ist.ImageStore
+	repo  Repo
+	store ist.ImageStore
+}
+
+func NewInteractor(r Repo, s ist.ImageStore) *Interactor {
+	return &Interactor{repo: r, store: s}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -48,7 +52,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 func (i *Interactor) buildResponses(baseImages []*im.BaseImage, out OutputPort) ([]*ImageResponse, bool) {
 	images := []*ImageResponse{}
 	for _, baseImage := range baseImages {
-		image, err := i.service.Find(*baseImage)
+		image, err := i.store.Find(*baseImage)
 		if err != nil {
 			out.ErrInternal(err)
 			return nil, false
@@ -57,8 +61,4 @@ func (i *Interactor) buildResponses(baseImages []*im.BaseImage, out OutputPort) 
 	}
 	return images, true
 
-}
-
-func NewInteractor(r Repo, s ist.ImageStore) *Interactor {
-	return &Interactor{repo: r, service: s}
 }

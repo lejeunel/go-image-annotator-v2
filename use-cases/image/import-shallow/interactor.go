@@ -29,7 +29,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	if err := i.repo.ImportImage(r.ImageId, collection.Id); err != nil {
+	if err := i.repo.AddImageToCollection(r.ImageId, collection.Id); err != nil {
 		out.ErrInternal(err)
 		return
 	}
@@ -67,7 +67,7 @@ func (i *Interactor) sourceImageExists(id im.ImageId, out OutputPort) bool {
 
 func (i *Interactor) findDestinationCollection(name string, out OutputPort) (*clc.Collection, bool) {
 
-	collection, err := i.repo.FindCollection(name)
+	collection, err := i.repo.FindCollectionByName(name)
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):

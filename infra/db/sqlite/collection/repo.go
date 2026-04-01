@@ -26,7 +26,7 @@ func (r *SQLiteCollectionRepo) Create(c clc.Collection) error {
 	query := "INSERT INTO collections (id, name, description) VALUES ($1,$2,$3)"
 	_, err := r.Db.Exec(query, c.Id.String(), c.Name, c.Description)
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("creating record: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
@@ -42,7 +42,7 @@ func (r *SQLiteCollectionRepo) FindCollectionByName(name string) (*clc.Collectio
 		case errors.Is(err, sql.ErrNoRows):
 			return nil, e.ErrNotFound
 		default:
-			return nil, fmt.Errorf("%v: %w", err, e.ErrInternal)
+			return nil, fmt.Errorf("fetching record by name: %v: %w", err, e.ErrInternal)
 		}
 	}
 
@@ -54,7 +54,7 @@ func (r *SQLiteCollectionRepo) Exists(name string) (bool, error) {
 
 	err := r.Db.Get(&exists, `SELECT EXISTS (SELECT 1 FROM collections WHERE name = $1)`, name)
 	if err != nil {
-		return false, e.ErrInternal
+		return false, fmt.Errorf("checking whether record exists: %v: %w", err, e.ErrInternal)
 	}
 
 	return exists, nil
@@ -64,7 +64,7 @@ func (r *SQLiteCollectionRepo) Delete(name string) error {
 	_, err := r.Db.Exec("DELETE FROM collections WHERE name=$1", name)
 
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("deleting record: %v: %w", err, e.ErrInternal)
 	}
 	return nil
 }
@@ -74,7 +74,7 @@ func (r *SQLiteCollectionRepo) Update(m update.Model) error {
 	_, err := r.Db.Exec(query, m.NewName, m.NewDescription, m.Name)
 
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("updating record: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func (r *SQLiteCollectionRepo) IsPopulated(name string) (*bool, error) {
 	query = "SELECT COUNT(*) FROM images_collections WHERE collection_id=(SELECT id FROM collections WHERE name=$1)"
 	err = r.Db.QueryRow(query, name).Scan(&count)
 	if err != nil {
-		return nil, fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return nil, fmt.Errorf("checking whether collection is populated: %v: %w", err, e.ErrInternal)
 	}
 	isPopulated := count > 0
 	return &isPopulated, nil

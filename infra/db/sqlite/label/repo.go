@@ -28,14 +28,14 @@ func (r *SQLiteLabelRepo) Create(l lbl.Label) error {
 	query := "INSERT INTO labels (id, name, description) VALUES ($1,$2,$3)"
 	_, err := r.Db.Exec(query, l.Id.String(), l.Name, l.Description)
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("inserting record: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
 
 }
 
-func (r *SQLiteLabelRepo) FindLabelbyName(name string) (*lbl.Label, error) {
+func (r *SQLiteLabelRepo) FindLabelByName(name string) (*lbl.Label, error) {
 	record := LabelRecord{}
 	err := r.Db.Get(&record,
 		"SELECT id,name,description FROM labels WHERE name=$1", name)
@@ -45,7 +45,7 @@ func (r *SQLiteLabelRepo) FindLabelbyName(name string) (*lbl.Label, error) {
 		case errors.Is(err, sql.ErrNoRows):
 			return nil, e.ErrNotFound
 		default:
-			return nil, fmt.Errorf("%v: %w", err, e.ErrInternal)
+			return nil, fmt.Errorf("finding record by label: %v: %w", err, e.ErrInternal)
 		}
 
 	}
@@ -57,7 +57,7 @@ func (r *SQLiteLabelRepo) Delete(name string) error {
 	_, err := r.Db.Exec("DELETE FROM labels WHERE name=$1", name)
 
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("deleting record: %v: %w", err, e.ErrInternal)
 	}
 	return nil
 }
@@ -67,7 +67,7 @@ func (r *SQLiteLabelRepo) Count() (int64, error) {
 	query := "SELECT COUNT(*) FROM labels"
 	err := r.Db.QueryRow(query).Scan(&count)
 	if err != nil {
-		return 0, e.ErrInternal
+		return 0, fmt.Errorf("counting records: %v: %w", err, e.ErrInternal)
 	}
 
 	return count, nil
@@ -78,11 +78,11 @@ func (r *SQLiteLabelRepo) List(m list.Request) ([]*lbl.Label, error) {
 	q = q.Limit(uint64(m.PageSize)).Offset(uint64((m.Page - 1) * m.PageSize))
 	sql, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("building query: %w", e.ErrInternal)
+		return nil, fmt.Errorf("building query: %v: %w", err, e.ErrInternal)
 	}
 	records := []LabelRecord{}
 	if err := r.Db.Select(&records, sql, args...); err != nil {
-		return nil, fmt.Errorf("applying query: %w", e.ErrInternal)
+		return nil, fmt.Errorf("applying query: %v: %w", err, e.ErrInternal)
 	}
 
 	objects := []*lbl.Label{}
@@ -109,7 +109,7 @@ func (r *SQLiteLabelRepo) Exists(name string) (bool, error) {
 
 	err := r.Db.Get(&exists, `SELECT EXISTS (SELECT 1 FROM labels WHERE name = $1)`, name)
 	if err != nil {
-		return false, e.ErrInternal
+		return false, fmt.Errorf("%v: %w", err, e.ErrInternal)
 	}
 
 	return exists, nil
@@ -120,7 +120,7 @@ func (r *SQLiteLabelRepo) IsUsed(name string) (*bool, error) {
 	query := "SELECT COUNT(*) FROM annotations WHERE label_id=(SELECT id FROM labels WHERE name=$1)"
 	err := r.Db.QueryRow(query, name).Scan(&count)
 	if err != nil {
-		return nil, e.ErrInternal
+		return nil, fmt.Errorf("%v: %w", err, e.ErrInternal)
 	}
 
 	isUsed := count > 0

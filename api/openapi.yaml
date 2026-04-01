@@ -1,0 +1,101 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: go-image-annotator API
+  description: Image Annotation Service
+  termsOfService: https://swagger.io/terms/
+  contact:
+    name: Swagger API Team
+    email: apiteam@swagger.io
+    url: https://swagger.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: /api
+paths:
+  /labels/{name}:
+    get:
+      summary: Find a label by name
+      description: Returns a label based on its name
+      operationId: findLabelByName
+      tags: [Label]
+      parameters:
+        - name: name
+          in: path
+          description: Name of label to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: label response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /labels:
+    post:
+      summary: Create a new label
+      description: Creates a new label. Duplicate names are not allowed
+      operationId: createLabel
+      tags: [Label]
+      requestBody:
+        description: Label to add
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewLabel'
+      responses:
+        '200':
+          description: label response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Label'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Label:
+      properties:
+        name:
+          type: string
+          description: Name of the label
+        description:
+          type: string
+          description: Description of the label
+
+    NewLabel:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the label
+        description:
+          type: string
+          description: Description of the label
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: Error message

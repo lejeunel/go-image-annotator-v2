@@ -6,10 +6,11 @@
 * DONE Add bounding box
 * DONE Remove bounding box
 * DONE Update bounding box
-* TODO Import existing image into collection (without annotations)
+* DONE Import existing image into collection (without annotations)
+** DONE use-case
 * TODO Import image into collection with annotations (needs source collection)
-* TODO SQLite repositories
-** TODO Labels
+* DONE SQLite repositories
+** DONE Labels
 *** DONE create
 *** DONE find
 *** DONE delete
@@ -30,6 +31,7 @@
 *** DONE FindImageIdByHash(string) (*im.Image, error)
 *** DONE Delete(im.ImageId) error
 *** DONE RemoveImageFromCollection
+*** DONE ImageExists(im.ImageId) (bool, error)
 ** DONE Annotations
 *** DONE AddImageLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
 *** DONE FindImageLabels(ImageId, clc.CollectionId) ([]*a.ImageLabel, error)

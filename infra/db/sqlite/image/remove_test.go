@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"errors"
 	"testing"
 
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
@@ -18,7 +19,7 @@ func TestInternalErrOnRemoveImageFromCollectionShouldFail(t *testing.T) {
 	repos.Image.AddImageToCollection(imageId, collectionId)
 	repos.Image.Db.Close()
 	err := repos.Image.RemoveImageFromCollection(imageId, collectionId)
-	if err != e.ErrInternal {
+	if !errors.Is(err, e.ErrInternal) {
 		t.Fatalf("expected internal error, got %v", err)
 	}
 }

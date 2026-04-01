@@ -10,12 +10,12 @@ import (
 )
 
 type Interactor struct {
-	service st.ImageStore
-	repo    Repo
+	store st.ImageStore
+	repo  Repo
 }
 
-func NewInteractor(service st.ImageStore, repo Repo) *Interactor {
-	return &Interactor{service: service, repo: repo}
+func NewInteractor(store st.ImageStore, repo Repo) *Interactor {
+	return &Interactor{store: store, repo: repo}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -79,7 +79,7 @@ func (i *Interactor) deleteLabels(image im.Image, out OutputPort) bool {
 
 func (i *Interactor) findImage(imageId im.ImageId, collection string, out OutputPort) (*im.Image, bool) {
 	errCtx := "deleting image: fetching associated resources"
-	image, err := i.service.Find(im.BaseImage{ImageId: imageId, Collection: collection})
+	image, err := i.store.Find(im.BaseImage{ImageId: imageId, Collection: collection})
 	switch {
 	case errors.Is(err, e.ErrNotFound):
 		out.ErrNotFound(fmt.Errorf("%v: %w", errCtx, err))

@@ -8,16 +8,16 @@ import (
 )
 
 type Interactor struct {
-	service st.ImageStore
+	store st.ImageStore
 }
 
-func NewInteractor(service st.ImageStore) *Interactor {
-	return &Interactor{service: service}
+func NewInteractor(store st.ImageStore) *Interactor {
+	return &Interactor{store: store}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
 
-	image, err := i.service.Find(im.BaseImage{ImageId: r.ImageId, Collection: r.Collection})
+	image, err := i.store.Find(im.BaseImage{ImageId: r.ImageId, Collection: r.Collection})
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):

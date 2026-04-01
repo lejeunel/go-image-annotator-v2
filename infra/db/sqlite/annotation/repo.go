@@ -34,7 +34,7 @@ func (r *SQLiteAnnotationRepo) AddImageLabel(annotationId a.AnnotationId, imageI
 	query := "INSERT INTO annotations (id, image_id, collection_id, label_id, type) VALUES ($1,$2,$3,$4,$5)"
 	_, err := r.Db.Exec(query, annotationId, imageId, collectionId, labelId, "image")
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("adding image label annotation record: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
@@ -55,16 +55,17 @@ func (r *SQLiteAnnotationRepo) findLabelById(labelId l.LabelId) (*l.Label, error
 func (r *SQLiteAnnotationRepo) FindImageLabels(imageId i.ImageId, collectionId c.CollectionId) ([]*l.Label, error) {
 	query := "SELECT id FROM labels WHERE id IN (SELECT label_id FROM annotations WHERE image_id=$1 AND collection_id=$2 AND type='image')"
 
+	errCtx := "building image label annotations"
 	labelIds := []l.LabelId{}
 	if err := r.Db.Select(&labelIds, query, imageId, collectionId); err != nil {
-		return nil, fmt.Errorf("applying query: %w", e.ErrInternal)
+		return nil, fmt.Errorf("%v: applying query: %w", errCtx, e.ErrInternal)
 	}
 
 	labels := []*l.Label{}
 	for _, id := range labelIds {
 		label, err := r.findLabelById(id)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%v: %w", errCtx, err)
 		}
 		labels = append(labels, label)
 	}
@@ -76,7 +77,7 @@ func (r *SQLiteAnnotationRepo) RemoveAnnotation(id a.AnnotationId) error {
 	_, err := r.Db.Exec("DELETE FROM annotations WHERE id=$1", id)
 
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("deleting annotation record: %v: %w", err, e.ErrInternal)
 	}
 	return nil
 }
@@ -88,7 +89,7 @@ func (r *SQLiteAnnotationRepo) AddBoundingBox(imageId i.ImageId, collectionId c.
 	query := "INSERT INTO annotations (id, image_id, collection_id, label_id, type, coordinates) VALUES ($1,$2,$3,$4,$5,$6)"
 	_, err := r.Db.Exec(query, box.Id, imageId, collectionId, box.Label.Id, "bounding_box", coordsString)
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("inserting record in annotation table: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
@@ -96,9 +97,10 @@ func (r *SQLiteAnnotationRepo) AddBoundingBox(imageId i.ImageId, collectionId c.
 func (r *SQLiteAnnotationRepo) FindBoundingBoxes(imageId i.ImageId, collectionId c.CollectionId) ([]*a.BoundingBox, error) {
 	query := "SELECT id,label_id,type,coordinates FROM annotations WHERE image_id=$1 AND collection_id=$2 AND type='bounding_box'"
 
+	errCtx := "building bounding box annotation objects"
 	records := []AnnotationRow{}
 	if err := r.Db.Select(&records, query, imageId, collectionId); err != nil {
-		return nil, fmt.Errorf("applying query: %w", e.ErrInternal)
+		return nil, fmt.Errorf("%v: applying query: %w", errCtx, e.ErrInternal)
 	}
 
 	boxes := []*a.BoundingBox{}
@@ -106,7 +108,8 @@ func (r *SQLiteAnnotationRepo) FindBoundingBoxes(imageId i.ImageId, collectionId
 		var specs BoundingBoxSpecs
 		err := json.Unmarshal([]byte(rec.Coordinates), &specs)
 		if err != nil {
-			return nil, fmt.Errorf("unmarshaling bounding box specs: %+v: %w: %w", rec.Coordinates, err, e.ErrInternal)
+			return nil, fmt.Errorf("%v: unmarshaling bounding box specs: %+v: %w: %w",
+				errCtx, rec.Coordinates, err, e.ErrInternal)
 		}
 		label, err := r.findLabelById(rec.LabelId)
 		boxes = append(boxes,
@@ -121,7 +124,7 @@ func (r *SQLiteAnnotationRepo) UpdateBoundingBoxLabel(id a.AnnotationId, labelId
 	_, err := r.Db.Exec(query, labelId, id)
 
 	if err != nil {
-		return fmt.Errorf("%v: %w", err, e.ErrInternal)
+		return fmt.Errorf("updating bounding box label: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
@@ -129,8 +132,9 @@ func (r *SQLiteAnnotationRepo) UpdateBoundingBoxLabel(id a.AnnotationId, labelId
 }
 
 func (r *SQLiteAnnotationRepo) UpdateBoundingBoxCoordinates(id a.AnnotationId, xc, yc, width, height float32) error {
+	errCtx := "updating bounding box coordinates"
 	if err := a.ValidateBoundingBox(xc, yc, width, height); err != nil {
-		return fmt.Errorf("updating bounding box coordinates: %w", err)
+		return fmt.Errorf("%v: %w", errCtx, err)
 	}
 
 	coordsBytes, _ := json.Marshal(BoundingBoxSpecs{Xc: xc, Yc: yc, Width: width, Height: height})
@@ -138,7 +142,7 @@ func (r *SQLiteAnnotationRepo) UpdateBoundingBoxCoordinates(id a.AnnotationId, x
 	query := "UPDATE annotations SET coordinates=$1 WHERE id=$2"
 	_, err := r.Db.Exec(query, coordsString, id)
 	if err != nil {
-		return fmt.Errorf("updating bounding box coordinates: %v: %w", err, e.ErrInternal)
+		return fmt.Errorf("%v: %v: %w", errCtx, err, e.ErrInternal)
 	}
 	return nil
 }
