@@ -75,7 +75,7 @@ func (r *SQLiteLabelRepo) Count() (int64, error) {
 
 func (r *SQLiteLabelRepo) List(m list.Request) ([]*lbl.Label, error) {
 	q := sq.StatementBuilder.Select("id,name,description").From("labels")
-	q = q.Limit(uint64(m.PageSize)).Offset(uint64((m.Page - 1) * m.PageSize))
+	q = q.Limit(uint64(m.PageSize)).Offset((uint64(m.Page-1) * uint64(m.PageSize)))
 	sql, args, err := q.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building query: %v: %w", err, e.ErrInternal)

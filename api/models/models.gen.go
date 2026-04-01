@@ -21,6 +21,12 @@ type Label struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// ListLabelsResponse defines model for ListLabelsResponse.
+type ListLabelsResponse struct {
+	Data       *[]Label    `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
 // NewLabel defines model for NewLabel.
 type NewLabel struct {
 	// Description Description of the label
@@ -28,6 +34,30 @@ type NewLabel struct {
 
 	// Name Name of the label
 	Name string `json:"name"`
+}
+
+// Pagination defines model for Pagination.
+type Pagination struct {
+	// Page current page number
+	Page *int64 `json:"page,omitempty"`
+
+	// PageSize maximum number of items per page
+	PageSize *int `json:"page_size,omitempty"`
+
+	// TotalItems total number of items
+	TotalItems *int64 `json:"total_items,omitempty"`
+
+	// TotalPages total number of pages
+	TotalPages *int64 `json:"total_pages,omitempty"`
+}
+
+// ListLabelsParams defines parameters for ListLabels.
+type ListLabelsParams struct {
+	// Page page number
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize maximum number of labels to return
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
 // CreateLabelJSONRequestBody defines body for CreateLabel for application/json ContentType.

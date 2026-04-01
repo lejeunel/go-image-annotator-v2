@@ -5,7 +5,7 @@ import (
 )
 
 type Request struct {
-	Page     int
+	Page     int64
 	PageSize int
 }
 
@@ -14,7 +14,7 @@ type LabelResponse struct {
 	Description string
 }
 
-type ListResponse struct {
+type Response struct {
 	Labels     []LabelResponse
 	Pagination pagination.Pagination
 }

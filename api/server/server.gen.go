@@ -12,11 +12,77 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Error defines model for Error.
+type Error struct {
+	// Code Error code
+	Code int32 `json:"code"`
+
+	// Message Error message
+	Message string `json:"message"`
+}
+
+// Label defines model for Label.
+type Label struct {
+	// Description Description of the label
+	Description *string `json:"description,omitempty"`
+
+	// Name Name of the label
+	Name *string `json:"name,omitempty"`
+}
+
+// ListLabelsResponse defines model for ListLabelsResponse.
+type ListLabelsResponse struct {
+	Data       *[]Label    `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
+// NewLabel defines model for NewLabel.
+type NewLabel struct {
+	// Description Description of the label
+	Description *string `json:"description,omitempty"`
+
+	// Name Name of the label
+	Name string `json:"name"`
+}
+
+// Pagination defines model for Pagination.
+type Pagination struct {
+	// Page current page number
+	Page *int64 `json:"page,omitempty"`
+
+	// PageSize maximum number of items per page
+	PageSize *int `json:"page_size,omitempty"`
+
+	// TotalItems total number of items
+	TotalItems *int64 `json:"total_items,omitempty"`
+
+	// TotalPages total number of pages
+	TotalPages *int64 `json:"total_pages,omitempty"`
+}
+
+// ListLabelsParams defines parameters for ListLabels.
+type ListLabelsParams struct {
+	// Page page number
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize maximum number of labels to return
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// CreateLabelJSONRequestBody defines body for CreateLabel for application/json ContentType.
+type CreateLabelJSONRequestBody = NewLabel
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List labels
+	// (GET /labels)
+	ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams)
 	// Create a new label
 	// (POST /labels)
 	CreateLabel(w http.ResponseWriter, r *http.Request)
+	// Delete a label by name
+	// (DELETE /labels/{name})
+	DeleteLabelByName(w http.ResponseWriter, r *http.Request, name string)
 	// Find a label by name
 	// (GET /labels/{name})
 	FindLabelByName(w http.ResponseWriter, r *http.Request, name string)
@@ -31,11 +97,71 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+// ListLabels operation middleware
+func (siw *ServerInterfaceWrapper) ListLabels(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListLabelsParams
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListLabels(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // CreateLabel operation middleware
 func (siw *ServerInterfaceWrapper) CreateLabel(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateLabel(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteLabelByName operation middleware
+func (siw *ServerInterfaceWrapper) DeleteLabelByName(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "name" -------------
+	var name string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "name", r.PathValue("name"), &name, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteLabelByName(w, r, name)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -190,7 +316,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	m.HandleFunc("GET "+options.BaseURL+"/labels", wrapper.ListLabels)
 	m.HandleFunc("POST "+options.BaseURL+"/labels", wrapper.CreateLabel)
+	m.HandleFunc("DELETE "+options.BaseURL+"/labels/{name}", wrapper.DeleteLabelByName)
 	m.HandleFunc("GET "+options.BaseURL+"/labels/{name}", wrapper.FindLabelByName)
 
 	return m

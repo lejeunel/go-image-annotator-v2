@@ -11,7 +11,6 @@ import (
 
 var (
 	port     int
-	migrate  bool
 	ServeCmd = &cobra.Command{
 		Use:   "serve",
 		Short: "Run server",
@@ -23,7 +22,6 @@ var (
 
 func init() {
 	ServeCmd.Flags().IntVarP(&port, "port", "p", 80, "port to serve on")
-	ServeCmd.Flags().BoolVarP(&migrate, "migrate", "m", false, "apply DB migrations")
 }
 
 func serve(port int) {

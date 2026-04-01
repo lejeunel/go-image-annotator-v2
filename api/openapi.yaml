@@ -40,7 +40,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a label by name
+      description: Delete a label based on its name
+      operationId: deleteLabelByName
+      tags: [Label]
+      parameters:
+        - name: name
+          in: path
+          description: Name of label to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: label deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /labels:
+    get:
+      summary: List labels
+      description: Returns all pets from the system that the user has access to
+      operationId: listLabels
+      tags: [Label]
+      parameters:
+        - name: page
+          in: query
+          description: page number
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: maximum number of labels to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: list label response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLabelsResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       summary: Create a new label
       description: Creates a new label. Duplicate names are not allowed
@@ -68,6 +132,26 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int64
+          minimum: 1
+          description: current page number
+        page_size:
+          type: integer
+          minimum: 1
+          description: maximum number of items per page
+        total_items:
+          type: integer
+          format: int64
+          description: total number of items
+        total_pages:
+          type: integer
+          format: int64
+          description: total number of pages
     Label:
       properties:
         name:
@@ -76,6 +160,15 @@ components:
         description:
           type: string
           description: Description of the label
+    ListLabelsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
 
     NewLabel:
       required:

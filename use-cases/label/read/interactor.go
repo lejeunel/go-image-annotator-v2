@@ -2,17 +2,19 @@ package read
 
 import (
 	"errors"
+	"fmt"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 )
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
+	errCtx := "finding label by name"
 	found, err := i.repo.FindLabelByName(r.Name)
 	if err != nil {
 		switch {
 		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
+			out.ErrNotFound(fmt.Errorf("%v: %w", errCtx, err))
 		default:
-			out.ErrInternal(err)
+			out.ErrInternal(fmt.Errorf("%v: %w", errCtx, err))
 		}
 		return
 	}

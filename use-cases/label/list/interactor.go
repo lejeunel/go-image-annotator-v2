@@ -17,7 +17,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	response := ListResponse{
+	response := Response{
 		Pagination: pagination.New(int64(r.Page), r.PageSize, count),
 	}
 	for _, f := range found {

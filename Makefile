@@ -31,7 +31,7 @@ $(MODELS_OUT): $(SPEC)
 $(SERVER_OUT): $(SPEC) $(MODELS_OUT)
 	mkdir -p $(SERVER_PKG)
 	$(OAPI) \
-		-generate std-http-server \
+		-generate types,std-http-server \
 		-package server \
 		-o $(SERVER_OUT) \
 		-import-mapping $(MODULE)/$(MODELS_PKG):$(MODULE)/$(MODELS_PKG) \

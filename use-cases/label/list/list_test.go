@@ -30,7 +30,7 @@ func TestListLabel(t *testing.T) {
 	repo := &FakeRepo{Count_: count}
 	p := &FakePresenter{}
 	itr := NewInteractor(repo)
-	itr.Execute(Request{PageSize: pageSize, Page: page}, p)
+	itr.Execute(Request{PageSize: pageSize, Page: int64(page)}, p)
 	if len(p.Got.Labels) != pageSize {
 		t.Fatalf("expected to retrieve %v labels, got %v", pageSize, len(p.Got.Labels))
 	}

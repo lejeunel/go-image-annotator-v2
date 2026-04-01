@@ -43,7 +43,7 @@ func (i *Interactor) isUsed(name string, out OutputPort) bool {
 		out.ErrInternal(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrInternal))
 		return false
 	}
-	if isUsed {
+	if *isUsed {
 		out.ErrDependency(fmt.Errorf("checking for existence of label with name %v: %w", name, e.ErrDependency))
 		return false
 	}

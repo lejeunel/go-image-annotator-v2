@@ -16,15 +16,18 @@ func (r *FakeRepo) Delete(string) error {
 	return nil
 }
 
-func (r *FakeRepo) IsUsed(n string) (bool, error) {
+func (r *FakeRepo) IsUsed(n string) (*bool, error) {
+	res := true
 	if r.ErrOnIsUsed {
-		return false, r.Err
+		res = false
+		return &res, r.Err
 	}
 	if r.IsUsed_ {
-		return true, nil
+		return &res, nil
 
 	}
-	return false, nil
+	res = false
+	return &res, nil
 }
 func (r *FakeRepo) Exists(n string) (bool, error) {
 	if r.ErrOnExists {
