@@ -5,10 +5,12 @@ import (
 
 	"database/sql"
 	"errors"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	s "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/update"
 )
 
@@ -91,6 +93,36 @@ func (r *SQLiteCollectionRepo) IsPopulated(name string) (*bool, error) {
 	}
 	isPopulated := count > 0
 	return &isPopulated, nil
+}
+func (r *SQLiteCollectionRepo) Count() (*int64, error) {
+	var count int64
+
+	query := "SELECT COUNT(*) FROM collections"
+	err := r.Db.QueryRow(query).Scan(&count)
+	if err != nil {
+		return nil, fmt.Errorf("counting records: %v: %w", err, e.ErrInternal)
+	}
+
+	return &count, nil
+}
+func (r *SQLiteCollectionRepo) List(m list.Request) ([]*clc.Collection, error) {
+	q := sq.StatementBuilder.Select("id,name,description").From("collections")
+	q = q.Limit(uint64(m.PageSize)).Offset((uint64(m.Page-1) * uint64(m.PageSize)))
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %v: %w", err, e.ErrInternal)
+	}
+	records := []Row{}
+	if err := r.Db.Select(&records, sql, args...); err != nil {
+		return nil, fmt.Errorf("applying query: %v: %w", err, e.ErrInternal)
+	}
+
+	objects := []*clc.Collection{}
+	for _, r := range records {
+		objects = append(objects, &clc.Collection{Id: r.Id, Name: r.Name, Description: r.Description})
+	}
+
+	return objects, nil
 }
 
 func NewSQLiteCollectionRepo(db *sqlx.DB) *SQLiteCollectionRepo {

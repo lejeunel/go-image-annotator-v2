@@ -27,9 +27,9 @@ func TestHandleInternalErrOnList(t *testing.T) {
 }
 
 func TestListCollection(t *testing.T) {
-	count := 3
+	count := int64(3)
 	pageSize := 2
-	page := 1
+	page := int64(1)
 
 	repo := &FakeRepo{Count_: count}
 	p := &FakePresenter{}
@@ -40,13 +40,13 @@ func TestListCollection(t *testing.T) {
 	if len(got.Collections) != pageSize {
 		t.Fatalf("expected to retrieve %v collections, got %v", pageSize, len(got.Collections))
 	}
-	if int(got.Pagination.TotalRecords) != count {
+	if got.Pagination.TotalRecords != count {
 		t.Fatalf("expected to retrieve count of %v, got %v", count, got.Pagination.TotalRecords)
 	}
 	if int(got.Pagination.TotalPages) != 2 {
 		t.Fatalf("expected to retrieve total pages %v, got %v", 2, got.Pagination.TotalPages)
 	}
-	if int(got.Pagination.Page) != page {
+	if got.Pagination.Page != page {
 		t.Fatalf("expected to retrieve page %v, got %v", page, got.Pagination.Page)
 	}
 	if int(got.Pagination.PageSize) != pageSize {

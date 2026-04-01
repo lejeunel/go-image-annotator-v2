@@ -1,9 +1,9 @@
-package label
+package collection
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/adapters/json"
 	"github.com/lejeunel/go-image-annotator-v2/api/models"
-	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/read"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/read"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ type Find struct {
 }
 
 func (p *Find) Success(r read.Response) {
-	response := models.Label{
+	response := models.Collection{
 		Name:        &r.Name,
 		Description: &r.Description,
 	}

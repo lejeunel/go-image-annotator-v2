@@ -1,4 +1,4 @@
-package label
+package collection
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/adapters/json"

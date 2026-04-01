@@ -6,7 +6,7 @@ import (
 
 type Request struct {
 	PageSize int
-	Page     int
+	Page     int64
 }
 
 type CollectionResponse struct {
@@ -14,7 +14,7 @@ type CollectionResponse struct {
 	Description string
 }
 
-type ListResponse struct {
+type Response struct {
 	Collections []CollectionResponse
 	Pagination  pagination.Pagination
 }

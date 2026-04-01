@@ -14,6 +14,122 @@ info:
 servers:
   - url: /api
 paths:
+  /collections/{name}:
+    get:
+      summary: Find a collection by name
+      description: Returns a collection based on its name
+      operationId: findCollectionByName
+      tags: [Collection]
+      parameters:
+        - name: name
+          in: path
+          description: Name of collection to fetch
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: collection response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a collection by name
+      description: Delete a collection based on its name
+      operationId: deleteCollectionByName
+      tags: [Collection]
+      parameters:
+        - name: name
+          in: path
+          description: Name of collection to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: collection deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /collections:
+    get:
+      summary: List collections
+      description: Paginate collections
+      operationId: listCollections
+      tags: [Collection]
+      parameters:
+        - name: page
+          in: query
+          description: page number
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: maximum number of collections to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: list collection response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCollectionsResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new collection
+      description: Creates a new collection. Duplicate names are not allowed
+      operationId: createCollection
+      tags: [Collection]
+      requestBody:
+        description: Collection to add
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCollection'
+      responses:
+        '200':
+          description: collection response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /labels/{name}:
     get:
       summary: Find a label by name
@@ -152,6 +268,34 @@ components:
           type: integer
           format: int64
           description: total number of pages
+    Collection:
+      properties:
+        name:
+          type: string
+          description: Name of the collection
+        description:
+          type: string
+          description: Description of the collection
+    ListCollectionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Collection'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    NewCollection:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the collection
+        description:
+          type: string
+          description: Description of the collection
     Label:
       properties:
         name:

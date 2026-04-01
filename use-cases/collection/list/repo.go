@@ -6,21 +6,22 @@ import (
 
 type Repo interface {
 	List(Request) ([]*clc.Collection, error)
-	Count() (int64, error)
+	Count() (*int64, error)
 }
 
 type FakeRepo struct {
 	Err        error
 	ErrOnCount bool
 	ErrOnList  bool
-	Count_     int
+	Count_     int64
 }
 
-func (r *FakeRepo) Count() (int64, error) {
+func (r *FakeRepo) Count() (*int64, error) {
+	count := int64(0)
 	if r.ErrOnCount {
-		return 0, r.Err
+		return &count, r.Err
 	}
-	return int64(r.Count_), nil
+	return &r.Count_, nil
 }
 
 func (r *FakeRepo) List(req Request) ([]*clc.Collection, error) {

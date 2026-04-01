@@ -1,9 +1,9 @@
-package label
+package collection
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/adapters/json"
 	"github.com/lejeunel/go-image-annotator-v2/api/models"
-	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/create"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/create"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ type Create struct {
 }
 
 func (p *Create) Success(r create.Response) {
-	response := models.NewLabel{
+	response := models.NewCollection{
 		Name:        r.Name,
 		Description: &r.Description,
 	}

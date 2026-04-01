@@ -36,6 +36,6 @@ func DecodeJSONOrFail[T any](w http.ResponseWriter, r *http.Request) (*T, bool) 
 		WriteError(w, http.StatusBadRequest, "invalid request body")
 		return nil, false
 	}
-	return body, false
+	return body, true
 
 }

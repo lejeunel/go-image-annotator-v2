@@ -1,6 +1,6 @@
 package delete
 
-type DeleteRequest struct {
+type Request struct {
 	Name string
 }
 

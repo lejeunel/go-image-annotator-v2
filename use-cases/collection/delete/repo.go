@@ -1,46 +1,38 @@
 package delete
 
-import "slices"
-
 type Repo interface {
 	Delete(string) error
 	Exists(string) (bool, error)
-	IsPopulated(string) (bool, error)
+	IsPopulated(string) (*bool, error)
 }
 
 type FakeRepo struct {
-	Collections  []string
-	ArePopulated []string
-}
-
-type FakeErrRepo struct {
-	err error
-}
-
-func (r *FakeErrRepo) Delete(string) error {
-	return r.err
-}
-func (r *FakeErrRepo) Exists(string) (bool, error) {
-	return false, r.err
-}
-func (r *FakeErrRepo) IsPopulated(string) (bool, error) {
-	return false, r.err
+	Err          error
+	ErrOnDelete  bool
+	Missing      bool
+	IsPopulated_ bool
 }
 
 func (r *FakeRepo) Delete(string) error {
+
+	if r.ErrOnDelete {
+		return r.Err
+	}
 	return nil
 }
 
 func (r *FakeRepo) Exists(c string) (bool, error) {
-	if slices.Contains(r.Collections, c) {
-		return true, nil
+	if r.Missing {
+		return false, nil
 	}
-	return false, nil
+	return true, nil
 }
 
-func (r *FakeRepo) IsPopulated(c string) (bool, error) {
-	if slices.Contains(r.ArePopulated, c) {
-		return true, nil
+func (r *FakeRepo) IsPopulated(c string) (*bool, error) {
+	res := true
+	if r.IsPopulated_ {
+		return &res, nil
 	}
-	return false, nil
+	res = false
+	return &res, nil
 }

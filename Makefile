@@ -12,11 +12,11 @@ SERVER_OUT := $(SERVER_PKG)/server.gen.go
 
 # ====== TARGETS ======
 
-.PHONY: all generate clean
+.PHONY: all api-code clean
 
-all: generate
+all: api-code
 
-generate: $(MODELS_OUT) $(SERVER_OUT)
+api-code: $(MODELS_OUT) $(SERVER_OUT)
 
 # --- Generate models (types only) ---
 $(MODELS_OUT): $(SPEC)

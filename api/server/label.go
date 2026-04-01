@@ -5,7 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/json"
-	pres "github.com/lejeunel/go-image-annotator-v2/adapters/json/label"
+	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/json/label"
 	"github.com/lejeunel/go-image-annotator-v2/api/models"
 	infra "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/create"
@@ -34,29 +34,21 @@ func NewHTTPLabelServer(db *sqlx.DB) *LabelServer {
 	}
 }
 
-func (s *Server) FindLabelByName(
-	w http.ResponseWriter,
-	r *http.Request,
-	name string,
-) {
+func (s *Server) FindLabelByName(w http.ResponseWriter, r *http.Request, name string) {
 
-	s.Label.Find.Execute(read.Request{Name: name}, &pres.FindPresenter{Writer: w})
+	s.Label.Find.Execute(read.Request{Name: name}, &presenter.Find{Writer: w})
 }
-
-func (s *Server) CreateLabel(
-	w http.ResponseWriter,
-	r *http.Request,
-) {
+func (s *Server) CreateLabel(w http.ResponseWriter, r *http.Request) {
 	body, ok := json.DecodeJSONOrFail[models.NewLabel](w, r)
 	if !ok {
 		return
 	}
 
 	s.Label.Create.Execute(create.Request{Name: body.Name, Description: *body.Description},
-		&pres.CreatePresenter{Writer: w})
+		&presenter.Create{Writer: w})
 }
 func (s *Server) DeleteLabelByName(w http.ResponseWriter, r *http.Request, name string) {
-	s.Label.Delete.Execute(delete.Request{Name: name}, &pres.DeletePresenter{Writer: w})
+	s.Label.Delete.Execute(delete.Request{Name: name}, &presenter.Delete{Writer: w})
 
 }
 func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams) {
@@ -67,6 +59,6 @@ func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request, params ListL
 	if p := params.PageSize; p != nil {
 		req.PageSize = *p
 	}
-	s.Label.List.Execute(req, &pres.ListPresenter{Writer: w})
+	s.Label.List.Execute(req, &presenter.List{Writer: w})
 
 }

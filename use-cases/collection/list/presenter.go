@@ -1,17 +1,17 @@
 package list
 
 type OutputPort interface {
-	Success(ListResponse)
+	Success(Response)
 	ErrInternal(error)
 }
 
 type FakePresenter struct {
-	Got            ListResponse
+	Got            Response
 	GotInternalErr bool
 	GotSuccess     bool
 }
 
-func (p *FakePresenter) Success(r ListResponse) {
+func (p *FakePresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
 }

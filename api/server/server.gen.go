@@ -12,6 +12,15 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Collection defines model for Collection.
+type Collection struct {
+	// Description Description of the collection
+	Description *string `json:"description,omitempty"`
+
+	// Name Name of the collection
+	Name *string `json:"name,omitempty"`
+}
+
 // Error defines model for Error.
 type Error struct {
 	// Code Error code
@@ -30,10 +39,25 @@ type Label struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// ListCollectionsResponse defines model for ListCollectionsResponse.
+type ListCollectionsResponse struct {
+	Data       *[]Collection `json:"data,omitempty"`
+	Pagination *Pagination   `json:"pagination,omitempty"`
+}
+
 // ListLabelsResponse defines model for ListLabelsResponse.
 type ListLabelsResponse struct {
 	Data       *[]Label    `json:"data,omitempty"`
 	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
+// NewCollection defines model for NewCollection.
+type NewCollection struct {
+	// Description Description of the collection
+	Description *string `json:"description,omitempty"`
+
+	// Name Name of the collection
+	Name string `json:"name"`
 }
 
 // NewLabel defines model for NewLabel.
@@ -60,6 +84,15 @@ type Pagination struct {
 	TotalPages *int64 `json:"total_pages,omitempty"`
 }
 
+// ListCollectionsParams defines parameters for ListCollections.
+type ListCollectionsParams struct {
+	// Page page number
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize maximum number of collections to return
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
 // ListLabelsParams defines parameters for ListLabels.
 type ListLabelsParams struct {
 	// Page page number
@@ -69,11 +102,26 @@ type ListLabelsParams struct {
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
 }
 
+// CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
+type CreateCollectionJSONRequestBody = NewCollection
+
 // CreateLabelJSONRequestBody defines body for CreateLabel for application/json ContentType.
 type CreateLabelJSONRequestBody = NewLabel
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List collections
+	// (GET /collections)
+	ListCollections(w http.ResponseWriter, r *http.Request, params ListCollectionsParams)
+	// Create a new collection
+	// (POST /collections)
+	CreateCollection(w http.ResponseWriter, r *http.Request)
+	// Delete a collection by name
+	// (DELETE /collections/{name})
+	DeleteCollectionByName(w http.ResponseWriter, r *http.Request, name string)
+	// Find a collection by name
+	// (GET /collections/{name})
+	FindCollectionByName(w http.ResponseWriter, r *http.Request, name string)
 	// List labels
 	// (GET /labels)
 	ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams)
@@ -96,6 +144,105 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// ListCollections operation middleware
+func (siw *ServerInterfaceWrapper) ListCollections(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListCollectionsParams
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListCollections(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateCollection operation middleware
+func (siw *ServerInterfaceWrapper) CreateCollection(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateCollection(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteCollectionByName operation middleware
+func (siw *ServerInterfaceWrapper) DeleteCollectionByName(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "name" -------------
+	var name string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "name", r.PathValue("name"), &name, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteCollectionByName(w, r, name)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// FindCollectionByName operation middleware
+func (siw *ServerInterfaceWrapper) FindCollectionByName(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "name" -------------
+	var name string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "name", r.PathValue("name"), &name, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.FindCollectionByName(w, r, name)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // ListLabels operation middleware
 func (siw *ServerInterfaceWrapper) ListLabels(w http.ResponseWriter, r *http.Request) {
@@ -316,6 +463,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	m.HandleFunc("GET "+options.BaseURL+"/collections", wrapper.ListCollections)
+	m.HandleFunc("POST "+options.BaseURL+"/collections", wrapper.CreateCollection)
+	m.HandleFunc("DELETE "+options.BaseURL+"/collections/{name}", wrapper.DeleteCollectionByName)
+	m.HandleFunc("GET "+options.BaseURL+"/collections/{name}", wrapper.FindCollectionByName)
 	m.HandleFunc("GET "+options.BaseURL+"/labels", wrapper.ListLabels)
 	m.HandleFunc("POST "+options.BaseURL+"/labels", wrapper.CreateLabel)
 	m.HandleFunc("DELETE "+options.BaseURL+"/labels/{name}", wrapper.DeleteLabelByName)
