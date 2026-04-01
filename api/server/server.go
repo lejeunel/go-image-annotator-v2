@@ -8,7 +8,7 @@ type Server struct {
 	Label *LabelServer
 }
 
-func NewServer() *Server {
-	db := sqlite.NewSQLiteDB(":memory:")
+func NewServer(dbPath string) *Server {
+	db := sqlite.NewSQLiteDB(dbPath)
 	return &Server{Label: NewHTTPLabelServer(db)}
 }

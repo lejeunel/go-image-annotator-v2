@@ -15,28 +15,29 @@ type Interactor struct {
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
+	errCtx := "creating label"
 	if err := i.validator.Validate(r.Name); err != nil {
-		out.ErrValidation(err)
+		out.ErrValidation(fmt.Errorf("%v: %w", errCtx, err))
 		return
 	}
-	if err := i.checkDuplicate(r.Name, out); err != nil {
+	if err := i.checkDuplicate(r.Name); err != nil {
 		if errors.Is(err, e.ErrDuplicate) {
-			out.ErrDuplication(err)
+			out.ErrDuplication(fmt.Errorf("%v: %w", errCtx, err))
 		} else {
-			out.ErrInternal(err)
+			out.ErrInternal(fmt.Errorf("%v: %w", errCtx, err))
 		}
 		return
 	}
 
 	label := lbl.NewLabel(lbl.NewLabelId(), r.Name, lbl.WithDescription(r.Description))
 	if err := i.repo.Create(*label); err != nil {
-		out.ErrInternal(err)
+		out.ErrInternal(fmt.Errorf("%v: %w", errCtx, err))
 		return
 	}
 	out.Success(Response{Name: r.Name, Description: r.Description})
 }
 
-func (i *Interactor) checkDuplicate(name string, out OutputPort) error {
+func (i *Interactor) checkDuplicate(name string) error {
 	errBaseMsg := "checking for duplicate label with name %v: %w"
 	alreadyExists, err := i.repo.Exists(name)
 	if err != nil {

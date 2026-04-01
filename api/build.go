@@ -2,7 +2,7 @@ package api
 
 import (
 	_ "embed"
-	"github.com/lejeunel/go-image-annotator-v2/api/server"
+	api "github.com/lejeunel/go-image-annotator-v2/api/server"
 	"html/template"
 	"net/http"
 )
@@ -10,9 +10,8 @@ import (
 //go:embed openapi.yaml
 var openapiyaml []byte
 
-func RegisterAPI(mux *http.ServeMux) {
-	apiServer := server.NewServer()
-	server.HandlerFromMuxWithBaseURL(apiServer, mux, "/api")
+func RegisterAPI(mux *http.ServeMux, server api.Server) {
+	api.HandlerFromMuxWithBaseURL(&server, mux, "/api")
 	specURL := "/api/openapi.yaml"
 	mux.HandleFunc(specURL, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/yaml")
