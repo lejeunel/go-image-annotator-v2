@@ -12,6 +12,27 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// BoundingBox defines model for BoundingBox.
+type BoundingBox struct {
+	// Height height of the bounding box
+	Height float32 `json:"height"`
+
+	// Id ID of the bounding box
+	Id string `json:"id"`
+
+	// Label label
+	Label string `json:"label"`
+
+	// Width width of the bounding box
+	Width float32 `json:"width"`
+
+	// Xc x coordinate of the center point
+	Xc float32 `json:"xc"`
+
+	// Yc y coordinate of the center point
+	Yc float32 `json:"yc"`
+}
+
 // Collection defines model for Collection.
 type Collection struct {
 	// Description Description of the collection
@@ -28,6 +49,18 @@ type Error struct {
 
 	// Message Error message
 	Message string `json:"message"`
+}
+
+// GetImage defines model for GetImage.
+type GetImage struct {
+	BoundingBoxes *[]BoundingBox `json:"bounding_boxes,omitempty"`
+
+	// Collection name of collection in which the image belongs
+	Collection string `json:"collection"`
+
+	// Id ID of the image
+	Id     string    `json:"id"`
+	Labels *[]string `json:"labels,omitempty"`
 }
 
 // ImageIngestionResponse defines model for ImageIngestionResponse.
@@ -141,6 +174,9 @@ type ListLabelsParams struct {
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
 
+// ReadImageJSONRequestBody defines body for ReadImage for application/json ContentType.
+type ReadImageJSONRequestBody = GetImage
+
 // IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
 type IngestImageJSONRequestBody = NewImage
 
@@ -161,6 +197,9 @@ type ServerInterface interface {
 	// Find a collection by name
 	// (GET /collections/{name})
 	FindCollectionByName(w http.ResponseWriter, r *http.Request, name string)
+	// Read image meta-data
+	// (GET /images)
+	ReadImage(w http.ResponseWriter, r *http.Request)
 	// Ingest a new image
 	// (POST /images)
 	IngestImage(w http.ResponseWriter, r *http.Request)
@@ -277,6 +316,20 @@ func (siw *ServerInterfaceWrapper) FindCollectionByName(w http.ResponseWriter, r
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.FindCollectionByName(w, r, name)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReadImage operation middleware
+func (siw *ServerInterfaceWrapper) ReadImage(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReadImage(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -523,6 +576,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/collections", wrapper.CreateCollection)
 	m.HandleFunc("DELETE "+options.BaseURL+"/collections/{name}", wrapper.DeleteCollectionByName)
 	m.HandleFunc("GET "+options.BaseURL+"/collections/{name}", wrapper.FindCollectionByName)
+	m.HandleFunc("GET "+options.BaseURL+"/images", wrapper.ReadImage)
 	m.HandleFunc("POST "+options.BaseURL+"/images", wrapper.IngestImage)
 	m.HandleFunc("GET "+options.BaseURL+"/labels", wrapper.ListLabels)
 	m.HandleFunc("POST "+options.BaseURL+"/labels", wrapper.CreateLabel)

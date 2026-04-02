@@ -1,6 +1,9 @@
 package server
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/json/image"
@@ -8,16 +11,19 @@ import (
 	far "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
 	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
 	ide "github.com/lejeunel/go-image-annotator-v2/application/image-decoder"
+	image_store "github.com/lejeunel/go-image-annotator-v2/application/image-store"
+	image "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	anr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/annotation"
 	clr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
 	imr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
 	lbr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/ingest"
-	"net/http"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read-meta"
 )
 
 type ImageServer struct {
-	Ingest ingest.Interactor
+	Ingest   ingest.Interactor
+	ReadMeta read_meta.Interactor
 }
 
 func NewHTTPImageServer(db *sqlx.DB, baseDir string, allowedImageFormats []string) *ImageServer {
@@ -25,9 +31,11 @@ func NewHTTPImageServer(db *sqlx.DB, baseDir string, allowedImageFormats []strin
 	clRepo := clr.NewSQLiteCollectionRepo(db)
 	lbRepo := lbr.NewSQLiteLabelRepo(db)
 	anRepo := anr.NewSQLiteAnnotationRepo(db)
+	artRepo := far.NewFileArtefactRepo(baseDir)
 	return &ImageServer{
 		Ingest: *ingest.NewInteractor(imRepo, clRepo, lbRepo, anRepo,
-			far.NewFileArtefactRepo(baseDir), has.NewSha256Hasher(), ide.NewBase64ImageDecoder(allowedImageFormats)),
+			artRepo, has.NewSha256Hasher(), ide.NewBase64ImageDecoder(allowedImageFormats)),
+		ReadMeta: *read_meta.NewInteractor(image_store.NewImageStore(imRepo, clRepo, anRepo, artRepo)),
 	}
 }
 
@@ -52,4 +60,15 @@ func (s *Server) IngestImage(w http.ResponseWriter, r *http.Request) {
 	s.Image.Ingest.Execute(req,
 		&presenter.Ingest{Writer: w})
 
+}
+
+func (s *Server) ReadImage(w http.ResponseWriter, r *http.Request) {
+	body, ok := json.DecodeJSONOrFail[models.GetImage](w, r)
+	if !ok {
+		return
+	}
+	id, err := image.NewImageIdFromString(body.Id)
+	json.WriteError(w, http.StatusBadRequest, fmt.Errorf("parsing UUID from string: %w", err).Error())
+	s.Image.ReadMeta.Execute(read_meta.Request{ImageId: id, Collection: body.Collection},
+		&presenter.ReadMeta{Writer: w})
 }

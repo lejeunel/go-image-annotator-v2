@@ -11,7 +11,8 @@ type Request struct {
 }
 
 type Response struct {
-	Id         im.ImageId
-	Collection string
-	Labels     []*a.ImageLabel
+	Id            im.ImageId
+	Collection    string
+	Labels        []*a.ImageLabel
+	BoundingBoxes []*a.BoundingBox
 }

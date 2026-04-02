@@ -74,9 +74,9 @@ func TestRetrieveImageWithBoxesAndImageLabels(t *testing.T) {
 	if len(imageLabels) != 1 {
 		t.Fatalf("expected to retrieve 1 image label, got %v", len(imageLabels))
 	}
-	if imageLabels[0].Name != newLabelName {
+	if imageLabels[0].Label.Name != newLabelName {
 		t.Fatalf("expected to retrieve image label with name %v, got %v",
-			newLabelName, imageLabels[0].Name)
+			newLabelName, imageLabels[0].Label.Name)
 	}
 
 }

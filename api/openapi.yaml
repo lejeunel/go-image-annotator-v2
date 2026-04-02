@@ -15,6 +15,31 @@ servers:
   - url: /api
 paths:
   /images:
+    get:
+      summary: Read image meta-data
+      description: Read meta-data of an image
+      operationId: readImage
+      tags: [Image]
+      requestBody:
+        description: Read image specification
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetImage'
+      responses:
+        '200':
+          description: image meta-data response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageIngestionResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
       summary: Ingest a new image
       description: Ingest an image into a collection. 
@@ -311,7 +336,25 @@ components:
             $ref: '#/components/schemas/Collection'
         pagination:
           $ref: '#/components/schemas/Pagination'
-
+    GetImage:
+      required:
+        - id
+        - collection
+      properties:
+        id:
+          type: string
+          description: ID of the image
+        collection:
+          type: string
+          description: name of collection in which the image belongs
+        labels:
+          type: array
+          items:
+            type: string
+        bounding_boxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoundingBox'
     NewImage:
       required:
         - data
@@ -339,6 +382,33 @@ components:
         - width
         - height
       properties:
+        label:
+          type: string
+          description: label
+        xc:
+          type: number
+          description: x coordinate of the center point
+        yc:
+          type: number
+          description: y coordinate of the center point
+        width:
+          type: number
+          description: width of the bounding box
+        height:
+          type: number
+          description: height of the bounding box
+    BoundingBox:
+      required:
+        - label
+        - xc
+        - yc
+        - width
+        - height
+        - id
+      properties:
+        id:
+          type: string
+          description: ID of the bounding box
         label:
           type: string
           description: label

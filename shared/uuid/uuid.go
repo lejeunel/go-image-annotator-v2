@@ -9,6 +9,10 @@ type UUIDWrapper[T any] struct {
 	UUID uuid.UUID
 }
 
+func FromUUID[T any](id uuid.UUID) UUIDWrapper[T] {
+	return UUIDWrapper[T]{UUID: id}
+}
+
 // Implement sql.Scanner
 func (u *UUIDWrapper[T]) Scan(value any) error {
 	var id uuid.UUID

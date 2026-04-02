@@ -52,25 +52,25 @@ func (r *SQLiteAnnotationRepo) findLabelById(labelId l.LabelId) (*l.Label, error
 
 }
 
-func (r *SQLiteAnnotationRepo) FindImageLabels(imageId i.ImageId, collectionId c.CollectionId) ([]*l.Label, error) {
-	query := "SELECT id FROM labels WHERE id IN (SELECT label_id FROM annotations WHERE image_id=$1 AND collection_id=$2 AND type='image')"
+func (r *SQLiteAnnotationRepo) FindImageLabels(imageId i.ImageId, collectionId c.CollectionId) ([]*a.ImageLabel, error) {
+	query := "SELECT id,label_id,type FROM annotations WHERE image_id=$1 AND collection_id=$2 AND type='image'"
 
-	errCtx := "building image label annotations"
-	labelIds := []l.LabelId{}
-	if err := r.Db.Select(&labelIds, query, imageId, collectionId); err != nil {
-		return nil, fmt.Errorf("%v: applying query: %w", errCtx, e.ErrInternal)
+	errCtx := "querying image annotations"
+	records := []AnnotationRow{}
+	if err := r.Db.Select(&records, query, imageId, collectionId); err != nil {
+		return nil, fmt.Errorf("%v: applying query: %v: %w", errCtx, err, e.ErrInternal)
 	}
 
-	labels := []*l.Label{}
-	for _, id := range labelIds {
-		label, err := r.findLabelById(id)
+	imageLabels := []*a.ImageLabel{}
+	for _, rec := range records {
+		label, err := r.findLabelById(rec.LabelId)
 		if err != nil {
 			return nil, fmt.Errorf("%v: %w", errCtx, err)
 		}
-		labels = append(labels, label)
+		imageLabels = append(imageLabels, &a.ImageLabel{Id: rec.Id, Label: *label})
 	}
 
-	return labels, nil
+	return imageLabels, nil
 }
 
 func (r *SQLiteAnnotationRepo) RemoveAnnotation(id a.AnnotationId) error {
@@ -97,10 +97,10 @@ func (r *SQLiteAnnotationRepo) AddBoundingBox(imageId i.ImageId, collectionId c.
 func (r *SQLiteAnnotationRepo) FindBoundingBoxes(imageId i.ImageId, collectionId c.CollectionId) ([]*a.BoundingBox, error) {
 	query := "SELECT id,label_id,type,coordinates FROM annotations WHERE image_id=$1 AND collection_id=$2 AND type='bounding_box'"
 
-	errCtx := "building bounding box annotation objects"
+	errCtx := "querying image annotations"
 	records := []AnnotationRow{}
 	if err := r.Db.Select(&records, query, imageId, collectionId); err != nil {
-		return nil, fmt.Errorf("%v: applying query: %w", errCtx, e.ErrInternal)
+		return nil, fmt.Errorf("%v: applying query: %v: %w", errCtx, err, e.ErrInternal)
 	}
 
 	boxes := []*a.BoundingBox{}
