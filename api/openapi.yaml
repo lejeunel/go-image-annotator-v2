@@ -14,6 +14,32 @@ info:
 servers:
   - url: /api
 paths:
+  /images:
+    post:
+      summary: Ingest a new image
+      description: Ingest an image into a collection. 
+      operationId: ingestImage
+      tags: [Image]
+      requestBody:
+        description: Ingestion payload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewImage'
+      responses:
+        '200':
+          description: collection response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageIngestionResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /collections/{name}:
     get:
       summary: Find a collection by name
@@ -286,6 +312,22 @@ components:
         pagination:
           $ref: '#/components/schemas/Pagination'
 
+    NewImage:
+      required:
+        - data
+        - collection
+      properties:
+        data:
+          type: string
+          description: base64 encoded image raw bytes
+        collection:
+          type: string
+          description: name of collection in which to add the image
+    ImageIngestionResponse:
+      properties:
+        id:
+          type: string
+          description: ID of ingested image
     NewCollection:
       required:
         - name

@@ -21,6 +21,12 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// ImageIngestionResponse defines model for ImageIngestionResponse.
+type ImageIngestionResponse struct {
+	// Id ID of ingested image
+	Id *string `json:"id,omitempty"`
+}
+
 // Label defines model for Label.
 type Label struct {
 	// Description Description of the label
@@ -49,6 +55,15 @@ type NewCollection struct {
 
 	// Name Name of the collection
 	Name string `json:"name"`
+}
+
+// NewImage defines model for NewImage.
+type NewImage struct {
+	// Collection name of collection in which to add the image
+	Collection string `json:"collection"`
+
+	// Data base64 encoded image raw bytes
+	Data string `json:"data"`
 }
 
 // NewLabel defines model for NewLabel.
@@ -95,6 +110,9 @@ type ListLabelsParams struct {
 
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
+
+// IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
+type IngestImageJSONRequestBody = NewImage
 
 // CreateLabelJSONRequestBody defines body for CreateLabel for application/json ContentType.
 type CreateLabelJSONRequestBody = NewLabel

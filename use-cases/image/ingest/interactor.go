@@ -3,12 +3,12 @@ package ingest
 import (
 	"errors"
 	"fmt"
-	"io"
 
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 
 	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
@@ -23,14 +23,15 @@ type Interactor struct {
 	annotationRepo AnnotationRepo
 	labelRepo      LabelRepo
 	artefactRepo   ast.ArtefactRepo
+	imageDecoder   ImageDecoder
 }
 
 func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
 	labelRepo LabelRepo, annotationRepo AnnotationRepo,
-	artefactRepo ast.ArtefactRepo, hasher Hasher) *Interactor {
+	artefactRepo ast.ArtefactRepo, hasher Hasher, decoder ImageDecoder) *Interactor {
 	return &Interactor{imageRepo: imageRepo, collectionRepo: collectionRepo,
 		annotationRepo: annotationRepo, labelRepo: labelRepo,
-		artefactRepo: artefactRepo, hasher: hasher}
+		artefactRepo: artefactRepo, hasher: hasher, imageDecoder: decoder}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -45,9 +46,9 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	data, err := io.ReadAll(r.Reader)
+	data, _, err := i.imageDecoder.Decode(r.Data)
 	if err != nil {
-		out.ErrInvalidImageData(fmt.Errorf("%v: reading image data: %w", errCtx, e.ErrValidation))
+		out.ErrValidation(fmt.Errorf("%v: reading image data: %w", errCtx, e.ErrValidation))
 		return
 	}
 
@@ -142,14 +143,14 @@ func (i *Interactor) ingestImage(image *im.Image, hash string, out OutputPort) b
 	}
 
 	for _, label := range image.Labels {
-		if err := i.annotationRepo.AddLabelToImage(image.Id, image.Collection.Id, label.Label.Id); err != nil {
+		if err := i.annotationRepo.AddImageLabel(an.NewAnnotationId(), image.Id, image.Collection.Id, label.Label.Id); err != nil {
 			out.ErrInternal(fmt.Errorf("%v: ingesting label: %w", errCtx, e.ErrInternal))
 			return false
 		}
 	}
 
 	for _, box := range image.BoundingBoxes {
-		if err := i.annotationRepo.AddBoundingBoxToImage(image.Id, image.Collection.Id, *box); err != nil {
+		if err := i.annotationRepo.AddBoundingBox(image.Id, image.Collection.Id, *box); err != nil {
 			out.ErrInternal(fmt.Errorf("%v: ingesting bounding box: %w", errCtx, e.ErrInternal))
 			return false
 		}
@@ -163,7 +164,7 @@ func (i *Interactor) findCollectionByName(name string, out OutputPort) (*clc.Col
 	baseErrMsg := fmt.Sprintf("%v: finding collection with name %v", errCtx, name)
 	switch {
 	case errors.Is(err, e.ErrNotFound):
-		out.ErrCollectionNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
+		out.ErrNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
 		return nil, false
 	case errors.Is(err, e.ErrInternal):
 		out.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
@@ -178,7 +179,7 @@ func (i *Interactor) findLabelByName(name string, out OutputPort) (*lbl.Label, b
 	label, err := i.labelRepo.FindLabelByName(name)
 	switch {
 	case errors.Is(err, e.ErrNotFound):
-		out.ErrLabelNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
+		out.ErrNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
 		return nil, false
 	case errors.Is(err, e.ErrInternal):
 		out.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
@@ -196,7 +197,7 @@ func (i *Interactor) duplicateImageExists(hash string, out OutputPort) bool {
 	case errors.Is(e.ErrNotFound, err):
 		return false
 	case duplicateId != nil:
-		out.ErrDuplicateImage(fmt.Errorf("%v: found duplicate with id: %v: %w", errCtx_, duplicateId, e.ErrValidation))
+		out.ErrDuplication(fmt.Errorf("%v: found duplicate with id: %v: %w", errCtx_, duplicateId, e.ErrValidation))
 		return true
 	default:
 		out.ErrInternal(fmt.Errorf("%v: %w", errCtx_, e.ErrInternal))

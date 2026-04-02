@@ -7,12 +7,14 @@ import (
 type Server struct {
 	Label      *LabelServer
 	Collection *CollectionServer
+	Image      *ImageServer
 }
 
-func NewServer(dbPath string) *Server {
+func NewServer(dbPath, artefactDir string, allowedImageFormats []string) *Server {
 	db := sqlite.NewSQLiteDB(dbPath)
 	return &Server{
 		Label:      NewHTTPLabelServer(db),
 		Collection: NewHTTPCollectionServer(db),
+		Image:      NewHTTPImageServer(db, artefactDir, allowedImageFormats),
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type Interactor struct {

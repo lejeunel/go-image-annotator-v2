@@ -3,7 +3,7 @@ package sqlite
 import (
 	"errors"
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"testing"
 )
 

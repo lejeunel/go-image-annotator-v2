@@ -30,6 +30,12 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// ImageIngestionResponse defines model for ImageIngestionResponse.
+type ImageIngestionResponse struct {
+	// Id ID of ingested image
+	Id *string `json:"id,omitempty"`
+}
+
 // Label defines model for Label.
 type Label struct {
 	// Description Description of the label
@@ -58,6 +64,15 @@ type NewCollection struct {
 
 	// Name Name of the collection
 	Name string `json:"name"`
+}
+
+// NewImage defines model for NewImage.
+type NewImage struct {
+	// Collection name of collection in which to add the image
+	Collection string `json:"collection"`
+
+	// Data base64 encoded image raw bytes
+	Data string `json:"data"`
 }
 
 // NewLabel defines model for NewLabel.
@@ -105,6 +120,9 @@ type ListLabelsParams struct {
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
 
+// IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
+type IngestImageJSONRequestBody = NewImage
+
 // CreateLabelJSONRequestBody defines body for CreateLabel for application/json ContentType.
 type CreateLabelJSONRequestBody = NewLabel
 
@@ -122,6 +140,9 @@ type ServerInterface interface {
 	// Find a collection by name
 	// (GET /collections/{name})
 	FindCollectionByName(w http.ResponseWriter, r *http.Request, name string)
+	// Ingest a new image
+	// (POST /images)
+	IngestImage(w http.ResponseWriter, r *http.Request)
 	// List labels
 	// (GET /labels)
 	ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams)
@@ -235,6 +256,20 @@ func (siw *ServerInterfaceWrapper) FindCollectionByName(w http.ResponseWriter, r
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.FindCollectionByName(w, r, name)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// IngestImage operation middleware
+func (siw *ServerInterfaceWrapper) IngestImage(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.IngestImage(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -467,6 +502,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/collections", wrapper.CreateCollection)
 	m.HandleFunc("DELETE "+options.BaseURL+"/collections/{name}", wrapper.DeleteCollectionByName)
 	m.HandleFunc("GET "+options.BaseURL+"/collections/{name}", wrapper.FindCollectionByName)
+	m.HandleFunc("POST "+options.BaseURL+"/images", wrapper.IngestImage)
 	m.HandleFunc("GET "+options.BaseURL+"/labels", wrapper.ListLabels)
 	m.HandleFunc("POST "+options.BaseURL+"/labels", wrapper.CreateLabel)
 	m.HandleFunc("DELETE "+options.BaseURL+"/labels/{name}", wrapper.DeleteLabelByName)

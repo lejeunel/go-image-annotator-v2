@@ -7,7 +7,7 @@ import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type Interactor struct {

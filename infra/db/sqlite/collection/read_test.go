@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 func TestRetrieveNonExistingShouldFail(t *testing.T) {

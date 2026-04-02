@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 func TestHandleNotFoundErrOnList(t *testing.T) {

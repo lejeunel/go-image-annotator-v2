@@ -8,8 +8,8 @@ import (
 	c "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	i "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	l "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
 	sl "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type SQLiteAnnotationRepo struct {

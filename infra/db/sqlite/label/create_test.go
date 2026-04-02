@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 func CreateLabel(repo *SQLiteLabelRepo, name string) (*lbl.Label, error) {

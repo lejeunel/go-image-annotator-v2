@@ -2,10 +2,8 @@ package ingest
 
 type OutputPort interface {
 	Success(Response)
-	ErrCollectionNotFound(error)
-	ErrLabelNotFound(error)
-	ErrInvalidImageData(error)
+	ErrNotFound(error)
 	ErrInternal(error)
-	ErrDuplicateImage(error)
+	ErrDuplication(error)
 	ErrValidation(error)
 }

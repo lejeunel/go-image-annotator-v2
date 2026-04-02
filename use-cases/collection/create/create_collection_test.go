@@ -3,8 +3,8 @@ package create
 import (
 	"testing"
 
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
-	v "github.com/lejeunel/go-image-annotator-v2/validation"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	v "github.com/lejeunel/go-image-annotator-v2/shared/validation"
 )
 
 func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {

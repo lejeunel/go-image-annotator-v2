@@ -16,8 +16,8 @@ type LabelRepo interface {
 }
 
 type AnnotationRepo interface {
-	AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error
-	AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error
+	AddImageLabel(an.AnnotationId, im.ImageId, clc.CollectionId, lbl.LabelId) error
+	AddBoundingBox(im.ImageId, clc.CollectionId, an.BoundingBox) error
 }
 
 type ImageRepo interface {

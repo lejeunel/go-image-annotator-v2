@@ -1,7 +1,7 @@
 package list
 
 import (
-	"github.com/lejeunel/go-image-annotator-v2/pagination"
+	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
 )
 
 func (i *Interactor) Execute(r Request, out OutputPort) {

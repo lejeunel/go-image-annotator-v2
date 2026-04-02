@@ -6,7 +6,9 @@ import (
 )
 
 type Config struct {
-	DBPath string `required:"true"`
+	DBPath              string   `required:"true"`
+	ArtefactDir         string   `required:"true"`
+	AllowedImageFormats []string `required:"true"`
 }
 
 func Parse() Config {

@@ -3,7 +3,7 @@ package update
 import (
 	"fmt"
 
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type Interactor struct {

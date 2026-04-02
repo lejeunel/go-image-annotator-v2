@@ -8,7 +8,7 @@ import (
 	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type RawImage struct {

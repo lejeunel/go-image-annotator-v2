@@ -2,22 +2,7 @@ package artefact_store
 
 import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
-	"io"
 )
-
-type FakeImageReader struct {
-	Err  error
-	Data []byte
-}
-
-func (r FakeImageReader) Read(buf []byte) (int, error) {
-	if r.Err != nil {
-		return 0, r.Err
-	}
-	n := copy(buf, r.Data)
-	return n, io.EOF
-
-}
 
 type FakeArtefactRepo struct {
 	GotArtefact      bool

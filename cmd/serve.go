@@ -27,7 +27,7 @@ func init() {
 func serve(port int) {
 	cfg := config.Parse()
 	mux := http.NewServeMux()
-	apiServer := apiServer.NewServer(cfg.DBPath)
+	apiServer := apiServer.NewServer(cfg.DBPath, cfg.ArtefactDir, cfg.AllowedImageFormats)
 	api.RegisterAPI(mux, *apiServer)
 	fmt.Println("serving on port:", port)
 	http.ListenAndServe(fmt.Sprintf(":%v", port), mux)

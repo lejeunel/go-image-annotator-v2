@@ -3,7 +3,7 @@ package read
 import (
 	"errors"
 	"fmt"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 func (i *Interactor) Execute(r Request, out OutputPort) {

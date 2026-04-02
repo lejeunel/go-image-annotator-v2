@@ -6,7 +6,7 @@ import (
 
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 func TestInternalErrOnUpdateBoundingBoxShouldFail(t *testing.T) {

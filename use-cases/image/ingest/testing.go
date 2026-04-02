@@ -5,7 +5,7 @@ import (
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type FakeHasher struct {
@@ -18,41 +18,31 @@ func (h *FakeHasher) Hash([]byte) string {
 }
 
 type FakePresenter struct {
-	Got                      *Response
-	GotSuccess               bool
-	GotCollectionNotFoundErr bool
-	GotLabelNotFoundErr      bool
-	GotInvalidImageDataErr   bool
-	GotDuplicateImage        bool
-	GotInternalErr           bool
-	GotValidationErr         bool
+	Got               *Response
+	GotSuccess        bool
+	GotNotFoundErr    bool
+	GotDuplicateImage bool
+	GotInternalErr    bool
+	GotValidationErr  bool
 }
 
 func (p *FakePresenter) Success(r Response) {
 	p.Got = &r
 	p.GotSuccess = true
 }
-func (p *FakePresenter) ErrCollectionNotFound(error) {
-	p.GotCollectionNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInvalidImageData(error) {
-	p.GotInvalidImageDataErr = true
+func (p *FakePresenter) ErrNotFound(error) {
+	p.GotNotFoundErr = true
 }
 
 func (p *FakePresenter) ErrInternal(error) {
 	p.GotInternalErr = true
 }
 
-func (p *FakePresenter) ErrLabelNotFound(error) {
-	p.GotLabelNotFoundErr = true
-}
-
 func (p *FakePresenter) ErrValidation(error) {
 	p.GotValidationErr = true
 }
 
-func (p *FakePresenter) ErrDuplicateImage(error) {
+func (p *FakePresenter) ErrDuplication(error) {
 	p.GotDuplicateImage = true
 }
 
@@ -120,7 +110,7 @@ func (r *FakeImageRepo) FindImageIdByHash(hash string) (*im.ImageId, error) {
 	return nil, e.ErrNotFound
 }
 
-func (r *FakeAnnotationRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error {
+func (r *FakeAnnotationRepo) AddImageLabel(an.AnnotationId, im.ImageId, clc.CollectionId, lbl.LabelId) error {
 	if r.ErrOnAddLabel {
 		return r.Err
 	}
@@ -128,7 +118,7 @@ func (r *FakeAnnotationRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.L
 	return nil
 }
 
-func (r *FakeAnnotationRepo) AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error {
+func (r *FakeAnnotationRepo) AddBoundingBox(im.ImageId, clc.CollectionId, an.BoundingBox) error {
 	if r.ErrOnAddBoundingBox {
 		return r.Err
 	}
@@ -157,4 +147,17 @@ func (r *FakeImageRepo) AddImage(imageId im.ImageId, hash string) error {
 	}
 	r.GotHash = hash
 	return nil
+}
+
+type FakeImageDecoder struct {
+	Format_ string
+	Err     error
+}
+
+func (d *FakeImageDecoder) Decode(data any) ([]byte, *string, error) {
+	if d.Err != nil {
+		return nil, nil, d.Err
+	}
+	return nil, &d.Format_, nil
+
 }

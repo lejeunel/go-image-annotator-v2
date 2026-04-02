@@ -8,11 +8,11 @@ import (
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/json/collection"
 	"github.com/lejeunel/go-image-annotator-v2/api/models"
 	infra "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
+	"github.com/lejeunel/go-image-annotator-v2/shared/validation"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/create"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/delete"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/read"
-	"github.com/lejeunel/go-image-annotator-v2/validation"
 )
 
 type CollectionServer struct {

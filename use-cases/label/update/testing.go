@@ -5,7 +5,7 @@ import (
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"slices"
 )
 
@@ -123,7 +123,7 @@ func (r *FakeImageRepo) FindImageByHash(hash string) (*im.Image, error) {
 	return nil, e.ErrNotFound
 }
 
-func (r *FakeAnnotationRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.LabelId) error {
+func (r *FakeAnnotationRepo) AddImageLabel(an.AnnotationId, im.ImageId, clc.CollectionId, lbl.LabelId) error {
 	if r.ErrOnAddLabel {
 		return r.Err
 	}
@@ -131,7 +131,7 @@ func (r *FakeAnnotationRepo) AddLabelToImage(im.ImageId, clc.CollectionId, lbl.L
 	return nil
 }
 
-func (r *FakeAnnotationRepo) AddBoundingBoxToImage(im.ImageId, clc.CollectionId, an.BoundingBox) error {
+func (r *FakeAnnotationRepo) AddBoundingBox(im.ImageId, clc.CollectionId, an.BoundingBox) error {
 	if r.ErrOnAddBoundingBox {
 		return r.Err
 	}

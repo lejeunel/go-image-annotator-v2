@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
-	v "github.com/lejeunel/go-image-annotator-v2/validation"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	v "github.com/lejeunel/go-image-annotator-v2/shared/validation"
 )
 
 type Interactor struct {

@@ -5,7 +5,7 @@ import (
 	"io"
 
 	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
-	e "github.com/lejeunel/go-image-annotator-v2/errors"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type Interactor struct {

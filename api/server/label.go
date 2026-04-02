@@ -8,11 +8,11 @@ import (
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/json/label"
 	"github.com/lejeunel/go-image-annotator-v2/api/models"
 	infra "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
+	"github.com/lejeunel/go-image-annotator-v2/shared/validation"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/create"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/delete"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/read"
-	"github.com/lejeunel/go-image-annotator-v2/validation"
 )
 
 type LabelServer struct {
