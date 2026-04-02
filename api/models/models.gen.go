@@ -48,6 +48,24 @@ type ListLabelsResponse struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
 }
 
+// NewBoundingBox defines model for NewBoundingBox.
+type NewBoundingBox struct {
+	// Height height of the bounding box
+	Height float32 `json:"height"`
+
+	// Label label
+	Label string `json:"label"`
+
+	// Width width of the bounding box
+	Width float32 `json:"width"`
+
+	// Xc x coordinate of the center point
+	Xc float32 `json:"xc"`
+
+	// Yc y coordinate of the center point
+	Yc float32 `json:"yc"`
+}
+
 // NewCollection defines model for NewCollection.
 type NewCollection struct {
 	// Description Description of the collection
@@ -59,11 +77,14 @@ type NewCollection struct {
 
 // NewImage defines model for NewImage.
 type NewImage struct {
+	BoundingBoxes *[]NewBoundingBox `json:"bounding_boxes,omitempty"`
+
 	// Collection name of collection in which to add the image
 	Collection string `json:"collection"`
 
 	// Data base64 encoded image raw bytes
-	Data string `json:"data"`
+	Data   string    `json:"data"`
+	Labels *[]string `json:"labels,omitempty"`
 }
 
 // NewLabel defines model for NewLabel.

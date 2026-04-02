@@ -37,7 +37,19 @@ func (s *Server) IngestImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.Image.Ingest.Execute(ingest.Request{Collection: body.Collection, Data: body.Data},
+	req := ingest.Request{Collection: body.Collection, Data: body.Data}
+	if body.Labels != nil {
+		req.Labels = *body.Labels
+	}
+
+	if body.BoundingBoxes != nil {
+		for _, bbox := range *body.BoundingBoxes {
+			req.BoundingBoxes = append(req.BoundingBoxes,
+				ingest.BoundingBoxRequest{Xc: bbox.Xc, Yc: bbox.Yc,
+					Width: bbox.Width, Height: bbox.Height})
+		}
+	}
+	s.Image.Ingest.Execute(req,
 		&presenter.Ingest{Writer: w})
 
 }

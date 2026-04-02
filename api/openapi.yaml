@@ -323,6 +323,37 @@ components:
         collection:
           type: string
           description: name of collection in which to add the image
+        labels:
+          type: array
+          items:
+            type: string
+        bounding_boxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewBoundingBox'
+    NewBoundingBox:
+      required:
+        - label
+        - xc
+        - yc
+        - width
+        - height
+      properties:
+        label:
+          type: string
+          description: label
+        xc:
+          type: number
+          description: x coordinate of the center point
+        yc:
+          type: number
+          description: y coordinate of the center point
+        width:
+          type: number
+          description: width of the bounding box
+        height:
+          type: number
+          description: height of the bounding box
     ImageIngestionResponse:
       properties:
         id:
