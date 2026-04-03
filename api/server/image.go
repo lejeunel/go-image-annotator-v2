@@ -18,12 +18,14 @@ import (
 	imr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
 	lbr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/ingest"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read-meta"
 )
 
 type ImageServer struct {
 	Ingest   ingest.Interactor
 	ReadMeta read_meta.Interactor
+	List     list.Interactor
 }
 
 func NewHTTPImageServer(db *sqlx.DB, baseDir string, allowedImageFormats []string) *ImageServer {
@@ -32,10 +34,12 @@ func NewHTTPImageServer(db *sqlx.DB, baseDir string, allowedImageFormats []strin
 	lbRepo := lbr.NewSQLiteLabelRepo(db)
 	anRepo := anr.NewSQLiteAnnotationRepo(db)
 	artRepo := far.NewFileArtefactRepo(baseDir)
+	imStore := image_store.NewImageStore(imRepo, clRepo, anRepo, artRepo)
 	return &ImageServer{
 		Ingest: *ingest.NewInteractor(imRepo, clRepo, lbRepo, anRepo,
 			artRepo, has.NewSha256Hasher(), ide.NewBase64ImageDecoder(allowedImageFormats)),
-		ReadMeta: *read_meta.NewInteractor(image_store.NewImageStore(imRepo, clRepo, anRepo, artRepo)),
+		ReadMeta: *read_meta.NewInteractor(imStore),
+		// List:     *list.NewInteractor(imRepo, imStore),
 	}
 }
 
@@ -62,13 +66,22 @@ func (s *Server) IngestImage(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *Server) ReadImage(w http.ResponseWriter, r *http.Request) {
-	body, ok := json.DecodeJSONOrFail[models.GetImage](w, r)
-	if !ok {
-		return
+func (s *Server) ReadImage(w http.ResponseWriter, r *http.Request, collectionName, imageId string) {
+	id, err := image.NewImageIdFromString(imageId)
+	if err != nil {
+		json.WriteError(w, http.StatusBadRequest, fmt.Errorf("parsing UUID from string: %w", err).Error())
 	}
-	id, err := image.NewImageIdFromString(body.Id)
-	json.WriteError(w, http.StatusBadRequest, fmt.Errorf("parsing UUID from string: %w", err).Error())
-	s.Image.ReadMeta.Execute(read_meta.Request{ImageId: id, Collection: body.Collection},
+	s.Image.ReadMeta.Execute(read_meta.Request{ImageId: id, Collection: collectionName},
 		&presenter.ReadMeta{Writer: w})
+}
+
+func (s *Server) ListImages(w http.ResponseWriter, r *http.Request, params ListImagesParams) {
+	req := list.Request{Page: 1, PageSize: s.Collection.DefaultPageSize, CollectionName: params.Collection}
+	if p := params.Page; p != nil {
+		req.Page = *p
+	}
+	if p := params.PageSize; p != nil {
+		req.PageSize = *p
+	}
+	s.Image.List.Execute(req, &presenter.List{Writer: w})
 }

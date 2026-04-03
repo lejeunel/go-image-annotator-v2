@@ -8,7 +8,7 @@ import (
 
 func TestCreatedCollectionExists(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	collection, _ := createCollection(repo, "a-collection")
+	collection, _ := CreateCollection(repo, "a-collection")
 	exists, _ := repo.Exists(collection.Name)
 	if !exists {
 		t.Fatal("expected that created collection exists")
@@ -42,7 +42,7 @@ func TestInternalErrOnDeleteShouldFail(t *testing.T) {
 
 func TestDeleteCollection(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	collection, _ := createCollection(repo, "a-collection")
+	collection, _ := CreateCollection(repo, "a-collection")
 	err := repo.Delete(collection.Name)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)

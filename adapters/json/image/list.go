@@ -1,9 +1,9 @@
-package label
+package image
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/adapters/json"
 	"github.com/lejeunel/go-image-annotator-v2/api/models"
-	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/list"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/list"
 	"net/http"
 )
 
@@ -12,23 +12,22 @@ type List struct {
 }
 
 func (p *List) Success(r list.Response) {
-	data := []models.Label{}
-	for _, label := range r.Labels {
-		data = append(data,
-			models.Label{
-				Name:        &label.Name,
-				Description: &label.Description,
-			})
-	}
-
-	response := models.ListLabelsResponse{Data: &data,
-		Pagination: &models.Pagination{
+	response := models.ListImagesResponse{
+		Pagination: models.Pagination{
 			Page:       r.Pagination.Page,
 			PageSize:   r.Pagination.PageSize,
 			TotalItems: r.Pagination.TotalRecords,
 			TotalPages: r.Pagination.TotalPages,
 		},
 	}
+
+	responseImages := []models.Image{}
+
+	for _, image := range r.Images {
+		responseImages = append(responseImages, BuildImageResponse(image))
+	}
+
+	response.Images = responseImages
 
 	json.WriteJSON(p.Writer, 200, response)
 

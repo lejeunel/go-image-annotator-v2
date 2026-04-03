@@ -51,8 +51,8 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// GetImage defines model for GetImage.
-type GetImage struct {
+// Image defines model for Image.
+type Image struct {
 	BoundingBoxes *[]BoundingBox `json:"bounding_boxes,omitempty"`
 
 	// Collection name of collection in which the image belongs
@@ -82,6 +82,12 @@ type Label struct {
 type ListCollectionsResponse struct {
 	Data       *[]Collection `json:"data,omitempty"`
 	Pagination *Pagination   `json:"pagination,omitempty"`
+}
+
+// ListImagesResponse defines model for ListImagesResponse.
+type ListImagesResponse struct {
+	Images     []Image    `json:"images"`
+	Pagination Pagination `json:"pagination"`
 }
 
 // ListLabelsResponse defines model for ListLabelsResponse.
@@ -141,16 +147,16 @@ type NewLabel struct {
 // Pagination defines model for Pagination.
 type Pagination struct {
 	// Page current page number
-	Page *int64 `json:"page,omitempty"`
+	Page int64 `json:"page"`
 
 	// PageSize maximum number of items per page
-	PageSize *int `json:"page_size,omitempty"`
+	PageSize int `json:"page_size"`
 
 	// TotalItems total number of items
-	TotalItems *int64 `json:"total_items,omitempty"`
+	TotalItems int64 `json:"total_items"`
 
 	// TotalPages total number of pages
-	TotalPages *int64 `json:"total_pages,omitempty"`
+	TotalPages int64 `json:"total_pages"`
 }
 
 // ListCollectionsParams defines parameters for ListCollections.
@@ -160,6 +166,18 @@ type ListCollectionsParams struct {
 
 	// PageSize maximum number of collections to return
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// ListImagesParams defines parameters for ListImages.
+type ListImagesParams struct {
+	// Page page number
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize maximum number of collections to return
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// Collection name of collection
+	Collection *string `form:"collection,omitempty" json:"collection,omitempty"`
 }
 
 // ListLabelsParams defines parameters for ListLabels.
@@ -173,9 +191,6 @@ type ListLabelsParams struct {
 
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
-
-// ReadImageJSONRequestBody defines body for ReadImage for application/json ContentType.
-type ReadImageJSONRequestBody = GetImage
 
 // IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
 type IngestImageJSONRequestBody = NewImage
@@ -197,12 +212,15 @@ type ServerInterface interface {
 	// Find a collection by name
 	// (GET /collections/{name})
 	FindCollectionByName(w http.ResponseWriter, r *http.Request, name string)
-	// Read image meta-data
+	// List images
 	// (GET /images)
-	ReadImage(w http.ResponseWriter, r *http.Request)
+	ListImages(w http.ResponseWriter, r *http.Request, params ListImagesParams)
 	// Ingest a new image
 	// (POST /images)
 	IngestImage(w http.ResponseWriter, r *http.Request)
+	// Read image meta-data
+	// (GET /images/{collection_name}/{image_id})
+	ReadImage(w http.ResponseWriter, r *http.Request, collectionName string, imageId string)
 	// List labels
 	// (GET /labels)
 	ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams)
@@ -325,11 +343,40 @@ func (siw *ServerInterfaceWrapper) FindCollectionByName(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
-// ReadImage operation middleware
-func (siw *ServerInterfaceWrapper) ReadImage(w http.ResponseWriter, r *http.Request) {
+// ListImages operation middleware
+func (siw *ServerInterfaceWrapper) ListImages(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListImagesParams
+
+	// ------------- Optional query parameter "page" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page", r.URL.Query(), &params.Page)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "page_size", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "collection" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "collection", r.URL.Query(), &params.Collection)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "collection", Err: err})
+		return
+	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ReadImage(w, r)
+		siw.Handler.ListImages(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -344,6 +391,40 @@ func (siw *ServerInterfaceWrapper) IngestImage(w http.ResponseWriter, r *http.Re
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.IngestImage(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReadImage operation middleware
+func (siw *ServerInterfaceWrapper) ReadImage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "collection_name" -------------
+	var collectionName string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "collection_name", r.PathValue("collection_name"), &collectionName, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "collection_name", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "image_id" -------------
+	var imageId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "image_id", r.PathValue("image_id"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "image_id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReadImage(w, r, collectionName, imageId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -576,8 +657,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/collections", wrapper.CreateCollection)
 	m.HandleFunc("DELETE "+options.BaseURL+"/collections/{name}", wrapper.DeleteCollectionByName)
 	m.HandleFunc("GET "+options.BaseURL+"/collections/{name}", wrapper.FindCollectionByName)
-	m.HandleFunc("GET "+options.BaseURL+"/images", wrapper.ReadImage)
+	m.HandleFunc("GET "+options.BaseURL+"/images", wrapper.ListImages)
 	m.HandleFunc("POST "+options.BaseURL+"/images", wrapper.IngestImage)
+	m.HandleFunc("GET "+options.BaseURL+"/images/{collection_name}/{image_id}", wrapper.ReadImage)
 	m.HandleFunc("GET "+options.BaseURL+"/labels", wrapper.ListLabels)
 	m.HandleFunc("POST "+options.BaseURL+"/labels", wrapper.CreateLabel)
 	m.HandleFunc("DELETE "+options.BaseURL+"/labels/{name}", wrapper.DeleteLabelByName)

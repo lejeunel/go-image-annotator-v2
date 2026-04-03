@@ -18,7 +18,7 @@ func TestInternalErrOnCollectionUpdateShouldFail(t *testing.T) {
 
 func TestUpdateCollection(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	collection, _ := createCollection(repo, "a-collection")
+	collection, _ := CreateCollection(repo, "a-collection")
 	newName := "new-collection-name"
 	newDesc := "new-description"
 	err := repo.Update(u.Model{Name: collection.Name, NewName: newName, NewDescription: newDesc})

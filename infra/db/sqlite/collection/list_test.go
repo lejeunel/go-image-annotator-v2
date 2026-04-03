@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestInternalErrOnLabelCountShouldFail(t *testing.T) {
+func TestInternalErrOnCollectionCountShouldFail(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
 	repo.Db.Close()
 	_, err := repo.Count()
@@ -16,16 +16,16 @@ func TestInternalErrOnLabelCountShouldFail(t *testing.T) {
 	}
 }
 
-func TestCountLabels(t *testing.T) {
+func TestCountCollections(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	createCollection(repo, "a-collection")
+	CreateCollection(repo, "a-collection")
 	count, _ := repo.Count()
 	if *count != 1 {
 		t.Fatalf("expected label count %v, got %v", 1, count)
 	}
 }
 
-func TestInternalErrOnLabelListShouldFail(t *testing.T) {
+func TestInternalErrOnCollectionListShouldFail(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
 	repo.Db.Close()
 	_, err := repo.List(l.Request{})
@@ -36,8 +36,8 @@ func TestInternalErrOnLabelListShouldFail(t *testing.T) {
 
 func TestListCollections(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	firstCollection, _ := createCollection(repo, "a-collection")
-	secondCollection, _ := createCollection(repo, "another-collection")
+	firstCollection, _ := CreateCollection(repo, "a-collection")
+	secondCollection, _ := CreateCollection(repo, "another-collection")
 	collections, err := repo.List(l.Request{Page: 1, PageSize: 2})
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)

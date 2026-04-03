@@ -42,8 +42,8 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// GetImage defines model for GetImage.
-type GetImage struct {
+// Image defines model for Image.
+type Image struct {
 	BoundingBoxes *[]BoundingBox `json:"bounding_boxes,omitempty"`
 
 	// Collection name of collection in which the image belongs
@@ -73,6 +73,12 @@ type Label struct {
 type ListCollectionsResponse struct {
 	Data       *[]Collection `json:"data,omitempty"`
 	Pagination *Pagination   `json:"pagination,omitempty"`
+}
+
+// ListImagesResponse defines model for ListImagesResponse.
+type ListImagesResponse struct {
+	Images     []Image    `json:"images"`
+	Pagination Pagination `json:"pagination"`
 }
 
 // ListLabelsResponse defines model for ListLabelsResponse.
@@ -132,16 +138,16 @@ type NewLabel struct {
 // Pagination defines model for Pagination.
 type Pagination struct {
 	// Page current page number
-	Page *int64 `json:"page,omitempty"`
+	Page int64 `json:"page"`
 
 	// PageSize maximum number of items per page
-	PageSize *int `json:"page_size,omitempty"`
+	PageSize int `json:"page_size"`
 
 	// TotalItems total number of items
-	TotalItems *int64 `json:"total_items,omitempty"`
+	TotalItems int64 `json:"total_items"`
 
 	// TotalPages total number of pages
-	TotalPages *int64 `json:"total_pages,omitempty"`
+	TotalPages int64 `json:"total_pages"`
 }
 
 // ListCollectionsParams defines parameters for ListCollections.
@@ -151,6 +157,18 @@ type ListCollectionsParams struct {
 
 	// PageSize maximum number of collections to return
 	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+}
+
+// ListImagesParams defines parameters for ListImages.
+type ListImagesParams struct {
+	// Page page number
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize maximum number of collections to return
+	PageSize *int `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// Collection name of collection
+	Collection *string `form:"collection,omitempty" json:"collection,omitempty"`
 }
 
 // ListLabelsParams defines parameters for ListLabels.
@@ -164,9 +182,6 @@ type ListLabelsParams struct {
 
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
-
-// ReadImageJSONRequestBody defines body for ReadImage for application/json ContentType.
-type ReadImageJSONRequestBody = GetImage
 
 // IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
 type IngestImageJSONRequestBody = NewImage

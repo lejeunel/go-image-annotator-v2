@@ -5,8 +5,9 @@ import (
 )
 
 type Request struct {
-	PageSize int
-	Page     int64
+	Collection string
+	PageSize   int
+	Page       int64
 }
 
 type CollectionResponse struct {

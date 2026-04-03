@@ -1,13 +1,17 @@
 package read_meta
 
+import (
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+)
+
 type FakePresenter struct {
-	Got            Response
+	Got            im.ImageResponse
 	GotInternalErr bool
 	GotNotFoundErr bool
 	GotSuccess     bool
 }
 
-func (p *FakePresenter) Success(r Response) {
+func (p *FakePresenter) Success(r im.ImageResponse) {
 	p.GotSuccess = true
 	p.Got = r
 }

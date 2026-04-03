@@ -23,10 +23,10 @@ func (p *List) Success(r list.Response) {
 
 	response := models.ListCollectionsResponse{Data: &data,
 		Pagination: &models.Pagination{
-			Page:       &r.Pagination.Page,
-			PageSize:   &r.Pagination.PageSize,
-			TotalItems: &r.Pagination.TotalRecords,
-			TotalPages: &r.Pagination.TotalPages,
+			Page:       r.Pagination.Page,
+			PageSize:   r.Pagination.PageSize,
+			TotalItems: r.Pagination.TotalRecords,
+			TotalPages: r.Pagination.TotalPages,
 		},
 	}
 

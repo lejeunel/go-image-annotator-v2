@@ -9,7 +9,7 @@ import (
 
 func TestRetrieveNonExistingShouldFail(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	createCollection(repo, "a-collection")
+	CreateCollection(repo, "a-collection")
 	_, err := repo.FindCollectionByName("non-existing-collection")
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
@@ -18,7 +18,7 @@ func TestRetrieveNonExistingShouldFail(t *testing.T) {
 
 func TestInternalErrOnFindShouldFail(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	createCollection(repo, "a-collection")
+	CreateCollection(repo, "a-collection")
 	repo.Db.Close()
 	_, err := repo.FindCollectionByName("a-collection")
 	if !errors.Is(err, e.ErrInternal) {
@@ -28,7 +28,7 @@ func TestInternalErrOnFindShouldFail(t *testing.T) {
 
 func TestRetrieve(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	collection, _ := createCollection(repo, "a-collection")
+	collection, _ := CreateCollection(repo, "a-collection")
 	r, err := repo.FindCollectionByName("a-collection")
 	if err != nil {
 		t.Fatalf("expected no error on find, got %v", err)

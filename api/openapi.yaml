@@ -14,26 +14,82 @@ info:
 servers:
   - url: /api
 paths:
-  /images:
+  /images/{collection_name}/{image_id}:
     get:
       summary: Read image meta-data
       description: Read meta-data of an image
       operationId: readImage
       tags: [Image]
-      requestBody:
-        description: Read image specification
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetImage'
+      parameters:
+        - name: collection_name
+          in: path
+          description: Name of collection
+          required: true
+          schema:
+            type: string
+        - name: image_id
+          in: path
+          description: ID of image
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: image meta-data response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImageIngestionResponse'
+                $ref: '#/components/schemas/Image'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /images:
+    get:
+      summary: List images
+      description: Paginate images
+      operationId: listImages
+      tags: [Image]
+      parameters:
+        - name: page
+          in: query
+          description: page number
+          required: false
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          description: maximum number of collections to return
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: collection
+          in: query
+          description: name of collection
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: list image response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListImagesResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         default:
           description: unexpected error
           content:
@@ -54,7 +110,7 @@ paths:
               $ref: '#/components/schemas/NewImage'
       responses:
         '200':
-          description: collection response
+          description: image ingestion response
           content:
             application/json:
               schema:
@@ -63,7 +119,7 @@ paths:
           description: unexpected error
           content:
             application/json:
-              schema:
+            schema:
                 $ref: '#/components/schemas/Error'
   /collections/{name}:
     get:
@@ -300,6 +356,11 @@ paths:
 components:
   schemas:
     Pagination:
+      required:
+        - page
+        - page_size
+        - total_items
+        - total_pages
       type: object
       properties:
         page:
@@ -336,7 +397,19 @@ components:
             $ref: '#/components/schemas/Collection'
         pagination:
           $ref: '#/components/schemas/Pagination'
-    GetImage:
+    ListImagesResponse:
+      type: object
+      required:
+        - images
+        - pagination
+      properties:
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    Image:
       required:
         - id
         - collection

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
@@ -17,7 +18,8 @@ type SQLiteImageRepo struct {
 }
 
 type Row struct {
-	Id im.ImageId `db:"id"`
+	ImageId      im.ImageId       `db:"image_id"`
+	CollectionId clc.CollectionId `db:"collection_id"`
 }
 
 func (r *SQLiteImageRepo) AddImageToCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
@@ -46,6 +48,38 @@ func (r *SQLiteImageRepo) Count(f ist.CountingParams) (*int64, error) {
 	}
 	return &count, nil
 
+}
+
+func (r *SQLiteImageRepo) List(f ist.FilteringParams) (*[]im.BaseImage, error) {
+
+	q := sq.StatementBuilder.Select("image_id,collection_id").From("images_collections")
+	q = q.Limit(uint64(f.PageSize)).Offset((uint64(f.Page-1) * uint64(f.PageSize)))
+
+	if f.Collection != nil {
+		q = q.Where(fmt.Sprintf("collection_id=(SELECT id FROM collections WHERE name='%v')", *f.Collection))
+	}
+
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("building query: %v: %w", err, e.ErrInternal)
+	}
+	records := []Row{}
+	if err := r.Db.Select(&records, sql, args...); err != nil {
+		return nil, fmt.Errorf("applying query: %v: %w", err, e.ErrInternal)
+	}
+
+	objects := []im.BaseImage{}
+	for _, rec := range records {
+		var collectionName string
+		q := "SELECT name FROM collections WHERE id=$1"
+		err := r.Db.QueryRow(q, rec.CollectionId.String()).Scan(&collectionName)
+		if err != nil {
+			return nil, fmt.Errorf("fetching collection name from id %v: %v: %w", rec.CollectionId, err, e.ErrInternal)
+		}
+		objects = append(objects, im.BaseImage{ImageId: rec.ImageId, Collection: collectionName})
+	}
+
+	return &objects, nil
 }
 func (r *SQLiteImageRepo) ImageExistsInCollection(imageId im.ImageId, collectionId clc.CollectionId) (bool, error) {
 	var count int64

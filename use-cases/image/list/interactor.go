@@ -5,6 +5,7 @@ import (
 	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
 )
 
 type Interactor struct {
@@ -39,26 +40,29 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	imageResponses, ok := i.buildResponses(baseImages, out)
+	imageResponses, ok := i.buildResponse(baseImages, out)
 	if !ok {
 		return
 	}
 
-	out.Success(Response{Images: imageResponses,
-		Pagination: Pagination{Page: r.Page, PageSize: r.PageSize, Total: *count, TotalPages: *count / int64(r.PageSize)}})
+	response := Response{Images: *imageResponses,
+		Pagination: pagination.Pagination{Page: r.Page, PageSize: r.PageSize, TotalRecords: *count, TotalPages: *count / int64(r.PageSize)}}
+
+	out.Success(response)
 
 }
 
-func (i *Interactor) buildResponses(baseImages []*im.BaseImage, out OutputPort) ([]*ImageResponse, bool) {
-	images := []*ImageResponse{}
+func (i *Interactor) buildResponse(baseImages []*im.BaseImage, out OutputPort) (*[]im.ImageResponse, bool) {
+	r := []im.ImageResponse{}
 	for _, baseImage := range baseImages {
 		image, err := i.store.Find(*baseImage)
 		if err != nil {
 			out.ErrInternal(err)
 			return nil, false
 		}
-		images = append(images, &ImageResponse{ImageId: image.Id, Collection: image.Collection.Name})
+		r = append(r, im.ImageResponse{Id: image.Id, Collection: image.Collection.Name, Labels: image.Labels,
+			BoundingBoxes: image.BoundingBoxes})
 	}
-	return images, true
+	return &r, true
 
 }

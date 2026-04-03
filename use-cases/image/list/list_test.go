@@ -63,7 +63,7 @@ func TestPaginationMetaData(t *testing.T) {
 	r := Request{Page: 1, PageSize: 2}
 	itr.Execute(r, p)
 	pg := p.Got.Pagination
-	if !(pg.Page == r.Page) || !(pg.PageSize == r.PageSize) || !(pg.Total == 10) || !(pg.TotalPages == 5) {
+	if !(pg.Page == r.Page) || !(pg.PageSize == r.PageSize) || !(pg.TotalRecords == 10) || !(pg.TotalPages == 5) {
 		t.Fatalf("expected pagination meta-data with page 1, page size 2, total 1, and total pages 5, got %+v", pg)
 	}
 }
