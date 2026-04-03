@@ -390,6 +390,8 @@ components:
           description: Description of the collection
     ListCollectionsResponse:
       type: object
+      required:
+        - pagination
       properties:
         data:
           type: array
@@ -522,6 +524,8 @@ components:
           description: Description of the label
     ListLabelsResponse:
       type: object
+      required:
+        - pagination
       properties:
         data:
           type: array

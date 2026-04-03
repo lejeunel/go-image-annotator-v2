@@ -39,7 +39,7 @@ func NewHTTPImageServer(db *sqlx.DB, baseDir string, allowedImageFormats []strin
 		Ingest: *ingest.NewInteractor(imRepo, clRepo, lbRepo, anRepo,
 			artRepo, has.NewSha256Hasher(), ide.NewBase64ImageDecoder(allowedImageFormats)),
 		ReadMeta: *read_meta.NewInteractor(imStore),
-		// List:     *list.NewInteractor(imRepo, imStore),
+		List:     *list.NewInteractor(imRepo, imStore),
 	}
 }
 

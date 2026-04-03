@@ -81,7 +81,7 @@ type Label struct {
 // ListCollectionsResponse defines model for ListCollectionsResponse.
 type ListCollectionsResponse struct {
 	Data       *[]Collection `json:"data,omitempty"`
-	Pagination *Pagination   `json:"pagination,omitempty"`
+	Pagination Pagination    `json:"pagination"`
 }
 
 // ListImagesResponse defines model for ListImagesResponse.
@@ -92,8 +92,8 @@ type ListImagesResponse struct {
 
 // ListLabelsResponse defines model for ListLabelsResponse.
 type ListLabelsResponse struct {
-	Data       *[]Label    `json:"data,omitempty"`
-	Pagination *Pagination `json:"pagination,omitempty"`
+	Data       *[]Label   `json:"data,omitempty"`
+	Pagination Pagination `json:"pagination"`
 }
 
 // NewBoundingBox defines model for NewBoundingBox.

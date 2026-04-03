@@ -22,12 +22,7 @@ func (p *List) Success(r list.Response) {
 	}
 
 	response := models.ListLabelsResponse{Data: &data,
-		Pagination: &models.Pagination{
-			Page:       r.Pagination.Page,
-			PageSize:   r.Pagination.PageSize,
-			TotalItems: r.Pagination.TotalRecords,
-			TotalPages: r.Pagination.TotalPages,
-		},
+		Pagination: json.BuildPaginationResponse(r.Pagination),
 	}
 
 	json.WriteJSON(p.Writer, 200, response)

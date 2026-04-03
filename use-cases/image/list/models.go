@@ -12,6 +12,6 @@ type Request struct {
 }
 
 type Response struct {
-	Images     []im.ImageResponse
+	Images     []im.Response
 	Pagination pagination.Pagination
 }

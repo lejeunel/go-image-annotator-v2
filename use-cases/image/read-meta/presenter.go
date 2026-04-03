@@ -5,13 +5,13 @@ import (
 )
 
 type FakePresenter struct {
-	Got            im.ImageResponse
+	Got            im.Response
 	GotInternalErr bool
 	GotNotFoundErr bool
 	GotSuccess     bool
 }
 
-func (p *FakePresenter) Success(r im.ImageResponse) {
+func (p *FakePresenter) Success(r im.Response) {
 	p.GotSuccess = true
 	p.Got = r
 }

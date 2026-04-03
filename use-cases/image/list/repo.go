@@ -6,7 +6,7 @@ import (
 )
 
 type Repo interface {
-	List(ist.FilteringParams) ([]*im.BaseImage, error)
+	List(ist.FilteringParams) (*[]im.BaseImage, error)
 	Count(ist.CountingParams) (*int64, error)
 }
 
@@ -18,20 +18,20 @@ type FakeRepo struct {
 	ErrOnCount bool
 }
 
-func (r *FakeRepo) List(f ist.FilteringParams) ([]*im.BaseImage, error) {
+func (r *FakeRepo) List(f ist.FilteringParams) (*[]im.BaseImage, error) {
 	if r.ErrOnList {
 		return nil, r.Err
 	}
 
 	r.GotFilters = f
 
-	result := []*im.BaseImage{}
+	result := []im.BaseImage{}
 	collectionName := "a-collection"
 	for range f.PageSize {
-		result = append(result, &im.BaseImage{Collection: collectionName, ImageId: im.NewImageId()})
+		result = append(result, im.BaseImage{Collection: collectionName, ImageId: im.NewImageId()})
 	}
 
-	return result, nil
+	return &result, nil
 
 }
 func (r *FakeRepo) Count(f ist.CountingParams) (*int64, error) {

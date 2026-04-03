@@ -10,7 +10,7 @@ type ReadMeta struct {
 	Writer http.ResponseWriter
 }
 
-func (p *ReadMeta) Success(r im.ImageResponse) {
+func (p *ReadMeta) Success(r im.Response) {
 	response := BuildImageResponse(r)
 	json.WriteJSON(p.Writer, 200, response)
 

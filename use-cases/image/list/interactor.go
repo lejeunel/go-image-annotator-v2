@@ -40,7 +40,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	imageResponses, ok := i.buildResponse(baseImages, out)
+	imageResponses, ok := i.buildResponse(*baseImages, out)
 	if !ok {
 		return
 	}
@@ -52,15 +52,15 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 }
 
-func (i *Interactor) buildResponse(baseImages []*im.BaseImage, out OutputPort) (*[]im.ImageResponse, bool) {
-	r := []im.ImageResponse{}
+func (i *Interactor) buildResponse(baseImages []im.BaseImage, out OutputPort) (*[]im.Response, bool) {
+	r := []im.Response{}
 	for _, baseImage := range baseImages {
-		image, err := i.store.Find(*baseImage)
+		image, err := i.store.Find(baseImage)
 		if err != nil {
 			out.ErrInternal(err)
 			return nil, false
 		}
-		r = append(r, im.ImageResponse{Id: image.Id, Collection: image.Collection.Name, Labels: image.Labels,
+		r = append(r, im.Response{Id: image.Id, Collection: image.Collection.Name, Labels: image.Labels,
 			BoundingBoxes: image.BoundingBoxes})
 	}
 	return &r, true

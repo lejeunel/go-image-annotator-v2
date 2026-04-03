@@ -5,7 +5,7 @@ import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 )
 
-func BuildImageResponse(image im.ImageResponse) models.Image {
+func BuildImageResponse(image im.Response) models.Image {
 	response := models.Image{
 		Id:         image.Id.String(),
 		Collection: image.Collection,

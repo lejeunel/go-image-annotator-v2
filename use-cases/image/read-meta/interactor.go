@@ -28,7 +28,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	out.Success(im.ImageResponse{
+	out.Success(im.Response{
 		Id:            image.Id,
 		Collection:    image.Collection.Name,
 		Labels:        image.Labels,

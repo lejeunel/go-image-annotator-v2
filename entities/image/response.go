@@ -4,7 +4,7 @@ import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 )
 
-type ImageResponse struct {
+type Response struct {
 	Id            ImageId
 	Collection    string
 	Labels        []*a.ImageLabel

@@ -5,7 +5,7 @@ import (
 )
 
 type OutputPort interface {
-	Success(im.ImageResponse)
+	Success(im.Response)
 	ErrNotFound(error)
 	ErrInternal(error)
 }

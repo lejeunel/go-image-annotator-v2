@@ -13,21 +13,12 @@ type List struct {
 
 func (p *List) Success(r list.Response) {
 	response := models.ListImagesResponse{
-		Pagination: models.Pagination{
-			Page:       r.Pagination.Page,
-			PageSize:   r.Pagination.PageSize,
-			TotalItems: r.Pagination.TotalRecords,
-			TotalPages: r.Pagination.TotalPages,
-		},
+		Pagination: json.BuildPaginationResponse(r.Pagination),
 	}
-
-	responseImages := []models.Image{}
 
 	for _, image := range r.Images {
-		responseImages = append(responseImages, BuildImageResponse(image))
+		response.Images = append(response.Images, BuildImageResponse(image))
 	}
-
-	response.Images = responseImages
 
 	json.WriteJSON(p.Writer, 200, response)
 
