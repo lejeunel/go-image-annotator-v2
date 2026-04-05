@@ -1,8 +1,10 @@
 package create
 
 import (
-	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	"slices"
+
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -28,24 +30,12 @@ func (r *FakeRepo) Exists(name string) (bool, error) {
 }
 
 type FakePresenter struct {
-	Got               Response
-	GotSuccess        bool
-	GotDuplicationErr bool
-	GotInternalErr    bool
-	GotValidationErr  bool
+	Got        Response
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
-}
-func (p *FakePresenter) ErrDuplication(error) {
-	p.GotDuplicationErr = true
-}
-func (p *FakePresenter) ErrValidation(error) {
-	p.GotValidationErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
 }

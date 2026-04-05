@@ -36,7 +36,7 @@ func NewHTTPCollectionServer(db *sqlx.DB) *CollectionServer {
 
 func (s *Server) FindCollectionByName(w http.ResponseWriter, r *http.Request, name string) {
 
-	s.Collection.Find.Execute(read.Request{Name: name}, &presenter.Find{Writer: w})
+	s.Collection.Find.Execute(read.Request{Name: name}, presenter.NewFindPresenter(w))
 }
 func (s *Server) CreateCollection(w http.ResponseWriter, r *http.Request) {
 	body, ok := json.DecodeJSONOrFail[models.NewCollection](w, r)
@@ -45,10 +45,10 @@ func (s *Server) CreateCollection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.Collection.Create.Execute(create.Request{Name: body.Name, Description: *body.Description},
-		&presenter.Create{Writer: w})
+		presenter.NewCreatePresenter(w))
 }
 func (s *Server) DeleteCollectionByName(w http.ResponseWriter, r *http.Request, name string) {
-	s.Collection.Delete.Execute(delete.Request{Name: name}, &presenter.Delete{Writer: w})
+	s.Collection.Delete.Execute(delete.Request{Name: name}, presenter.NewDeletePresenter(w))
 
 }
 func (s *Server) ListCollections(w http.ResponseWriter, r *http.Request, params ListCollectionsParams) {
@@ -59,6 +59,6 @@ func (s *Server) ListCollections(w http.ResponseWriter, r *http.Request, params 
 	if p := params.PageSize; p != nil {
 		req.PageSize = *p
 	}
-	s.Collection.List.Execute(req, &presenter.List{Writer: w})
+	s.Collection.List.Execute(req, presenter.NewListPresenter(w))
 
 }

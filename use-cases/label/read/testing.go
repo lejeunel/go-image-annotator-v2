@@ -3,6 +3,7 @@ package read
 import (
 	l "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -23,21 +24,12 @@ func (r *FakeRepo) FindLabelByName(name string) (*l.Label, error) {
 }
 
 type FakePresenter struct {
-	Got            Response
-	GotNotFoundErr bool
-	GotInternalErr bool
-	GotSuccess     bool
+	Got        Response
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
 }

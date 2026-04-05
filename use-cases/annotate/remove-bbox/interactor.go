@@ -1,10 +1,8 @@
 package remove_bbox
 
 import (
-	"errors"
 	"fmt"
 
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
@@ -22,14 +20,8 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	if err := i.repo.RemoveAnnotation(r.Id); err != nil {
 		err = fmt.Errorf("%v: %w", errCtx, err)
 		i.logger.Error(errCtx, "error", err)
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-			return
-		default:
-			out.ErrInternal(err)
-			return
-		}
+		out.Error(err)
+		return
 	}
 
 	out.Success(Response{})

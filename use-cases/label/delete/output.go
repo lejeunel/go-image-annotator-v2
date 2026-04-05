@@ -1,8 +1,6 @@
 package delete
 
 type OutputPort interface {
-	ErrNotFound(error)
-	ErrDependency(error)
-	ErrInternal(error)
+	Error(error)
 	Success()
 }

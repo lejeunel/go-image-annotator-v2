@@ -39,7 +39,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "listing label"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-	out.ErrInternal(err)
+	out.Error(err)
 }
 
 func NewInteractor(r Repo) *Interactor {

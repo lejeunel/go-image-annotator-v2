@@ -3,6 +3,7 @@ package modify_bbox
 import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -29,24 +30,10 @@ func (r *FakeRepo) FindLabelByName(name string) (*lbl.Label, error) {
 }
 
 type FakePresenter struct {
-	GotNotFoundErr   bool
-	GotInternalErr   bool
-	GotValidationErr bool
-	GotSuccess       bool
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(Response) {
 	p.GotSuccess = true
-}
-
-func (p *FakePresenter) ErrValidation(error) {
-	p.GotValidationErr = true
 }

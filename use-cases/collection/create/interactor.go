@@ -1,7 +1,6 @@
 package create
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -68,15 +67,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "creating collection"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrValidation):
-		out.ErrValidation(err)
-	case errors.Is(err, e.ErrDuplicate):
-		out.ErrDuplication(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 
 func NewInteractor(r CreateRepo, v v.Validator) *Interactor {

@@ -2,6 +2,7 @@ package remove_bbox
 
 import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -18,17 +19,8 @@ func (r *FakeRepo) RemoveAnnotation(annotationId a.AnnotationId) error {
 }
 
 type FakePresenter struct {
-	GotNotFoundErr bool
-	GotInternalErr bool
-	GotSuccess     bool
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(Response) {

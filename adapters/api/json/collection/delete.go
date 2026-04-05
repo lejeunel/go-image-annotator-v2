@@ -7,21 +7,14 @@ import (
 
 type Delete struct {
 	Writer http.ResponseWriter
+	json.ErrorPresenter
 }
 
-func (p *Delete) Success() {
+func (p Delete) Success() {
 	p.Writer.WriteHeader(http.StatusNoContent)
 
 }
 
-func (p *Delete) ErrNotFound(err error) {
-	json.WriteError(p.Writer, http.StatusNotFound, err.Error())
-}
-
-func (p *Delete) ErrDependency(err error) {
-	json.WriteError(p.Writer, http.StatusFailedDependency, err.Error())
-}
-
-func (p *Delete) ErrInternal(err error) {
-	json.WriteError(p.Writer, http.StatusInternalServerError, err.Error())
+func NewDeletePresenter(w http.ResponseWriter) Delete {
+	return Delete{Writer: w, ErrorPresenter: json.ErrorPresenter{Writer: w}}
 }

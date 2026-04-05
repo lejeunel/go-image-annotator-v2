@@ -9,9 +9,10 @@ import (
 
 type Find struct {
 	Writer http.ResponseWriter
+	json.ErrorPresenter
 }
 
-func (p *Find) Success(r read.Response) {
+func (p Find) Success(r read.Response) {
 	response := models.Collection{
 		Name:        &r.Name,
 		Description: &r.Description,
@@ -21,10 +22,6 @@ func (p *Find) Success(r read.Response) {
 
 }
 
-func (p *Find) ErrNotFound(err error) {
-	json.WriteError(p.Writer, http.StatusNotFound, err.Error())
-}
-
-func (p *Find) ErrInternal(err error) {
-	json.WriteError(p.Writer, http.StatusInternalServerError, err.Error())
+func NewFindPresenter(w http.ResponseWriter) Find {
+	return Find{Writer: w, ErrorPresenter: json.ErrorPresenter{Writer: w}}
 }

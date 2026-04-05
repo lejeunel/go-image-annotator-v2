@@ -1,11 +1,9 @@
 package list
 
 import (
-	"errors"
 	"fmt"
 	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
 	"log/slog"
@@ -70,11 +68,5 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "listing images"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }

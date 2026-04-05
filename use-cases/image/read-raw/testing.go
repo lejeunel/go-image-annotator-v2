@@ -2,6 +2,7 @@ package read_raw
 
 import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -17,18 +18,9 @@ func (r *FakeRepo) Get(id im.ImageId) ([]byte, error) {
 }
 
 type FakePresenter struct {
-	Got            Response
-	GotNotFoundErr bool
-	GotSuccess     bool
-	GotInternalErr bool
-}
-
-func (p *FakePresenter) ErrNotFound(err error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(err error) {
-	p.GotInternalErr = true
+	Got        Response
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(r Response) {

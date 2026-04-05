@@ -4,6 +4,7 @@ import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -29,17 +30,8 @@ func (r *FakeRepo) RemoveAnnotation(imageId im.ImageId, collectionId clc.Collect
 }
 
 type FakePresenter struct {
-	GotNotFoundErr bool
-	GotInternalErr bool
-	GotSuccess     bool
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(Response) {

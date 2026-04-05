@@ -1,7 +1,6 @@
 package update
 
 import (
-	"errors"
 	"fmt"
 
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
@@ -31,7 +30,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	}
 
 	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
-		out.ErrInternal(err)
+		i.handleError(err, out)
 		return
 	}
 
@@ -64,13 +63,5 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "updating label"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	case errors.Is(err, e.ErrDuplicate):
-		out.ErrDuplication(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }

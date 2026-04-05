@@ -2,7 +2,9 @@ package json
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/models"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
 	"net/http"
 )
@@ -50,4 +52,27 @@ func DecodeJSONOrFail[T any](w http.ResponseWriter, r *http.Request) (*T, bool) 
 	}
 	return body, true
 
+}
+
+func HTTPStatusCodeFromErr(err error) int {
+	switch {
+	case errors.Is(err, e.ErrDuplicate):
+		return http.StatusConflict
+	case errors.Is(err, e.ErrValidation):
+		return http.StatusBadRequest
+	case errors.Is(err, e.ErrDependency):
+		return http.StatusFailedDependency
+	case errors.Is(err, e.ErrNotFound):
+		return http.StatusNotFound
+	default:
+		return http.StatusInternalServerError
+	}
+}
+
+type ErrorPresenter struct {
+	Writer http.ResponseWriter
+}
+
+func (p ErrorPresenter) Error(err error) {
+	WriteError(p.Writer, HTTPStatusCodeFromErr(err), err.Error())
 }

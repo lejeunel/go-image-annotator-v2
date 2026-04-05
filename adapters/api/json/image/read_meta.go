@@ -8,18 +8,15 @@ import (
 
 type ReadMeta struct {
 	Writer http.ResponseWriter
+	json.ErrorPresenter
 }
 
-func (p *ReadMeta) Success(r im.Response) {
+func (p ReadMeta) Success(r im.Response) {
 	response := BuildImageResponse(r)
 	json.WriteJSON(p.Writer, 200, response)
 
 }
 
-func (p *ReadMeta) ErrInternal(err error) {
-	json.WriteError(p.Writer, http.StatusInternalServerError, err.Error())
-}
-
-func (p *ReadMeta) ErrNotFound(err error) {
-	json.WriteError(p.Writer, http.StatusBadRequest, err.Error())
+func NewReadMetaPresenter(w http.ResponseWriter) ReadMeta {
+	return ReadMeta{Writer: w, ErrorPresenter: json.ErrorPresenter{Writer: w}}
 }

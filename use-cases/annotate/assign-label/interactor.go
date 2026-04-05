@@ -1,14 +1,12 @@
 package assign_label
 
 import (
-	"errors"
 	"fmt"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
@@ -43,15 +41,8 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "assigning label to image"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
+	out.Error(err)
 
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	case errors.Is(err, e.ErrDependency):
-		out.ErrDependency(err)
-	default:
-		out.ErrInternal(err)
-	}
 }
 func (i *Interactor) findLabel(name string) (*lbl.Label, error) {
 	label, err := i.repo.FindLabel(name)

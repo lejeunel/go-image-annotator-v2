@@ -1,14 +1,12 @@
 package add_bbox
 
 import (
-	"errors"
 	"fmt"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
@@ -53,15 +51,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "adding bounding box"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	case errors.Is(err, e.ErrValidation):
-		out.ErrValidation(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 func (i *Interactor) addBox(image *im.Image, box a.BoundingBox) error {
 	if err := i.repo.AddBoundingBox(image.Id, image.Collection.Id, box); err != nil {

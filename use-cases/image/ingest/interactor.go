@@ -79,17 +79,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "ingesting image"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	case errors.Is(err, e.ErrDuplicate):
-		out.ErrDuplication(err)
-	case errors.Is(err, e.ErrValidation):
-		out.ErrValidation(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 func (i *Interactor) ingestRawData(id im.ImageId, data []byte, hash string) error {
 

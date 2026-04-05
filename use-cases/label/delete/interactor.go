@@ -1,7 +1,6 @@
 package delete
 
 import (
-	"errors"
 	"fmt"
 
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
@@ -59,15 +58,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "creating label"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	case errors.Is(err, e.ErrDependency):
-		out.ErrDependency(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 
 func NewInteractor(r Repo) *Interactor {

@@ -1,9 +1,7 @@
 package read
 
 import (
-	"errors"
 	"fmt"
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
@@ -20,13 +18,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	if err != nil {
 		err = fmt.Errorf("%v: %w", errCtx, err)
 		i.logger.Error(errCtx, "error", err)
-
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-		default:
-			out.ErrInternal(err)
-		}
+		out.Error(err)
 		return
 	}
 

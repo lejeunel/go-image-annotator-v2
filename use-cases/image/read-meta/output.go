@@ -6,6 +6,5 @@ import (
 
 type OutputPort interface {
 	Success(im.Response)
-	ErrNotFound(error)
-	ErrInternal(error)
+	Error(error)
 }

@@ -5,6 +5,7 @@ import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -42,26 +43,12 @@ func (r *FakeRepo) AddImageLabel(imageId im.ImageId, collectionId clc.Collection
 }
 
 type FakePresenter struct {
-	Got              Response
-	GotSuccess       bool
-	GotNotFoundErr   bool
-	GotInternalErr   bool
-	GotDependencyErr bool
+	Got        Response
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(r Response) {
 	p.Got = r
 	p.GotSuccess = true
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
-}
-
-func (p *FakePresenter) ErrDependency(error) {
-	p.GotDependencyErr = true
 }

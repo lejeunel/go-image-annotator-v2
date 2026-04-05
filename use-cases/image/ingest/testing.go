@@ -6,6 +6,7 @@ import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeHasher struct {
@@ -18,32 +19,14 @@ func (h *FakeHasher) Hash([]byte) string {
 }
 
 type FakePresenter struct {
-	Got               *Response
-	GotSuccess        bool
-	GotNotFoundErr    bool
-	GotDuplicateImage bool
-	GotInternalErr    bool
-	GotValidationErr  bool
+	Got        *Response
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(r Response) {
 	p.Got = &r
 	p.GotSuccess = true
-}
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
-}
-
-func (p *FakePresenter) ErrValidation(error) {
-	p.GotValidationErr = true
-}
-
-func (p *FakePresenter) ErrDuplication(error) {
-	p.GotDuplicateImage = true
 }
 
 type FakeCollectionRepo struct {

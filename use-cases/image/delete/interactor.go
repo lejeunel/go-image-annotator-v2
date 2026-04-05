@@ -1,12 +1,10 @@
 package delete
 
 import (
-	"errors"
 	"fmt"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
@@ -51,13 +49,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "deleting image"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 
 func (i *Interactor) deleteBoundingBoxes(image im.Image) error {

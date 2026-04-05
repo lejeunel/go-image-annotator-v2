@@ -37,7 +37,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "listing images"
 	err = fmt.Errorf("%v: %w: %w", errCtx, err, e.ErrInternal)
 	i.logger.Error(errCtx, "error", err)
-	out.ErrInternal(err)
+	out.Error(err)
 }
 
 func NewInteractor(r Repo) *Interactor {

@@ -1,7 +1,6 @@
 package unassign_label
 
 import (
-	"errors"
 	"fmt"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
@@ -67,15 +66,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "deleting image label"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrDependency):
-		out.ErrDependency(err)
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 
 func NewInteractor(repo Repo, store st.ImageStore) *Interactor {

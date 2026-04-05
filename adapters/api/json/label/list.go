@@ -9,9 +9,10 @@ import (
 
 type List struct {
 	Writer http.ResponseWriter
+	json.ErrorPresenter
 }
 
-func (p *List) Success(r list.Response) {
+func (p List) Success(r list.Response) {
 	data := []models.Label{}
 	for _, label := range r.Labels {
 		data = append(data,
@@ -29,10 +30,6 @@ func (p *List) Success(r list.Response) {
 
 }
 
-func (p *List) ErrNotFound(err error) {
-	json.WriteError(p.Writer, http.StatusNotFound, err.Error())
-}
-
-func (p *List) ErrInternal(err error) {
-	json.WriteError(p.Writer, http.StatusInternalServerError, err.Error())
+func NewListPresenter(w http.ResponseWriter) List {
+	return List{Writer: w, ErrorPresenter: json.ErrorPresenter{Writer: w}}
 }

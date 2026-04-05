@@ -3,6 +3,7 @@ package list
 import (
 	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
 )
 
 type FakeRepo struct {
@@ -38,21 +39,12 @@ func (r *FakeRepo) Count(f ist.CountingParams) (*int64, error) {
 }
 
 type FakePresenter struct {
-	Got            Response
-	GotInternalErr bool
-	GotNotFoundErr bool
-	GotSuccess     bool
+	Got        Response
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success(r Response) {
 	p.GotSuccess = true
 	p.Got = r
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
 }

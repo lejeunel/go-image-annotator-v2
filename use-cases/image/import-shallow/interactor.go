@@ -1,7 +1,6 @@
 package import_shallow
 
 import (
-	"errors"
 	"fmt"
 
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
@@ -85,13 +84,5 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "deleting image"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(err)
-	case errors.Is(err, e.ErrDependency):
-		out.ErrDependency(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }

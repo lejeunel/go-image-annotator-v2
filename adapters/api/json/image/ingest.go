@@ -9,9 +9,10 @@ import (
 
 type Ingest struct {
 	Writer http.ResponseWriter
+	json.ErrorPresenter
 }
 
-func (p *Ingest) Success(r ingest.Response) {
+func (p Ingest) Success(r ingest.Response) {
 	id := r.ImageId.String()
 	response := models.ImageIngestionResponse{
 		Id: &id,
@@ -21,18 +22,6 @@ func (p *Ingest) Success(r ingest.Response) {
 
 }
 
-func (p *Ingest) ErrInternal(err error) {
-	json.WriteError(p.Writer, http.StatusInternalServerError, err.Error())
-}
-
-func (p *Ingest) ErrDuplication(err error) {
-	json.WriteError(p.Writer, http.StatusConflict, err.Error())
-}
-
-func (p *Ingest) ErrValidation(err error) {
-	json.WriteError(p.Writer, http.StatusBadRequest, err.Error())
-}
-
-func (p *Ingest) ErrNotFound(err error) {
-	json.WriteError(p.Writer, http.StatusBadRequest, err.Error())
+func NewIngestPresenter(w http.ResponseWriter) Ingest {
+	return Ingest{Writer: w, ErrorPresenter: json.ErrorPresenter{Writer: w}}
 }

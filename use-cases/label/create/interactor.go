@@ -1,7 +1,6 @@
 package create
 
 import (
-	"errors"
 	"fmt"
 
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
@@ -38,15 +37,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "creating label"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
-
-	switch {
-	case errors.Is(err, e.ErrValidation):
-		out.ErrValidation(err)
-	case errors.Is(err, e.ErrDuplicate):
-		out.ErrDuplication(err)
-	default:
-		out.ErrInternal(err)
-	}
+	out.Error(err)
 }
 
 func (i *Interactor) checkDuplicate(name string) error {

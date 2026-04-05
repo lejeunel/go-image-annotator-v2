@@ -1,5 +1,9 @@
 package delete
 
+import (
+	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
+)
+
 type FakeRepo struct {
 	Err         error
 	IsUsed_     bool
@@ -42,22 +46,8 @@ func (r *FakeRepo) Exists(n string) (bool, error) {
 }
 
 type FakePresenter struct {
-	GotDependencyErr bool
-	GotInternalErr   bool
-	GotNotFoundErr   bool
-	GotSuccess       bool
-}
-
-func (p *FakePresenter) ErrDependency(error) {
-	p.GotDependencyErr = true
-}
-
-func (p *FakePresenter) ErrInternal(error) {
-	p.GotInternalErr = true
-}
-
-func (p *FakePresenter) ErrNotFound(error) {
-	p.GotNotFoundErr = true
+	GotSuccess bool
+	t.TestingErrPresenter
 }
 
 func (p *FakePresenter) Success() {

@@ -35,8 +35,7 @@ func NewHTTPLabelServer(db *sqlx.DB) *LabelServer {
 }
 
 func (s *Server) FindLabelByName(w http.ResponseWriter, r *http.Request, name string) {
-
-	s.Label.Find.Execute(read.Request{Name: name}, &presenter.Find{Writer: w})
+	s.Label.Find.Execute(read.Request{Name: name}, presenter.NewFindPresenter(w))
 }
 func (s *Server) CreateLabel(w http.ResponseWriter, r *http.Request) {
 	body, ok := json.DecodeJSONOrFail[models.NewLabel](w, r)
@@ -48,8 +47,7 @@ func (s *Server) CreateLabel(w http.ResponseWriter, r *http.Request) {
 		&presenter.Create{Writer: w})
 }
 func (s *Server) DeleteLabelByName(w http.ResponseWriter, r *http.Request, name string) {
-	s.Label.Delete.Execute(delete.Request{Name: name}, &presenter.Delete{Writer: w})
-
+	s.Label.Delete.Execute(delete.Request{Name: name}, presenter.NewDeletePresenter(w))
 }
 func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request, params ListLabelsParams) {
 	req := list.Request{Page: 1, PageSize: s.Label.DefaultPageSize}
@@ -59,6 +57,6 @@ func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request, params ListL
 	if p := params.PageSize; p != nil {
 		req.PageSize = *p
 	}
-	s.Label.List.Execute(req, &presenter.List{Writer: w})
+	s.Label.List.Execute(req, presenter.NewListPresenter(w))
 
 }

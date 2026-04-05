@@ -50,7 +50,7 @@ func (s *Server) IngestImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.Image.Ingest.Execute(NewIngestImageRequest(*body),
-		&presenter.Ingest{Writer: w})
+		presenter.NewIngestPresenter(w))
 }
 
 func (s *Server) ReadImage(w http.ResponseWriter, r *http.Request, collectionName, imageId string) {
@@ -59,7 +59,7 @@ func (s *Server) ReadImage(w http.ResponseWriter, r *http.Request, collectionNam
 		json.WriteError(w, http.StatusBadRequest, fmt.Errorf("parsing UUID from string: %w", err).Error())
 	}
 	s.Image.ReadMeta.Execute(read_meta.Request{ImageId: id, Collection: collectionName},
-		&presenter.ReadMeta{Writer: w})
+		presenter.NewReadMetaPresenter(w))
 }
 
 func (s *Server) ListImages(w http.ResponseWriter, r *http.Request, params ListImagesParams) {
@@ -70,7 +70,7 @@ func (s *Server) ListImages(w http.ResponseWriter, r *http.Request, params ListI
 	if p := params.PageSize; p != nil {
 		req.PageSize = *p
 	}
-	s.Image.List.Execute(req, &presenter.List{Writer: w})
+	s.Image.List.Execute(req, presenter.NewListPresenter(w))
 }
 
 func NewIngestImageRequest(req models.NewImage) ingest.Request {

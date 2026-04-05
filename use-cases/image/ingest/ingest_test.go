@@ -100,7 +100,7 @@ func TestAddImageDuplicateHashShouldFail(t *testing.T) {
 		&FakeCollectionRepo{}, &FakeLabelRepo{},
 		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{}, &FakeHasher{}, &FakeImageDecoder{})
 	itr.Execute(Request{}, p)
-	if !p.GotDuplicateImage || p.GotSuccess {
+	if !p.GotDuplicationErr || p.GotSuccess {
 		t.Fatal("expected validation error")
 	}
 }
