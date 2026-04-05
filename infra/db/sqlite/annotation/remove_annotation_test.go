@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestInternalErrOnRemoveImageLabelShouldFail(t *testing.T) {
+func TestInternalErrOnRemoveAnnotationShouldFail(t *testing.T) {
 	repos := NewAnnotationTestRepos()
 	image, collection, label := CreateAnnotableImage(repos, "a-collection", "a-label")
 	annotationId := a.NewAnnotationId()
@@ -27,5 +27,29 @@ func TestRemoveAnnotation(t *testing.T) {
 	err := repos.Annotation.RemoveAnnotation(annotationId)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
+	}
+}
+
+func TestInternalErrOnRemoveImageLabelShouldFail(t *testing.T) {
+	repos := NewAnnotationTestRepos()
+	image, collection, label := CreateAnnotableImage(repos, "a-collection", "a-label")
+	repos.Annotation.Db.Close()
+	err := repos.Annotation.RemoveImageLabel(image.Id, collection.Id, label.Id)
+	if !errors.Is(err, e.ErrInternal) {
+		t.Fatalf("expected internal error, got %v", err)
+	}
+}
+
+func TestRemoveImageLabel(t *testing.T) {
+	repos := NewAnnotationTestRepos()
+	image, collection, label := CreateAnnotableImage(repos, "a-collection", "a-label")
+	repos.Annotation.AddImageLabel(a.NewAnnotationId(), image.Id, collection.Id, label.Id)
+	err := repos.Annotation.RemoveImageLabel(image.Id, collection.Id, label.Id)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	labels, _ := repos.Annotation.FindImageLabels(image.Id, collection.Id)
+	if len(labels) != 0 {
+		t.Fatalf("expected zero image labels, got %v", len(labels))
 	}
 }

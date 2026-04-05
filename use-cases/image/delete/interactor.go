@@ -7,87 +7,87 @@ import (
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
-	store st.ImageStore
-	repo  Repo
+	store  st.ImageStore
+	repo   Repo
+	logger *slog.Logger
 }
 
 func NewInteractor(store st.ImageStore, repo Repo) *Interactor {
-	return &Interactor{store: store, repo: repo}
+	return &Interactor{store: store, repo: repo, logger: logging.NewNoOpLogger()}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	image, ok := i.findImage(r.ImageId, r.Collection, out)
-	if !ok {
+	image, err := i.findImage(r.ImageId, r.Collection)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	if ok := i.deleteLabels(*image, out); !ok {
+	if err := i.deleteLabels(*image); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	if ok := i.deleteBoundingBoxes(*image, out); !ok {
+	if err := i.deleteBoundingBoxes(*image); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	if err := i.repo.RemoveImageFromCollection(image.Id, image.Collection.Id); err != nil {
-		out.ErrInternal(fmt.Errorf("removing image %v from collection %v: %w",
-			image.Id, image.Collection.Name, e.ErrInternal))
+		i.handleError(err, out)
 		return
 
 	}
 
 	out.Success(Response{})
 }
-func (i *Interactor) deleteBoundingBoxes(image im.Image, out OutputPort) bool {
-	errCtx := fmt.Sprintf("deleting bounding boxes assigned to image %v", image.Id.String())
-	for _, box := range image.BoundingBoxes {
-		if err := i.repo.RemoveAnnotation(image.Id, image.Collection.Id, box.Id); err != nil {
-			switch {
-			case errors.Is(err, e.ErrNotFound):
-				out.ErrNotFound(fmt.Errorf("%v: deleting box with label %v: %w", errCtx, box.Label.Name, err))
-				return false
-			default:
-				out.ErrInternal(fmt.Errorf("%v: deleting box with label %v: %w", errCtx, box.Label.Name, e.ErrInternal))
-				return false
-			}
-		}
-	}
-	return true
 
-}
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "deleting image"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
 
-func (i *Interactor) deleteLabels(image im.Image, out OutputPort) bool {
-	errCtx := fmt.Sprintf("deleting labels assigned to image %v", image.Id.String())
-	for _, label := range image.Labels {
-		if err := i.repo.RemoveAnnotation(image.Id, image.Collection.Id, label.Id); err != nil {
-			switch {
-			case errors.Is(err, e.ErrNotFound):
-				out.ErrNotFound(fmt.Errorf("%v: deleting label %v: %w", errCtx, label.Label.Name, err))
-				return false
-			default:
-				out.ErrInternal(fmt.Errorf("%v: deleting label %v: %w", errCtx, label.Label.Name, e.ErrInternal))
-				return false
-			}
-		}
-	}
-	return true
-
-}
-
-func (i *Interactor) findImage(imageId im.ImageId, collection string, out OutputPort) (*im.Image, bool) {
-	errCtx := "deleting image: fetching associated resources"
-	image, err := i.store.Find(im.BaseImage{ImageId: imageId, Collection: collection})
 	switch {
 	case errors.Is(err, e.ErrNotFound):
-		out.ErrNotFound(fmt.Errorf("%v: %w", errCtx, err))
-		return nil, false
-	case errors.Is(err, e.ErrInternal):
-		out.ErrInternal(fmt.Errorf("%v: %w", errCtx, e.ErrInternal))
-		return nil, false
+		out.ErrNotFound(err)
+	default:
+		out.ErrInternal(err)
 	}
-	return image, true
+}
+
+func (i *Interactor) deleteBoundingBoxes(image im.Image) error {
+	baseErr := fmt.Errorf("deleting bounding box annotations")
+	for _, box := range image.BoundingBoxes {
+		if err := i.repo.RemoveAnnotation(image.Id, image.Collection.Id, box.Id); err != nil {
+			return fmt.Errorf("%w: %w", baseErr, err)
+		}
+	}
+	return nil
+
+}
+
+func (i *Interactor) deleteLabels(image im.Image) error {
+	baseErr := fmt.Errorf("deleting image labels")
+	for _, label := range image.Labels {
+		if err := i.repo.RemoveAnnotation(image.Id, image.Collection.Id, label.Id); err != nil {
+			return fmt.Errorf("%w: %w", baseErr, err)
+		}
+	}
+	return nil
+
+}
+
+func (i *Interactor) findImage(imageId im.ImageId, collection string) (*im.Image, error) {
+	baseErr := fmt.Errorf("fetching associated resources")
+	image, err := i.store.Find(im.BaseImage{ImageId: imageId, Collection: collection})
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", baseErr, err)
+	}
+	return image, nil
 
 }

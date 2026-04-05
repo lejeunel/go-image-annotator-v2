@@ -1,11 +1,11 @@
 # ====== CONFIG ======
 MODULE := github.com/lejeunel/go-image-annotator-v2
-SPEC := api/openapi.yaml
+SPEC := adapters/api/openapi.yaml
 
 OAPI := oapi-codegen
 
-MODELS_PKG := api/models
-SERVER_PKG := api/server
+MODELS_PKG := adapters/api/models
+SERVER_PKG := adapters/api/server
 
 MODELS_OUT := $(MODELS_PKG)/models.gen.go
 SERVER_OUT := $(SERVER_PKG)/server.gen.go

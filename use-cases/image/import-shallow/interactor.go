@@ -2,82 +2,96 @@ package import_shallow
 
 import (
 	"errors"
+	"fmt"
 
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
-	repo Repo
+	repo   Repo
+	logger *slog.Logger
 }
 
 func NewInteractor(repo Repo) *Interactor {
-	return &Interactor{repo: repo}
+	return &Interactor{repo: repo, logger: logging.NewNoOpLogger()}
 }
 func (i *Interactor) Execute(r Request, out OutputPort) {
 
-	if ok := i.sourceImageExists(r.ImageId, out); !ok {
+	if err := i.ensureSourceImageExists(r.ImageId); err != nil {
+		i.handleError(err, out)
 		return
 	}
-	collection, ok := i.findDestinationCollection(r.Collection, out)
-	if !ok {
+	collection, err := i.findDestinationCollection(r.Collection)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	if ok := i.imageDoesNotAlreadyExistInCollection(r.ImageId, collection.Id, out); !ok {
+	if err := i.ensureImageDoesNotAlreadyExistInCollection(r.ImageId, collection.Id); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	if err := i.repo.AddImageToCollection(r.ImageId, collection.Id); err != nil {
-		out.ErrInternal(err)
+		i.handleError(err, out)
 		return
 	}
 
 	out.Success(Response{})
 
 }
-func (i *Interactor) imageDoesNotAlreadyExistInCollection(imageId im.ImageId, collectionId clc.CollectionId, out OutputPort) bool {
+func (i *Interactor) ensureImageDoesNotAlreadyExistInCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
 
+	baseErr := fmt.Errorf("ensuring that source image does not already exist in destination collection")
 	alreadyExists, err := i.repo.ImageExistsInCollection(imageId, collectionId)
 	if err != nil {
-		out.ErrInternal(err)
-		return false
+		return fmt.Errorf("%w: %w", baseErr, err)
 	}
 	if alreadyExists {
-		out.ErrDependency(e.ErrDependency)
-		return false
+		return fmt.Errorf("%w: %w", baseErr, e.ErrDependency)
 	}
-	return true
+	return nil
 }
 
-func (i *Interactor) sourceImageExists(id im.ImageId, out OutputPort) bool {
+func (i *Interactor) ensureSourceImageExists(id im.ImageId) error {
+	baseErr := fmt.Errorf("ensuring that source image exists")
 	exists, err := i.repo.ImageExists(id)
 	if err != nil {
-		out.ErrInternal(err)
-		return false
+		return fmt.Errorf("%w: %w", baseErr, err)
 	}
 	if !exists {
-		out.ErrNotFound(e.ErrNotFound)
-		return false
+		return fmt.Errorf("%w: %w", baseErr, e.ErrNotFound)
 	}
-	return true
+	return nil
 
 }
 
-func (i *Interactor) findDestinationCollection(name string, out OutputPort) (*clc.Collection, bool) {
+func (i *Interactor) findDestinationCollection(name string) (*clc.Collection, error) {
 
+	baseErr := fmt.Errorf("fetching destination collection")
 	collection, err := i.repo.FindCollectionByName(name)
 	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-			return nil, false
-		default:
-			out.ErrInternal(err)
-			return nil, false
-		}
+		return nil, fmt.Errorf("%w: %w", baseErr, err)
 	}
-	return collection, true
+	return collection, nil
 
+}
+
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "deleting image"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+
+	switch {
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	case errors.Is(err, e.ErrDependency):
+		out.ErrDependency(err)
+	default:
+		out.ErrInternal(err)
+	}
 }

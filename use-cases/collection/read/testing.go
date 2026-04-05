@@ -1,0 +1,43 @@
+package read
+
+import (
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+)
+
+type FakeRepo struct {
+	Err        error
+	Collection clc.Collection
+}
+
+func (r *FakeRepo) FindCollectionByName(name string) (*clc.Collection, error) {
+	if r.Err != nil {
+		return nil, r.Err
+	}
+
+	if name == r.Collection.Name {
+		return &r.Collection, nil
+	}
+	return nil, e.ErrNotFound
+
+}
+
+type FakeReadPresenter struct {
+	Got            Response
+	GotNotFoundErr bool
+	GotInternalErr bool
+	GotSuccess     bool
+}
+
+func (p *FakeReadPresenter) Success(r Response) {
+	p.GotSuccess = true
+	p.Got = r
+}
+
+func (p *FakeReadPresenter) ErrNotFound(error) {
+	p.GotNotFoundErr = true
+}
+
+func (p *FakeReadPresenter) ErrInternal(error) {
+	p.GotInternalErr = true
+}

@@ -9,35 +9,3 @@ type Repo interface {
 	List(ist.FilteringParams) (*[]im.BaseImage, error)
 	Count(ist.CountingParams) (*int64, error)
 }
-
-type FakeRepo struct {
-	GotFilters ist.FilteringParams
-	Err        error
-	Count_     int64
-	ErrOnList  bool
-	ErrOnCount bool
-}
-
-func (r *FakeRepo) List(f ist.FilteringParams) (*[]im.BaseImage, error) {
-	if r.ErrOnList {
-		return nil, r.Err
-	}
-
-	r.GotFilters = f
-
-	result := []im.BaseImage{}
-	collectionName := "a-collection"
-	for range f.PageSize {
-		result = append(result, im.BaseImage{Collection: collectionName, ImageId: im.NewImageId()})
-	}
-
-	return &result, nil
-
-}
-func (r *FakeRepo) Count(f ist.CountingParams) (*int64, error) {
-	if r.ErrOnCount {
-		return nil, r.Err
-	}
-	return &r.Count_, nil
-
-}

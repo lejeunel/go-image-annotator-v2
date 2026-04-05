@@ -65,7 +65,7 @@ func TestHandleIngestionInternalErr(t *testing.T) {
 	p := &FakePresenter{}
 	itr := NewInteractor(&FakeImageRepo{ErrOnAddImageToCollection: true, Err: e.ErrInternal},
 		&FakeCollectionRepo{}, &FakeLabelRepo{},
-		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Err: e.ErrInternal}, &FakeHasher{}, &FakeImageDecoder{})
+		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{}, &FakeHasher{}, &FakeImageDecoder{})
 	itr.Execute(Request{}, p)
 	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error")

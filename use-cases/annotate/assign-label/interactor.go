@@ -2,79 +2,81 @@ package assign_label
 
 import (
 	"errors"
+	"fmt"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
-	repo  Repo
-	store st.ImageStore
+	repo   Repo
+	store  st.ImageStore
+	logger *slog.Logger
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
 
-	image, ok := i.findImage(r.ImageId, r.Collection, out)
-	if !ok {
+	image, err := i.findImage(r.ImageId, r.Collection)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
-	label, ok := i.findLabel(r.Label, out)
-	if !ok {
+	label, err := i.findLabel(r.Label)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	if ok := i.addLabel(image.Id, image.Collection.Id, label.Id, out); !ok {
+	if err := i.addLabel(image.Id, image.Collection.Id, label.Id); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	out.Success(Response{ImageId: r.ImageId, Collection: r.Collection, Label: r.Label})
 }
-func (i *Interactor) findLabel(name string, out OutputPort) (*lbl.Label, bool) {
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "assigning label to image"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+
+	switch {
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	case errors.Is(err, e.ErrDependency):
+		out.ErrDependency(err)
+	default:
+		out.ErrInternal(err)
+	}
+}
+func (i *Interactor) findLabel(name string) (*lbl.Label, error) {
 	label, err := i.repo.FindLabel(name)
 	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-			return nil, false
-		default:
-			out.ErrInternal(err)
-			return nil, false
-		}
+		return nil, err
 	}
-	return label, true
+	return label, nil
 
 }
-func (i *Interactor) findImage(imageId im.ImageId, collection string, out OutputPort) (*im.Image, bool) {
+func (i *Interactor) findImage(imageId im.ImageId, collection string) (*im.Image, error) {
 	image, err := i.store.Find(im.BaseImage{ImageId: imageId, Collection: collection})
 	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-			return nil, false
-		case errors.Is(err, e.ErrDependency):
-			out.ErrDependency(err)
-			return nil, false
-		default:
-			out.ErrInternal(err)
-			return nil, false
-		}
+		return nil, err
 	}
-	return image, true
+	return image, nil
 }
 
-func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId, labelId lbl.LabelId, out OutputPort) bool {
-	err := i.repo.AddImageLabel(imageId, collectionId, labelId)
-	if err != nil {
-		out.ErrInternal(err)
-		return false
+func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId, labelId lbl.LabelId) error {
+	if err := i.repo.AddImageLabel(imageId, collectionId, labelId); err != nil {
+		return err
 	}
-	return true
+	return nil
 
 }
 
 func NewInteractor(repo Repo, store st.ImageStore) *Interactor {
-	return &Interactor{repo: repo, store: store}
+	return &Interactor{repo: repo, store: store, logger: logging.NewNoOpLogger()}
 }

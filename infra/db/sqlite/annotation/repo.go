@@ -82,6 +82,16 @@ func (r *SQLiteAnnotationRepo) RemoveAnnotation(id a.AnnotationId) error {
 	return nil
 }
 
+func (r *SQLiteAnnotationRepo) RemoveImageLabel(imageId i.ImageId, collectionId c.CollectionId, labelId l.LabelId) error {
+	_, err := r.Db.Exec("DELETE FROM annotations WHERE image_id=$1 AND collection_id=$2 AND label_id=$3 AND type='image'",
+		imageId, collectionId, labelId)
+
+	if err != nil {
+		return fmt.Errorf("deleting image label: %v: %w", err, e.ErrInternal)
+	}
+	return nil
+}
+
 func (r *SQLiteAnnotationRepo) AddBoundingBox(imageId i.ImageId, collectionId c.CollectionId, box a.BoundingBox) error {
 
 	coordsBytes, _ := json.Marshal(BoundingBoxSpecs{Xc: box.Xc, Yc: box.Yc, Width: box.Width, Height: box.Height})
@@ -94,6 +104,7 @@ func (r *SQLiteAnnotationRepo) AddBoundingBox(imageId i.ImageId, collectionId c.
 
 	return nil
 }
+
 func (r *SQLiteAnnotationRepo) FindBoundingBoxes(imageId i.ImageId, collectionId c.CollectionId) ([]*a.BoundingBox, error) {
 	query := "SELECT id,label_id,type,coordinates FROM annotations WHERE image_id=$1 AND collection_id=$2 AND type='bounding_box'"
 
@@ -158,6 +169,7 @@ func (r *SQLiteAnnotationRepo) UpdateBoundingBox(id a.AnnotationId, u a.Bounding
 	return nil
 
 }
+
 func NewSQLiteAnnotationRepo(db *sqlx.DB) *SQLiteAnnotationRepo {
 	return &SQLiteAnnotationRepo{Db: db}
 }

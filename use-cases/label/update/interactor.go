@@ -1,43 +1,76 @@
 package update
 
 import (
+	"errors"
 	"fmt"
 
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
-	repo Repo
+	repo   Repo
+	logger *slog.Logger
 }
 
 func NewInteractor(r Repo) *Interactor {
-	return &Interactor{repo: r}
+	return &Interactor{repo: r, logger: logging.NewNoOpLogger()}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	exists, err := i.repo.Exists(r.Name)
-	if err != nil {
-		out.ErrInternal(fmt.Errorf("updating label %v: checking whether it exists: %w", r.Name, e.ErrInternal))
-		return
-	}
-	if !exists {
-		out.ErrNotFound(fmt.Errorf("updating label %v: checking whether it exists: %w", r.Name, e.ErrNotFound))
+
+	if err := i.ensureNameExists(r.Name); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	exists, err = i.repo.Exists(r.NewName)
-	if err != nil {
-		out.ErrInternal(fmt.Errorf("updating label %v to new name %v: checking whether new name exists: %w", r.Name, r.NewName, e.ErrInternal))
+	if err := i.ensureNameDoesNotExist(r.NewName); err != nil {
+		i.handleError(err, out)
 		return
 	}
-	if exists {
-		out.ErrDuplication(fmt.Errorf("updating label %v to new name %v: checking whether new name exists: %w", r.Name, r.NewName, e.ErrDuplicate))
-		return
-	}
+
 	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
 		out.ErrInternal(err)
 		return
 	}
 
 	out.Success(Response{Name: r.NewName, Description: r.NewDescription})
+}
+func (i *Interactor) ensureNameExists(name string) error {
+	exists, err := i.repo.Exists(name)
+	baseErr := fmt.Errorf("checking that label %v exists", name)
+	if err != nil {
+		return fmt.Errorf("%w: %w", baseErr, e.ErrInternal)
+	}
+	if !exists {
+		return fmt.Errorf("%w: %w", baseErr, e.ErrNotFound)
+	}
+	return nil
+}
+func (i *Interactor) ensureNameDoesNotExist(name string) error {
+	exists, err := i.repo.Exists(name)
+	baseErr := fmt.Errorf("checking that label name %v does not exist", name)
+	if err != nil {
+		return fmt.Errorf("%w: %w", baseErr, e.ErrInternal)
+	}
+	if exists {
+		return fmt.Errorf("%w: %w", baseErr, e.ErrDuplicate)
+	}
+	return nil
+}
+
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "updating label"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+
+	switch {
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	case errors.Is(err, e.ErrDuplicate):
+		out.ErrDuplication(err)
+	default:
+		out.ErrInternal(err)
+	}
 }

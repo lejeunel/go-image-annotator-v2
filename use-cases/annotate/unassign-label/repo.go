@@ -7,20 +7,5 @@ import (
 )
 
 type Repo interface {
-	RemoveLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
-}
-
-type FakeRepo struct {
-	Err              error
-	ErrOnRemoveLabel bool
-	RemovedLabel     bool
-}
-
-func (r *FakeRepo) RemoveLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error {
-	if r.ErrOnRemoveLabel {
-		return r.Err
-	}
-	r.RemovedLabel = true
-	return nil
-
+	RemoveImageLabel(im.ImageId, clc.CollectionId, lbl.LabelId) error
 }

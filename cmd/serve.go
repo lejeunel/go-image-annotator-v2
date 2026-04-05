@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	api "github.com/lejeunel/go-image-annotator-v2/api"
-	apiServer "github.com/lejeunel/go-image-annotator-v2/api/server"
+	api "github.com/lejeunel/go-image-annotator-v2/adapters/api"
+	apiServer "github.com/lejeunel/go-image-annotator-v2/adapters/api/server"
 	"github.com/lejeunel/go-image-annotator-v2/config"
 	"github.com/spf13/cobra"
 	"net/http"

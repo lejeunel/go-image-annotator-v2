@@ -1,58 +1,74 @@
 package delete
 
 import (
+	"errors"
 	"fmt"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
-	repo Repo
+	repo   Repo
+	logger *slog.Logger
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	errCtx := fmt.Sprintf("deleting collection with name %v", r.Name)
-	if ok := i.exists(r, out, errCtx); !ok {
+	if err := i.ensureExists(r.Name); err != nil {
+		i.handleError(err, out)
 		return
 	}
-	if ok := i.isDeletable(r, out, errCtx); !ok {
+	if err := i.ensureDeletable(r.Name); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	if err := i.repo.Delete(r.Name); err != nil {
-		out.ErrInternal(fmt.Errorf("%v: %w", errCtx, e.ErrInternal))
+		i.handleError(err, out)
 		return
 	}
 	out.Success()
 }
-func (i *Interactor) isDeletable(r Request, out OutputPort, errCtx string) bool {
-	isPopulated, err := i.repo.IsPopulated(r.Name)
+func (i *Interactor) ensureDeletable(name string) error {
+	baseErr := fmt.Errorf("ensuring collection with name %v is empty", name)
+	isPopulated, err := i.repo.IsPopulated(name)
 	if err != nil {
-		out.ErrInternal(fmt.Errorf("%v: checking whether it contains items: %w", errCtx, e.ErrInternal))
-		return false
+		return fmt.Errorf("%w: %w", baseErr, e.ErrInternal)
 	}
 	if *isPopulated {
-		out.ErrDependency(fmt.Errorf("%v: checking whether it contains items: %w", errCtx, e.ErrDependency))
-		return false
+		return fmt.Errorf("%w: %w", baseErr, e.ErrDependency)
 	}
-	return true
+	return nil
 
 }
 
-func (i *Interactor) exists(r Request, out OutputPort, errCtx string) bool {
-	exists, err := i.repo.Exists(r.Name)
+func (i *Interactor) ensureExists(name string) error {
+	baseErr := fmt.Errorf("checking whether collection with name %v exists", name)
+	exists, err := i.repo.Exists(name)
 	if err != nil {
-		out.ErrInternal(fmt.Errorf("%v: checking whether it exists: %w", errCtx, e.ErrInternal))
-		return false
+		return fmt.Errorf("%w: %w", baseErr, e.ErrInternal)
 	}
 	if !exists {
-		out.ErrNotFound(fmt.Errorf("%v: checking whether it exists: %w", errCtx, e.ErrNotFound))
-		return false
+		return fmt.Errorf("%w: %w", baseErr, e.ErrNotFound)
 	}
-	return true
+	return nil
+}
+
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "deleting collection"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+
+	switch {
+	case errors.Is(err, e.ErrDependency):
+		out.ErrDependency(err)
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	default:
+		out.ErrInternal(err)
+	}
 }
 
 func NewInteractor(r Repo) *Interactor {
-	return &Interactor{
-		repo: r,
-	}
+	return &Interactor{repo: r, logger: logging.NewNoOpLogger()}
 }

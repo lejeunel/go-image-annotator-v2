@@ -89,7 +89,7 @@ func TestInternalErrOnRemoveImageFromCollectionShouldFail(t *testing.T) {
 	id := im.NewImageId()
 	collectionName := "a-collection"
 	image := im.NewImage(id, *clc.NewCollection(clc.NewCollectionId(), collectionName))
-	itr := NewInteractor(&st.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveImage: true, Err: e.ErrNotFound})
+	itr := NewInteractor(&st.FakeImageStore{Return: image}, &FakeRepo{ErrOnRemoveImage: true, Err: e.ErrInternal})
 	itr.Execute(Request{}, p)
 	if p.GotSuccess || !(p.GotInternalErr) {
 		t.Fatalf("expected internal error")

@@ -2,95 +2,93 @@ package add_bbox
 
 import (
 	"errors"
+	"fmt"
 
 	st "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
 	imageStore st.ImageStore
 	repo       Repo
+	logger     *slog.Logger
 }
 
 func NewInteractor(imageStore st.ImageStore, repo Repo) *Interactor {
-	return &Interactor{repo: repo, imageStore: imageStore}
+	return &Interactor{repo: repo, imageStore: imageStore, logger: logging.NewNoOpLogger()}
 }
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	image, ok := i.findImage(r.ImageId, r.Collection, out)
-	if !ok {
+	image, err := i.findImage(r.ImageId, r.Collection)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	label, ok := i.findLabel(r.Label, out)
-	if !ok {
+	label, err := i.findLabel(r.Label)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	box := a.NewBoundingBox(a.NewAnnotationId(), r.Xc, r.Yc, r.Width, r.Height, *label)
-	if ok := i.validateBox(image, *box, out); !ok {
+	if err := i.validateBox(image, *box); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	if ok := i.addBox(image, *box, out); !ok {
+	if err := i.addBox(image, *box); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	out.Success(Response{})
 
 }
-func (i *Interactor) addBox(image *im.Image, box a.BoundingBox, out OutputPort) bool {
-	err := i.repo.AddBoundingBox(image.Id, image.Collection.Id, box)
-	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-			return false
-		default:
-			out.ErrInternal(e.ErrInternal)
-			return false
-		}
-	}
-	return true
-}
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "adding bounding box"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
 
-func (i *Interactor) validateBox(image *im.Image, box a.BoundingBox, out OutputPort) bool {
-	err := image.AddBoundingBox(box)
-	if err != nil {
+	switch {
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	case errors.Is(err, e.ErrValidation):
 		out.ErrValidation(err)
-		return false
+	default:
+		out.ErrInternal(err)
 	}
-	return true
+}
+func (i *Interactor) addBox(image *im.Image, box a.BoundingBox) error {
+	if err := i.repo.AddBoundingBox(image.Id, image.Collection.Id, box); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (i *Interactor) findLabel(name string, out OutputPort) (*lbl.Label, bool) {
+func (i *Interactor) validateBox(image *im.Image, box a.BoundingBox) error {
+	if err := image.AddBoundingBox(box); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (i *Interactor) findLabel(name string) (*lbl.Label, error) {
 	label, err := i.repo.FindLabelByName(name)
 	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(e.ErrNotFound)
-			return nil, false
-		default:
-			out.ErrInternal(e.ErrInternal)
-			return nil, false
-		}
+		return nil, err
 	}
-	return label, true
+	return label, nil
 }
 
-func (i *Interactor) findImage(imageId im.ImageId, collectionName string, out OutputPort) (*im.Image, bool) {
+func (i *Interactor) findImage(imageId im.ImageId, collectionName string) (*im.Image, error) {
 	image, err := i.imageStore.Find(im.BaseImage{ImageId: imageId, Collection: collectionName})
 	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(e.ErrNotFound)
-			return nil, false
-		default:
-			out.ErrInternal(e.ErrInternal)
-			return nil, false
-		}
+		return nil, err
 	}
-	return image, true
+	return image, nil
 }

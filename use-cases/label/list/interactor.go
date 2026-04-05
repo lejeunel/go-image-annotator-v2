@@ -1,19 +1,27 @@
 package list
 
 import (
+	"fmt"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
+	"log/slog"
 )
+
+type Interactor struct {
+	repo   Repo
+	logger *slog.Logger
+}
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
 	found, err := i.repo.List(r)
 	if err != nil {
-		out.ErrInternal(err)
+		i.handleError(err, out)
 		return
 	}
 
 	count, err := i.repo.Count()
 	if err != nil {
-		out.ErrInternal(err)
+		i.handleError(err, out)
 		return
 	}
 
@@ -27,10 +35,13 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 }
 
-type Interactor struct {
-	repo Repo
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "listing label"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+	out.ErrInternal(err)
 }
 
 func NewInteractor(r Repo) *Interactor {
-	return &Interactor{repo: r}
+	return &Interactor{repo: r, logger: logging.NewNoOpLogger()}
 }

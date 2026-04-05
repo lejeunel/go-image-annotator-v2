@@ -2,19 +2,23 @@ package list
 
 import (
 	"errors"
+	"fmt"
 	ist "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
+	"log/slog"
 )
 
 type Interactor struct {
-	repo  Repo
-	store ist.ImageStore
+	repo   Repo
+	store  ist.ImageStore
+	logger *slog.Logger
 }
 
 func NewInteractor(r Repo, s ist.ImageStore) *Interactor {
-	return &Interactor{repo: r, store: s}
+	return &Interactor{repo: r, store: s, logger: logging.NewNoOpLogger()}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -25,23 +29,19 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 	baseImages, err := i.repo.List(*filteringParams)
 	if err != nil {
-		switch {
-		case errors.Is(err, e.ErrNotFound):
-			out.ErrNotFound(err)
-		default:
-			out.ErrInternal(err)
-		}
+		i.handleError(err, out)
 		return
 	}
 
 	count, err := i.repo.Count(ist.CountingParams{Collection: filteringParams.Collection})
 	if err != nil {
-		out.ErrInternal(err)
+		i.handleError(err, out)
 		return
 	}
 
-	imageResponses, ok := i.buildResponse(*baseImages, out)
-	if !ok {
+	imageResponses, err := i.buildResponse(*baseImages)
+	if err != nil {
+		i.handleError(err, out)
 		return
 	}
 
@@ -52,17 +52,29 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 }
 
-func (i *Interactor) buildResponse(baseImages []im.BaseImage, out OutputPort) (*[]im.Response, bool) {
+func (i *Interactor) buildResponse(baseImages []im.BaseImage) (*[]im.Response, error) {
 	r := []im.Response{}
 	for _, baseImage := range baseImages {
 		image, err := i.store.Find(baseImage)
 		if err != nil {
-			out.ErrInternal(err)
-			return nil, false
+			return nil, err
 		}
 		r = append(r, im.Response{Id: image.Id, Collection: image.Collection.Name, Labels: image.Labels,
 			BoundingBoxes: image.BoundingBoxes})
 	}
-	return &r, true
+	return &r, nil
 
+}
+
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "listing images"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+
+	switch {
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	default:
+		out.ErrInternal(err)
+	}
 }

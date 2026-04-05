@@ -1,61 +1,78 @@
 package update
 
 import (
+	"errors"
 	"fmt"
 
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
+	"log/slog"
 )
 
 type Interactor struct {
-	repo Repo
+	repo   Repo
+	logger *slog.Logger
 }
 
 func NewInteractor(r Repo) *Interactor {
-	return &Interactor{repo: r}
+	return &Interactor{repo: r, logger: logging.NewNoOpLogger()}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
 
-	if !i.sourceExists(r.Name, out) {
+	if err := i.ensureNameExists(r.Name); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
-	if i.destinationExists(r.NewName, out) {
+	if err := i.ensureNameDoesNotExist(r.NewName); err != nil {
+		i.handleError(err, out)
 		return
 	}
 
 	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
-		out.ErrInternal(fmt.Errorf("updating collection %v: %w", r.Name, e.ErrInternal))
+		i.handleError(err, out)
 		return
 	}
 
 	out.Success(Response{Name: r.NewName, Description: r.NewDescription})
 }
 
-func (i *Interactor) sourceExists(name string, out OutputPort) bool {
-	baseErrMsg := fmt.Sprintf("updating collection %v: checking whether it exists", name)
+func (i *Interactor) ensureNameExists(name string) error {
+	baseErr := fmt.Errorf("ensuring that collection with name %v exists", name)
 	exists, err := i.repo.Exists(name)
 	if err != nil {
-		out.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
-		return true
+		return fmt.Errorf("%w: %w", baseErr, e.ErrInternal)
 	}
-	if exists {
-		return true
+	if !exists {
+		return fmt.Errorf("%w: %w", baseErr, e.ErrNotFound)
 	}
-	out.ErrNotFound(fmt.Errorf("%v: %w", baseErrMsg, e.ErrNotFound))
-	return false
+	return nil
 }
 
-func (i *Interactor) destinationExists(name string, out OutputPort) bool {
-	baseErrMsg := fmt.Sprintf("updating collection to name %v: checking whether it exists", name)
+func (i *Interactor) ensureNameDoesNotExist(name string) error {
+	baseErr := fmt.Errorf("ensuring that a collection with name %v does not already exist", name)
 	exists, err := i.repo.Exists(name)
 	if err != nil {
-		out.ErrInternal(fmt.Errorf("%v: %w", baseErrMsg, e.ErrInternal))
-		return true
+		return fmt.Errorf("%w: %w", baseErr, e.ErrInternal)
 	}
 	if exists {
-		out.ErrDuplication(fmt.Errorf("%v: %w", baseErrMsg, e.ErrDuplicate))
-		return true
+		return fmt.Errorf("%w: %w", baseErr, e.ErrDuplicate)
 	}
-	return false
+	return nil
+}
+
+func (i *Interactor) handleError(err error, out OutputPort) {
+	errCtx := "deleting collection"
+	err = fmt.Errorf("%v: %w", errCtx, err)
+	i.logger.Error(errCtx, "error", err)
+
+	switch {
+	case errors.Is(err, e.ErrDuplicate):
+		out.ErrDuplication(err)
+	case errors.Is(err, e.ErrNotFound):
+		out.ErrNotFound(err)
+	default:
+		out.ErrInternal(err)
+	}
 }
