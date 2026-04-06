@@ -1,4 +1,4 @@
-package import_shallow
+package import_image
 
 type OutputPort interface {
 	Error(error)

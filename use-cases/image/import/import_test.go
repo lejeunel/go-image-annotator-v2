@@ -1,4 +1,4 @@
-package import_shallow
+package import_image
 
 import (
 	"testing"

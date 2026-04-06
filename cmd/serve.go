@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	api "github.com/lejeunel/go-image-annotator-v2/adapters/api"
 	apiServer "github.com/lejeunel/go-image-annotator-v2/adapters/api/server"
 	"github.com/lejeunel/go-image-annotator-v2/config"
+	"github.com/lejeunel/go-image-annotator-v2/site"
 	"github.com/spf13/cobra"
 	"net/http"
 )
@@ -27,8 +27,13 @@ func init() {
 func serve(port int) {
 	cfg := config.Parse()
 	mux := http.NewServeMux()
-	apiServer := apiServer.NewServer(cfg.DBPath, cfg.ArtefactDir, cfg.AllowedImageFormats)
-	api.RegisterAPI(mux, *apiServer)
+
+	siteConfig := site.SiteConfig{APIDocsPath: "/api/docs", OpenAPISpecsPath: "/api/openapi.yaml"}
+
+	site.RegisterHandlers(mux,
+		*apiServer.NewServer(cfg.DBPath, cfg.ArtefactDir, cfg.AllowedImageFormats),
+		siteConfig)
+
 	fmt.Println("serving on port:", port)
 	http.ListenAndServe(fmt.Sprintf(":%v", port), mux)
 }

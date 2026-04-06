@@ -8,6 +8,7 @@
           gopls
           gotest
           oapi-codegen
+          tailwindcss_4
         ];
       };
     };

@@ -1,4 +1,4 @@
-package import_shallow
+package import_image
 
 import (
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
