@@ -10,7 +10,7 @@ type Server struct {
 	Image      *ImageServer
 }
 
-func NewServer(dbPath, artefactDir string, allowedImageFormats []string) *Server {
+func NewSQLiteServer(dbPath, artefactDir string, allowedImageFormats []string) *Server {
 	db := sqlite.NewSQLiteDB(dbPath)
 	return &Server{
 		Label:      NewHTTPLabelServer(db),

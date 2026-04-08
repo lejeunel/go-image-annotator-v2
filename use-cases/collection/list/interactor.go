@@ -2,7 +2,6 @@ package list
 
 import (
 	"fmt"
-	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
 	"log/slog"
@@ -14,6 +13,11 @@ type Interactor struct {
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
+	if err := pagination.Validate(r.Page, r.PageSize); err != nil {
+		i.handleError(err, out)
+		return
+	}
+
 	found, err := i.repo.List(r)
 	if err != nil {
 		i.handleError(err, out)
@@ -35,7 +39,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 
 func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "listing images"
-	err = fmt.Errorf("%v: %w: %w", errCtx, err, e.ErrInternal)
+	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
 	out.Error(err)
 }

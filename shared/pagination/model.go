@@ -1,6 +1,8 @@
 package pagination
 
 import (
+	"fmt"
+	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"math"
 )
 
@@ -16,4 +18,11 @@ func New(page int64, pageSize int, totalRecords int64) Pagination {
 		Page:       page,
 		PageSize:   pageSize,
 		TotalPages: int64(math.Ceil(float64(totalRecords) / float64(pageSize)))}
+}
+
+func Validate(page int64, pageSize int) error {
+	if page < 1 {
+		return fmt.Errorf("validating page number: found non-positive value (%v): %w", page, e.ErrValidation)
+	}
+	return nil
 }

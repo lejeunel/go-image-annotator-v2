@@ -8,16 +8,25 @@ import (
 func TestHandleInternalErrOnCount(t *testing.T) {
 	p := &FakePresenter{}
 	itr := NewInteractor(&FakeRepo{ErrOnCount: true, Err: e.ErrInternal})
-	itr.Execute(Request{}, p)
+	itr.Execute(Request{Page: 1, PageSize: 1}, p)
 	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error, but got none")
+	}
+}
+
+func TestInvalidPageShouldFail(t *testing.T) {
+	p := &FakePresenter{}
+	itr := NewInteractor(&FakeRepo{})
+	itr.Execute(Request{Page: -1}, p)
+	if !p.GotValidationErr || p.GotSuccess {
+		t.Fatal("expected validation error")
 	}
 }
 
 func TestHandleInternalErrOnList(t *testing.T) {
 	p := &FakePresenter{}
 	itr := NewInteractor(&FakeRepo{ErrOnList: true, Err: e.ErrInternal})
-	itr.Execute(Request{}, p)
+	itr.Execute(Request{Page: 1, PageSize: 1}, p)
 	if !p.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
 	}
