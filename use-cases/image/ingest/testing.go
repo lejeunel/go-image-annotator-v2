@@ -7,6 +7,7 @@ import (
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
+	"io"
 )
 
 type FakeHasher struct {
@@ -133,14 +134,13 @@ func (r *FakeImageRepo) AddImage(imageId im.ImageId, hash string) error {
 }
 
 type FakeImageDecoder struct {
-	Format_ string
-	Err     error
+	Err error
 }
 
-func (d *FakeImageDecoder) Decode(data any) ([]byte, *string, error) {
+func (d *FakeImageDecoder) Read([]byte) (int, error) {
 	if d.Err != nil {
-		return nil, nil, d.Err
+		return 0, d.Err
 	}
-	return nil, &d.Format_, nil
+	return 0, io.EOF
 
 }

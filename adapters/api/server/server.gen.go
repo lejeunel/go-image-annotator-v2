@@ -159,6 +159,15 @@ type Pagination struct {
 	TotalPages int64 `json:"total_pages"`
 }
 
+// UpdateCollection defines model for UpdateCollection.
+type UpdateCollection struct {
+	// Description New description of the collection
+	Description string `json:"description"`
+
+	// Name New name of the collection
+	Name string `json:"name"`
+}
+
 // ListCollectionsParams defines parameters for ListCollections.
 type ListCollectionsParams struct {
 	// Page page number
@@ -192,6 +201,9 @@ type ListLabelsParams struct {
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
 
+// UpdateCollectionByNameJSONRequestBody defines body for UpdateCollectionByName for application/json ContentType.
+type UpdateCollectionByNameJSONRequestBody = UpdateCollection
+
 // IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
 type IngestImageJSONRequestBody = NewImage
 
@@ -212,6 +224,9 @@ type ServerInterface interface {
 	// Find a collection by name
 	// (GET /collections/{name})
 	FindCollectionByName(w http.ResponseWriter, r *http.Request, name string)
+	// Update a collection
+	// (PUT /collections/{name})
+	UpdateCollectionByName(w http.ResponseWriter, r *http.Request, name string)
 	// List images
 	// (GET /images)
 	ListImages(w http.ResponseWriter, r *http.Request, params ListImagesParams)
@@ -334,6 +349,31 @@ func (siw *ServerInterfaceWrapper) FindCollectionByName(w http.ResponseWriter, r
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.FindCollectionByName(w, r, name)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateCollectionByName operation middleware
+func (siw *ServerInterfaceWrapper) UpdateCollectionByName(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "name" -------------
+	var name string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "name", r.PathValue("name"), &name, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateCollectionByName(w, r, name)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -657,6 +697,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/collections", wrapper.CreateCollection)
 	m.HandleFunc("DELETE "+options.BaseURL+"/collections/{name}", wrapper.DeleteCollectionByName)
 	m.HandleFunc("GET "+options.BaseURL+"/collections/{name}", wrapper.FindCollectionByName)
+	m.HandleFunc("PUT "+options.BaseURL+"/collections/{name}", wrapper.UpdateCollectionByName)
 	m.HandleFunc("GET "+options.BaseURL+"/images", wrapper.ListImages)
 	m.HandleFunc("POST "+options.BaseURL+"/images", wrapper.IngestImage)
 	m.HandleFunc("GET "+options.BaseURL+"/images/{collection_name}/{image_id}", wrapper.ReadImage)

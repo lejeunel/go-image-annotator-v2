@@ -3,6 +3,7 @@ package ingest
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 
@@ -12,8 +13,16 @@ import (
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
+	"github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
+
+	far "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
+	anr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/annotation"
+	clr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
+	imr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
+	lbr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 )
 
 type Interactor struct {
@@ -23,16 +32,26 @@ type Interactor struct {
 	annotationRepo AnnotationRepo
 	labelRepo      LabelRepo
 	artefactRepo   ast.ArtefactRepo
-	imageDecoder   ImageDecoder
 	logger         *slog.Logger
+}
+
+func NewSQLiteIngestInteractor(dbPath, artefactDir string) *Interactor {
+	db := sqlite.NewSQLiteDB(dbPath)
+	imRepo := imr.NewSQLiteImageRepo(db)
+	clRepo := clr.NewSQLiteCollectionRepo(db)
+	lbRepo := lbr.NewSQLiteLabelRepo(db)
+	anRepo := anr.NewSQLiteAnnotationRepo(db)
+	artRepo := far.NewFileArtefactRepo(artefactDir)
+	return NewInteractor(imRepo, clRepo, lbRepo, anRepo,
+		artRepo, has.NewSha256Hasher())
 }
 
 func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
 	labelRepo LabelRepo, annotationRepo AnnotationRepo,
-	artefactRepo ast.ArtefactRepo, hasher Hasher, decoder ImageDecoder) *Interactor {
+	artefactRepo ast.ArtefactRepo, hasher Hasher) *Interactor {
 	return &Interactor{imageRepo: imageRepo, collectionRepo: collectionRepo,
 		annotationRepo: annotationRepo, labelRepo: labelRepo,
-		artefactRepo: artefactRepo, hasher: hasher, imageDecoder: decoder,
+		artefactRepo: artefactRepo, hasher: hasher,
 		logger: logging.NewNoOpLogger(),
 	}
 }
@@ -51,7 +70,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	data, _, err := i.imageDecoder.Decode(r.Data)
+	data, err := io.ReadAll(r.Reader)
 	if err != nil {
 		i.handleError(err, out)
 		return
@@ -61,7 +80,6 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	if err := i.ingestRawData(imageId, data, hash); err != nil {
 		i.handleError(err, out)
 		return
-
 	}
 
 	if err := i.ingestImage(image, hash); err != nil {

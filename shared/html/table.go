@@ -5,35 +5,41 @@ import (
 	gh "maragu.dev/gomponents/html"
 )
 
+type MyTable struct {
+	Fields []string
+	Rows   []TableRow
+}
+
+func (t *MyTable) Render() gp.Node {
+	return gh.Div(gh.Class("overflow-hidden w-full overflow-x-auto rounded-radius border border-outline dark:border-outline-dark"),
+		gh.Table(gh.Class("w-full text-left text-sm text-on-surface dark:text-on-surface-dark"),
+			TableHeader(t.Fields),
+			TableBody(t.Rows),
+		))
+}
+
 type TableRow struct {
 	Values []gp.Node
 }
 
 func (r TableRow) Render() gp.Node {
-	return gh.Tr(gh.Class("text-neutral-1000"),
+	return gh.Tr(
 		gp.Map(r.Values, func(node gp.Node) gp.Node {
-			return gh.Td(gh.Class("px-5 py-4 text-sm whitespace-nowrap"),
+			return gh.Td(gh.Class("p-4"),
 				node)
 		}))
 
 }
 
-func MyTable(fields []string, rows []TableRow) gp.Node {
-	return gh.Table(gh.Class("min-w-full divide-y divide-neutral-200"),
-		TableHeader(fields),
-		TableBody(rows),
-	)
-}
-
 func TableHeader(fields []string) gp.Node {
-	return gh.THead(gh.Tr(gh.Class("text-neutral-500"),
+	return gh.THead(gh.Tr(gh.Class("border-b border-outline bg-surface-alt text-sm text-on-surface-strong dark:border-outline-dark dark:bg-surface-dark-alt dark:text-on-surface-dark-strong"),
 		gp.Map(fields, func(f string) gp.Node {
-			return gh.Th(gh.Class("px-5 py-3 text-xs font-medium text-left uppercase"), gp.Text(f))
+			return gh.Th(gh.Scope("col"), gh.Class("p-4"), gp.Text(f))
 		})))
 }
 
 func TableBody(rows []TableRow) gp.Node {
-	return gh.TBody(gh.Class("divide-y divide-neutral-200"),
+	return gh.TBody(gh.Class("divide-y divide-outline dark:divide-outline-dark"),
 		gp.Map(rows, func(r TableRow) gp.Node {
 			return r.Render()
 

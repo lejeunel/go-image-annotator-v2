@@ -150,6 +150,15 @@ type Pagination struct {
 	TotalPages int64 `json:"total_pages"`
 }
 
+// UpdateCollection defines model for UpdateCollection.
+type UpdateCollection struct {
+	// Description New description of the collection
+	Description string `json:"description"`
+
+	// Name New name of the collection
+	Name string `json:"name"`
+}
+
 // ListCollectionsParams defines parameters for ListCollections.
 type ListCollectionsParams struct {
 	// Page page number
@@ -182,6 +191,9 @@ type ListLabelsParams struct {
 
 // CreateCollectionJSONRequestBody defines body for CreateCollection for application/json ContentType.
 type CreateCollectionJSONRequestBody = NewCollection
+
+// UpdateCollectionByNameJSONRequestBody defines body for UpdateCollectionByName for application/json ContentType.
+type UpdateCollectionByNameJSONRequestBody = UpdateCollection
 
 // IngestImageJSONRequestBody defines body for IngestImage for application/json ContentType.
 type IngestImageJSONRequestBody = NewImage

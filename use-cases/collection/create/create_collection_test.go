@@ -2,7 +2,9 @@ package create
 
 import (
 	"testing"
+	"time"
 
+	"github.com/jonboulle/clockwork"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	v "github.com/lejeunel/go-image-annotator-v2/shared/validation"
 )
@@ -10,7 +12,7 @@ import (
 func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 	name := "my-collection"
 	p := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{Names: []string{name}}, &v.FakeNameValidator{})
+	itr := NewInteractor(&FakeRepo{Names: []string{name}}, &v.FakeNameValidator{}, clockwork.NewFakeClock())
 	itr.Execute(Request{Name: name}, p)
 	if !p.GotDuplicationErr {
 		t.Fatal("expected duplication error, but go none")
@@ -22,7 +24,7 @@ func TestCreateCollectionWithDuplicateNameShouldFail(t *testing.T) {
 
 func TestHandleInternalError(t *testing.T) {
 	p := &FakePresenter{}
-	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal}, &v.FakeNameValidator{})
+	itr := NewInteractor(&FakeRepo{Err: e.ErrInternal}, &v.FakeNameValidator{}, clockwork.NewFakeClock())
 	itr.Execute(Request{}, p)
 	if !p.GotInternalErr {
 		t.Fatal("expected internal error, but got none")
@@ -33,7 +35,7 @@ func TestCreateCollectionWithInvalidNameShouldFail(t *testing.T) {
 	name := "my-collection%/"
 	p := &FakePresenter{}
 	validator := &v.FakeNameValidator{Err: e.ErrValidation}
-	itr := NewInteractor(&FakeRepo{Names: []string{name}}, validator)
+	itr := NewInteractor(&FakeRepo{Names: []string{name}}, validator, clockwork.NewFakeClock())
 	itr.Execute(Request{Name: name}, p)
 	if !p.GotValidationErr {
 		t.Fatal("expected validation error, but go none")
@@ -43,18 +45,16 @@ func TestCreateCollectionWithInvalidNameShouldFail(t *testing.T) {
 func TestCreateCollection(t *testing.T) {
 	p := &FakePresenter{}
 	repo := &FakeRepo{}
-	itr := NewInteractor(repo, &v.FakeNameValidator{})
+	now := time.Now()
+	itr := NewInteractor(repo, &v.FakeNameValidator{}, clockwork.NewFakeClockAt(now))
 	name := "a-name"
 	desc := "a-description"
 	req := Request{Name: name, Description: desc}
-	wantp := Response{Name: name, Description: desc}
 	itr.Execute(req, p)
-	if p.Got != wantp {
-		t.Fatalf("expected %v, got %v", wantp, p.Got)
-	}
-	if repo.Got.Name != name || repo.Got.Description != desc || repo.Got.Id.IsNil() {
-		t.Fatalf("expected to create label with name %v, description %v, and non-nil id, got %v, %v, %v",
-			name, desc, repo.Got.Name, repo.Got.Description, repo.Got.Id)
+	got := repo.Got
+	if got.Name != name || got.Description != desc || got.Id.IsNil() || got.CreatedAt != now {
+		t.Fatalf("expected to create collection with name %v, description %v, non-nil id, and created at %v got %v, %v, %v, %v",
+			name, desc, now, got.Name, got.Description, got.Id, got.CreatedAt)
 
 	}
 }

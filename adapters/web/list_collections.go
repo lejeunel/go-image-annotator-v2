@@ -8,27 +8,23 @@ import (
 	. "maragu.dev/gomponents"
 )
 
-type ListPresenter struct {
-	Writer http.ResponseWriter
-	Title  string
+type ListCollectionsPresenter struct {
+	ListRenderer
 }
 
-func (p ListPresenter) Success(r list.Response) {
-	var rows []html.TableRow
+func (p ListCollectionsPresenter) Success(r list.Response) {
+	table := html.MyTable{Fields: []string{"name", "description", "created"}}
 	for _, c := range r.Collections {
-		rows = append(rows,
-			html.TableRow{Values: []Node{Raw(c.Name), Raw(c.Description)}})
+		table.Rows = append(table.Rows,
+			html.TableRow{Values: []Node{html.MakeTextLink("/collection/"+c.Name, c.Name),
+				Raw(c.Description), Raw(DateTimeToStr(c.CreatedAt))}})
 	}
-
-	html.MakeTitledPage(p.Title, html.MyTable([]string{"name", "description"}, rows),
-		html.Scripts(html.ScriptIncludes{}),
-		html.NavBarActivatedItems{Collections: true}).Render(p.Writer)
+	p.RenderSuccess(table, r.Pagination)
 }
 
-func (p ListPresenter) Error(err error) {
-	html.MakeBasePage(p.Title, Text(err.Error()), html.Scripts(html.ScriptIncludes{}), html.NavBarActivatedItems{})
-}
-
-func NewListPresenter(w http.ResponseWriter) ListPresenter {
-	return ListPresenter{Writer: w, Title: "Collections"}
+func NewListCollectionsPresenter(w http.ResponseWriter) ListCollectionsPresenter {
+	return ListCollectionsPresenter{
+		ListRenderer: NewListRenderer("Collections", "/collections",
+			html.NavBarActivatedItems{Collections: true}, w),
+	}
 }

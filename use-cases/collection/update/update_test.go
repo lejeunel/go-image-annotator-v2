@@ -56,6 +56,17 @@ func TestUpdateCollectionWithNameAlreadyTakenShouldFail(t *testing.T) {
 	}
 }
 
+func TestUpdateCollectionWithUnchangedNameShouldSucceed(t *testing.T) {
+
+	p := &FakePresenter{}
+	name := "name"
+	itr := NewInteractor(&FakeRepo{Names: []string{name}})
+	itr.Execute(Request{Name: name, NewName: name}, p)
+	if !p.GotSuccess {
+		t.Fatal("expected success")
+	}
+}
+
 func TestHandleInternalError(t *testing.T) {
 	p := &FakePresenter{}
 	itr := NewInteractor(&FakeErrRepo{e.ErrInternal})

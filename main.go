@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	cli "github.com/lejeunel/go-image-annotator-v2/adapters/cli"
 	cmd "github.com/lejeunel/go-image-annotator-v2/cmd"
 	"github.com/spf13/cobra"
 	"os"
@@ -27,6 +28,7 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(cmd.ServeCmd)
+	rootCmd.AddCommand(cli.IngestDirectoryCmd)
 }
 
 func main() {

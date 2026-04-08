@@ -3,7 +3,9 @@ package sqlite
 import (
 	"errors"
 	"testing"
+	"time"
 
+	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
@@ -28,14 +30,17 @@ func TestInternalErrOnFindShouldFail(t *testing.T) {
 
 func TestRetrieve(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	collection, _ := CreateCollection(repo, "a-collection")
+	c := clc.NewCollection(clc.NewCollectionId(), "a-collection",
+		clc.WithDescription("a-description"), clc.WithCreatedAt(time.Now()))
+	repo.Create(*c)
 	r, err := repo.FindCollectionByName("a-collection")
 	if err != nil {
 		t.Fatalf("expected no error on find, got %v", err)
 	}
-	if (r.Name != collection.Name) || (r.Description != collection.Description) || (r.Id != collection.Id) {
-		t.Fatalf("expected to retrieve name %v, description %v, and id %v, got %v, %v, %v",
-			collection.Name, collection.Description, collection.Id, r.Name, r.Description, r.Id)
+	if (r.Name != c.Name) || (r.Description != c.Description) || (r.Id != c.Id) || !r.CreatedAt.Equal(c.CreatedAt) {
+		t.Fatalf("expected to retrieve name %v, description %v, id %v, created at %v, got %v, %v, %v, %v",
+			c.Name, c.Description, c.Id, c.CreatedAt,
+			r.Name, r.Description, r.Id, r.CreatedAt)
 
 	}
 

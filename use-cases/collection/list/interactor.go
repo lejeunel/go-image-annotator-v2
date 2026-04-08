@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
+
 	"log/slog"
 )
 
@@ -31,9 +32,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	}
 
 	response := Response{Pagination: pagination.New(int64(r.Page), r.PageSize, *count)}
-	for _, f := range found {
-		response.Collections = append(response.Collections, CollectionResponse{Name: f.Name, Description: f.Description})
-	}
+	response.Collections = found
 	out.Success(response)
 }
 

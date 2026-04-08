@@ -44,7 +44,7 @@ func DecodeJSON[T any](r *http.Request) (*T, error) {
 	return &v, nil
 }
 
-func DecodeJSONOrFail[T any](w http.ResponseWriter, r *http.Request) (*T, bool) {
+func MustDecodeJSON[T any](w http.ResponseWriter, r *http.Request) (*T, bool) {
 	body, err := DecodeJSON[T](r)
 	if err != nil {
 		WriteError(w, http.StatusBadRequest, "invalid request body")

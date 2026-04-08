@@ -38,7 +38,7 @@ func (s *Server) FindLabelByName(w http.ResponseWriter, r *http.Request, name st
 	s.Label.Find.Execute(read.Request{Name: name}, presenter.NewFindPresenter(w))
 }
 func (s *Server) CreateLabel(w http.ResponseWriter, r *http.Request) {
-	body, ok := json.DecodeJSONOrFail[models.NewLabel](w, r)
+	body, ok := json.MustDecodeJSON[models.NewLabel](w, r)
 	if !ok {
 		return
 	}

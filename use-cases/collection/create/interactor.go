@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/jonboulle/clockwork"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
@@ -14,6 +15,7 @@ type Interactor struct {
 	repo      CreateRepo
 	validator v.Validator
 	logger    *slog.Logger
+	clock     clockwork.Clock
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
@@ -32,7 +34,9 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 }
 
 func (i *Interactor) create(r Request) error {
-	collection := clc.NewCollection(clc.NewCollectionId(), r.Name, clc.WithDescription(r.Description))
+	collection := clc.NewCollection(clc.NewCollectionId(), r.Name,
+		clc.WithDescription(r.Description),
+		clc.WithCreatedAt(i.clock.Now()))
 	if err := i.repo.Create(*collection); err != nil {
 		return err
 	}
@@ -70,6 +74,7 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	out.Error(err)
 }
 
-func NewInteractor(r CreateRepo, v v.Validator) *Interactor {
-	return &Interactor{repo: r, validator: v, logger: logging.NewNoOpLogger()}
+func NewInteractor(r CreateRepo, v v.Validator, clock clockwork.Clock) *Interactor {
+	return &Interactor{repo: r, validator: v, logger: logging.NewNoOpLogger(),
+		clock: clock}
 }

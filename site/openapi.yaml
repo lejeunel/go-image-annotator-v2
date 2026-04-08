@@ -147,6 +147,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a collection
+      description: Update the name and description of a collection
+      operationId: updateCollectionByName
+      tags: [Collection]
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Current name of the collection
+          schema:
+            type: string
+      requestBody:
+        description: New values for the collection
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCollection'
+      responses:
+        '200':
+          description: Collection updated successfully
+        '404':
+          description: Collection not found
+        '400':
+          description: Invalid input
     delete:
       summary: Delete a collection by name
       description: Delete a collection based on its name
@@ -388,6 +414,19 @@ components:
         description:
           type: string
           description: Description of the collection
+    UpdateCollection:
+      type: object
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+          description: New name of the collection
+        description:
+          type: string
+          description: New description of the collection
+
     ListCollectionsResponse:
       type: object
       required:

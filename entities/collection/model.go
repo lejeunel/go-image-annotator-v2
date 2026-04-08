@@ -1,9 +1,12 @@
 package collection
 
+import "time"
+
 type Collection struct {
 	Id          CollectionId
 	Name        string
 	Description string
+	CreatedAt   time.Time
 }
 
 func NewCollection(id CollectionId, name string, opts ...Option) *Collection {
@@ -19,5 +22,11 @@ type Option func(*Collection)
 func WithDescription(d string) Option {
 	return func(c *Collection) {
 		c.Description = d
+	}
+}
+
+func WithCreatedAt(t time.Time) Option {
+	return func(c *Collection) {
+		c.CreatedAt = t
 	}
 }

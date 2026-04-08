@@ -5,6 +5,7 @@ import (
 
 	"database/sql"
 	"errors"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
@@ -22,22 +23,34 @@ type Row struct {
 	Id          clc.CollectionId `db:"id"`
 	Name        string           `db:"name"`
 	Description string           `db:"description"`
+	CreatedAt   sql.NullTime     `db:"created_at"`
 }
 
 func (r *SQLiteCollectionRepo) Create(c clc.Collection) error {
-	query := "INSERT INTO collections (id, name, description) VALUES ($1,$2,$3)"
-	_, err := r.Db.Exec(query, c.Id.String(), c.Name, c.Description)
+	query := "INSERT INTO collections (id, name, description, created_at) VALUES ($1,$2,$3,$4)"
+	_, err := r.Db.Exec(query, c.Id.String(), c.Name, c.Description, c.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("creating record: %v: %w", err, e.ErrInternal)
 	}
 
 	return nil
 }
+
+func (r *SQLiteCollectionRepo) rowToEntity(row Row) clc.Collection {
+	c := clc.NewCollection(row.Id, row.Name,
+		clc.WithDescription(row.Description))
+	if row.CreatedAt.Valid {
+		c.CreatedAt = row.CreatedAt.Time
+	}
+	return *c
+
+}
+
 func (r *SQLiteCollectionRepo) FindCollectionByName(name string) (*clc.Collection, error) {
 
 	row := Row{}
 	err := r.Db.Get(&row,
-		"SELECT id,name,description FROM collections WHERE name=$1", name)
+		"SELECT id,name,description,created_at FROM collections WHERE name=$1", name)
 
 	if err != nil {
 		switch {
@@ -48,7 +61,8 @@ func (r *SQLiteCollectionRepo) FindCollectionByName(name string) (*clc.Collectio
 		}
 	}
 
-	return clc.NewCollection(row.Id, row.Name, clc.WithDescription(row.Description)), nil
+	entity := r.rowToEntity(row)
+	return &entity, nil
 }
 
 func (r *SQLiteCollectionRepo) Exists(name string) (bool, error) {
@@ -106,7 +120,7 @@ func (r *SQLiteCollectionRepo) Count() (*int64, error) {
 	return &count, nil
 }
 func (r *SQLiteCollectionRepo) List(m list.Request) ([]*clc.Collection, error) {
-	q := sq.StatementBuilder.Select("id,name,description").From("collections")
+	q := sq.StatementBuilder.Select("id,name,description,created_at").From("collections")
 	q = q.Limit(uint64(m.PageSize)).Offset((uint64(m.Page-1) * uint64(m.PageSize)))
 	sql, args, err := q.ToSql()
 	if err != nil {
@@ -118,8 +132,9 @@ func (r *SQLiteCollectionRepo) List(m list.Request) ([]*clc.Collection, error) {
 	}
 
 	objects := []*clc.Collection{}
-	for _, r := range records {
-		objects = append(objects, &clc.Collection{Id: r.Id, Name: r.Name, Description: r.Description})
+	for _, rec := range records {
+		e := r.rowToEntity(rec)
+		objects = append(objects, &e)
 	}
 
 	return objects, nil

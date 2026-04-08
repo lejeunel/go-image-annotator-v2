@@ -6,6 +6,7 @@ import (
 )
 
 func RegisterWebPages(mux *http.ServeMux, server web.Server) {
-	mux.HandleFunc("/", server.ListCollections)
+	mux.HandleFunc("/", HomePageHandler)
 	mux.HandleFunc("/collections", server.ListCollections)
+	mux.HandleFunc("/labels", server.ListLabels)
 }

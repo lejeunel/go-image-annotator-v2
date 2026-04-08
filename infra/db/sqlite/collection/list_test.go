@@ -36,22 +36,26 @@ func TestInternalErrOnCollectionListShouldFail(t *testing.T) {
 
 func TestListCollections(t *testing.T) {
 	repo := NewTestSQLiteCollectionRepo()
-	firstCollection, _ := CreateCollection(repo, "a-collection")
-	secondCollection, _ := CreateCollection(repo, "another-collection")
-	collections, err := repo.List(l.Request{Page: 1, PageSize: 2})
+	first, _ := CreateCollection(repo, "a-collection")
+	second, _ := CreateCollection(repo, "another-collection")
+	cs, err := repo.List(l.Request{Page: 1, PageSize: 2})
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
 	}
-	if len(collections) != 2 {
-		t.Fatalf("expected two collections, got %v", len(collections))
+	if len(cs) != 2 {
+		t.Fatalf("expected two collections, got %v", len(cs))
 	}
-	if collections[0].Name == collections[1].Name {
+	if cs[0].Name == cs[1].Name {
 		t.Fatalf("expected to retrieve two distinct collections with name %v and %v, got %v and %v",
-			firstCollection.Name, secondCollection.Name, collections[0].Name, collections[1].Name)
+			first.Name, second.Name, cs[0].Name, cs[1].Name)
 
 	}
-	if collections[0].Description != firstCollection.Description {
+	if cs[0].Description != first.Description {
 		t.Fatalf("expected to retrieve collection with description %v , got %v",
-			firstCollection.Description, collections[0].Description)
+			first.Description, cs[0].Description)
+	}
+	if !cs[0].CreatedAt.Equal(first.CreatedAt) {
+		t.Fatalf("expected to retrieve created at %v , got %v",
+			first.CreatedAt, cs[0].CreatedAt)
 	}
 }

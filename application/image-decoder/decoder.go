@@ -8,44 +8,49 @@ import (
 	i "image"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"slices"
 )
 
 type Base64ImageDecoder struct {
 	AllowedFormats []string
+	Base64Data     string
+	data           []byte
+	offset         int
 }
 
-func NewBase64ImageDecoder(allowedFormats []string) *Base64ImageDecoder {
-	return &Base64ImageDecoder{AllowedFormats: allowedFormats}
+func NewBase64ImageDecoder(allowedFormats []string, base64Data string) *Base64ImageDecoder {
+	return &Base64ImageDecoder{AllowedFormats: allowedFormats, Base64Data: base64Data}
 
 }
 
-// Decode decodes an image that has been encoded in base64.
-// If the raw-bytes cannot be decoded to specified allowed formats,
-// return an internal error
-// The string returned is the format name used during format registration.
-func (r *Base64ImageDecoder) Decode(data any) ([]byte, *string, error) {
+func (r *Base64ImageDecoder) Read(p []byte) (int, error) {
 	errCtx := "decoding base64 data"
 
-	strData, ok := data.(string)
-	if !ok {
-		return nil, nil, fmt.Errorf("%v: expected string input, got %T: %w", errCtx, data, e.ErrImageFormat)
+	if r.data == nil {
+		bytesData, err := base64.StdEncoding.DecodeString(r.Base64Data)
+		if err != nil {
+			return 0, fmt.Errorf("%v: %v: %w", errCtx, err, e.ErrImageFormat)
+		}
+
+		_, format, err := i.Decode(bytes.NewBuffer(bytesData))
+		if err != nil {
+			return 0, fmt.Errorf("%v: decoding image data: %v: %w", errCtx, err, e.ErrImageFormat)
+		}
+
+		if !slices.Contains(r.AllowedFormats, format) {
+			return 0, fmt.Errorf("%v: checking for supported format (allowed formats are %v): %v: %w",
+				errCtx, r.AllowedFormats, err, e.ErrImageFormat)
+		}
+		r.data = bytesData
+
+	}
+	if r.offset >= len(r.data) {
+		return 0, io.EOF
 	}
 
-	bytesData, err := base64.StdEncoding.DecodeString(strData)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%v: %v: %w", errCtx, err, e.ErrImageFormat)
-	}
+	n := copy(p, r.data[r.offset:])
+	r.offset += n
 
-	_, format, err := i.Decode(bytes.NewBuffer(bytesData))
-	if err != nil {
-		return nil, nil, fmt.Errorf("%v: decoding image data: %v: %w", errCtx, err, e.ErrImageFormat)
-	}
-
-	if !slices.Contains(r.AllowedFormats, format) {
-		return nil, nil, fmt.Errorf("%v: checking for supported format (allowed formats are %v): %v: %w",
-			errCtx, r.AllowedFormats, err, e.ErrImageFormat)
-	}
-
-	return bytesData, &format, nil
+	return n, nil
 }

@@ -24,9 +24,12 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	if err := i.ensureNameDoesNotExist(r.NewName); err != nil {
-		i.handleError(err, out)
-		return
+	if r.NewName != r.Name {
+		if err := i.ensureNameDoesNotExist(r.NewName); err != nil {
+			i.handleError(err, out)
+			return
+		}
+
 	}
 
 	if err := i.repo.Update(Model{Name: r.Name, NewName: r.NewName, NewDescription: r.NewDescription}); err != nil {
@@ -62,7 +65,7 @@ func (i *Interactor) ensureNameDoesNotExist(name string) error {
 }
 
 func (i *Interactor) handleError(err error, out OutputPort) {
-	errCtx := "deleting collection"
+	errCtx := "updating collection"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
 	out.Error(err)

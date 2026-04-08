@@ -1,11 +1,14 @@
 package sqlite
 
 import (
+	"time"
+
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 )
 
 func CreateCollection(repo *SQLiteCollectionRepo, name string) (*clc.Collection, error) {
-	c := clc.NewCollection(clc.NewCollectionId(), name, clc.WithDescription("a-description"))
+	c := clc.NewCollection(clc.NewCollectionId(), name,
+		clc.WithDescription("a-description"), clc.WithCreatedAt(time.Now()))
 	if err := repo.Create(*c); err != nil {
 		return nil, err
 	}
