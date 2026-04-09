@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"net/url"
 
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/list"
@@ -21,9 +22,15 @@ func (p ListLabelsPresenter) Success(r list.Response) {
 	p.RenderSuccess(table, r.Pagination)
 }
 
+func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request) {
+	s.ListLabelsInteractor.Execute(list.Request{PageSize: s.PageSize, Page: int64(GetPageFromRequest(r))},
+		NewListLabelsPresenter(w))
+}
+
 func NewListLabelsPresenter(w http.ResponseWriter) ListLabelsPresenter {
+	baseURL, _ := url.Parse("/labels")
 	return ListLabelsPresenter{
-		ListRenderer: NewListRenderer("Labels", "/labels",
+		ListRenderer: NewListRenderer("Labels", *baseURL,
 			html.NavBarActivatedItems{Labels: true}, w),
 	}
 }

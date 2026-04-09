@@ -10,12 +10,12 @@ import (
 )
 
 type Interactor struct {
-	store  st.ImageStore
+	store  st.IImageStore
 	repo   Repo
 	logger *slog.Logger
 }
 
-func NewInteractor(store st.ImageStore, repo Repo) *Interactor {
+func NewInteractor(store st.IImageStore, repo Repo) *Interactor {
 	return &Interactor{store: store, repo: repo, logger: logging.NewNoOpLogger()}
 }
 

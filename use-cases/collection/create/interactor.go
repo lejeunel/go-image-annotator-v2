@@ -12,7 +12,7 @@ import (
 )
 
 type Interactor struct {
-	repo      CreateRepo
+	repo      Repo
 	validator v.Validator
 	logger    *slog.Logger
 	clock     clockwork.Clock
@@ -74,7 +74,11 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	out.Error(err)
 }
 
-func NewInteractor(r CreateRepo, v v.Validator, clock clockwork.Clock) *Interactor {
+func NewInteractor(r Repo, v v.Validator, clock clockwork.Clock) *Interactor {
 	return &Interactor{repo: r, validator: v, logger: logging.NewNoOpLogger(),
 		clock: clock}
+}
+
+func NewDefaultInteractor(repo Repo) *Interactor {
+	return NewInteractor(repo, v.NewNameValidator(), clockwork.NewRealClock())
 }

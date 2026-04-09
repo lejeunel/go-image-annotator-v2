@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/api/json/label"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/models"
@@ -23,8 +22,7 @@ type LabelServer struct {
 	DefaultPageSize int
 }
 
-func NewHTTPLabelServer(db *sqlx.DB) *LabelServer {
-	repo := infra.NewSQLiteLabelRepo(db)
+func NewHTTPLabelServer(repo *infra.SQLiteLabelRepo) *LabelServer {
 	return &LabelServer{
 		Find:            *read.NewInteractor(repo),
 		Create:          *create.NewInteractor(repo, validation.NewNameValidator()),

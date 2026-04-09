@@ -3,16 +3,15 @@ package web
 import (
 	"io"
 
-	s "github.com/lejeunel/go-image-annotator-v2/shared"
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
-	. "maragu.dev/gomponents"
+	"net/url"
 )
 
 type ListRenderer struct {
 	Title       string
 	NavBarSpecs html.NavBarActivatedItems
-	ListURL     string
+	ListURL     url.URL
 	Writer      io.Writer
 }
 
@@ -22,11 +21,10 @@ func (p ListRenderer) RenderSuccess(table html.MyTable, pagination pagination.Pa
 }
 
 func (p ListRenderer) Error(err error) {
-	html.MakeBasePage(p.Title, Text(err.Error()),
-		html.Scripts(html.ScriptIncludes{}), p.NavBarSpecs, s.RepoURL).Render(p.Writer)
+	html.MakeErrorPage(err.Error()).Render(p.Writer)
 }
 
-func NewListRenderer(title, listURL string, navBarSpecs html.NavBarActivatedItems, w io.Writer) ListRenderer {
+func NewListRenderer(title string, listURL url.URL, navBarSpecs html.NavBarActivatedItems, w io.Writer) ListRenderer {
 	return ListRenderer{Title: title, ListURL: listURL,
 		NavBarSpecs: navBarSpecs, Writer: w}
 

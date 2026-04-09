@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
+	app "github.com/lejeunel/go-image-annotator-v2/application"
 )
 
 type Server struct {
@@ -10,11 +10,10 @@ type Server struct {
 	Image      *ImageServer
 }
 
-func NewSQLiteServer(dbPath, artefactDir string, allowedImageFormats []string) *Server {
-	db := sqlite.NewSQLiteDB(dbPath)
+func NewSQLiteServer(app *app.SQLiteApp, allowedImageFormats []string) *Server {
 	return &Server{
-		Label:      NewHTTPLabelServer(db),
-		Collection: NewHTTPCollectionServer(db),
-		Image:      NewHTTPImageServer(db, artefactDir, allowedImageFormats),
+		Label:      NewHTTPLabelServer(app.LabelRepo),
+		Collection: NewHTTPCollectionServer(app.CollectionRepo),
+		Image:      NewHTTPImageServer(app, allowedImageFormats),
 	}
 }

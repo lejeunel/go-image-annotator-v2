@@ -24,7 +24,7 @@ func NewFileArtefactRepo(baseDir string) *FileArtefactRepo {
 
 // filePath returns the full path for a given ImageId
 func (r *FileArtefactRepo) filePath(id im.ImageId) string {
-	return filepath.Join(r.baseDir, fmt.Sprintf("%s.bin", id.String()))
+	return filepath.Join(r.baseDir, fmt.Sprintf("%s", id.String()))
 }
 
 // Store writes the byte slice to a file

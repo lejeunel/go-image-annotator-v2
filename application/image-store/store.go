@@ -8,18 +8,14 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
-type ImageStore interface {
-	Find(im.BaseImage) (*im.Image, error)
-}
-
-type MyImageStore struct {
+type ImageStore struct {
 	collectionRepo CollectionRepo
 	annotationRepo AnnotationRepo
 	imageRepo      ImageRepo
 	artefactRepo   ast.ArtefactRepo
 }
 
-func (s *MyImageStore) Find(base im.BaseImage) (*im.Image, error) {
+func (s ImageStore) Find(base im.BaseImage) (*im.Image, error) {
 	collection, err := s.collectionRepo.FindCollectionByName(base.Collection)
 	if err != nil {
 		return nil, fmt.Errorf("fetching collection by name (%v): %w", base.Collection, err)
@@ -53,8 +49,8 @@ func (s *MyImageStore) Find(base im.BaseImage) (*im.Image, error) {
 }
 
 func NewImageStore(imageRepo ImageRepo, collectionRepo CollectionRepo,
-	annotationRepo AnnotationRepo, artefactRepo ast.ArtefactRepo) *MyImageStore {
-	return &MyImageStore{imageRepo: imageRepo,
+	annotationRepo AnnotationRepo, artefactRepo ast.ArtefactRepo) *ImageStore {
+	return &ImageStore{imageRepo: imageRepo,
 		collectionRepo: collectionRepo,
 		annotationRepo: annotationRepo,
 		artefactRepo:   artefactRepo}

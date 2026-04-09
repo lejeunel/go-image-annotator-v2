@@ -1,4 +1,4 @@
-package site
+package web
 
 import (
 	s "github.com/lejeunel/go-image-annotator-v2/shared"

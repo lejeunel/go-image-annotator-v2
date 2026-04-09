@@ -4,19 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/api/json/image"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/models"
-	far "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	app "github.com/lejeunel/go-image-annotator-v2/application"
 	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
 	dec "github.com/lejeunel/go-image-annotator-v2/application/image-decoder"
-	image_store "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	image "github.com/lejeunel/go-image-annotator-v2/entities/image"
-	anr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/annotation"
-	clr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
-	imr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
-	lbr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/ingest"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read-meta"
@@ -29,18 +23,13 @@ type ImageServer struct {
 	AllowedImageFormats []string
 }
 
-func NewHTTPImageServer(db *sqlx.DB, baseDir string, allowedImageFormats []string) *ImageServer {
-	imRepo := imr.NewSQLiteImageRepo(db)
-	clRepo := clr.NewSQLiteCollectionRepo(db)
-	lbRepo := lbr.NewSQLiteLabelRepo(db)
-	anRepo := anr.NewSQLiteAnnotationRepo(db)
-	artRepo := far.NewFileArtefactRepo(baseDir)
-	imStore := image_store.NewImageStore(imRepo, clRepo, anRepo, artRepo)
+func NewHTTPImageServer(app *app.SQLiteApp, allowedImageFormats []string) *ImageServer {
 	return &ImageServer{
-		Ingest: *ingest.NewInteractor(imRepo, clRepo, lbRepo, anRepo,
-			artRepo, has.NewSha256Hasher()),
-		ReadMeta:            *read_meta.NewInteractor(imStore),
-		List:                *list.NewInteractor(imRepo, imStore),
+		Ingest: *ingest.NewInteractor(app.ImageRepo, app.CollectionRepo,
+			app.LabelRepo, app.AnnotationRepo,
+			app.ArtefactRepo, has.NewSha256Hasher()),
+		ReadMeta:            *read_meta.NewInteractor(*app.ImageStore),
+		List:                *list.NewInteractor(app.ImageRepo, app.ImageStore),
 		AllowedImageFormats: allowedImageFormats,
 	}
 }

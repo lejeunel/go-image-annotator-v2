@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"net/url"
 
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/list"
@@ -16,15 +17,21 @@ func (p ListCollectionsPresenter) Success(r list.Response) {
 	table := html.MyTable{Fields: []string{"name", "description", "created"}}
 	for _, c := range r.Collections {
 		table.Rows = append(table.Rows,
-			html.TableRow{Values: []Node{html.MakeTextLink("/collection/"+c.Name, c.Name),
+			html.TableRow{Values: []Node{html.MakeTextLink("/images?collection="+c.Name, c.Name),
 				Raw(c.Description), Raw(DateTimeToStr(c.CreatedAt))}})
 	}
 	p.RenderSuccess(table, r.Pagination)
 }
 
+func (s *Server) ListCollections(w http.ResponseWriter, r *http.Request) {
+	s.ListCollectionsInteractor.Execute(list.Request{PageSize: s.PageSize, Page: int64(GetPageFromRequest(r))},
+		NewListCollectionsPresenter(w))
+}
+
 func NewListCollectionsPresenter(w http.ResponseWriter) ListCollectionsPresenter {
+	baseURL, _ := url.Parse("/collections")
 	return ListCollectionsPresenter{
-		ListRenderer: NewListRenderer("Collections", "/collections",
+		ListRenderer: NewListRenderer("Collections", *baseURL,
 			html.NavBarActivatedItems{Collections: true}, w),
 	}
 }

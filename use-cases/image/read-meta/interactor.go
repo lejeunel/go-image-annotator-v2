@@ -9,11 +9,11 @@ import (
 )
 
 type Interactor struct {
-	store  st.ImageStore
+	store  st.IImageStore
 	logger *slog.Logger
 }
 
-func NewInteractor(store st.ImageStore) *Interactor {
+func NewInteractor(store st.IImageStore) *Interactor {
 	return &Interactor{store: store, logger: logging.NewNoOpLogger()}
 }
 

@@ -2,9 +2,12 @@ package html
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
+
+	s "github.com/lejeunel/go-image-annotator-v2/shared"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
-	"strconv"
 )
 
 func MakePaginatorEllipsis() Node {
@@ -18,13 +21,13 @@ func MakePaginatorEllipsis() Node {
 	))
 }
 
-func MakePaginatorNumberedButton(baseURL string, pageNumber int, isActive bool) Node {
-	url := fmt.Sprintf("%v?page=%v", baseURL, pageNumber)
+func MakePaginatorNumberedButton(baseURL url.URL, pageNumber int, isActive bool) Node {
+	url := s.URLWithQuery(baseURL, "page", strconv.Itoa(pageNumber))
 	class := Class("flex size-6 items-center justify-center rounded-radius p-1 text-on-surface hover:text-primary dark:text-on-surface-dark dark:hover:text-primary-dark")
 	if isActive {
 		class = Class("flex size-6 items-center justify-center rounded-radius bg-primary p-1 font-bold text-on-primary dark:bg-primary-dark dark:text-on-primary-dark")
 	}
-	return Li(A(Href(url),
+	return Li(A(Href(url.String()),
 		class,
 		Aria("label", fmt.Sprintf("page %v", pageNumber)),
 		Text(strconv.Itoa(pageNumber)),
@@ -56,18 +59,18 @@ func MakePaginatorNext(url string) Node {
 
 }
 
-func MakePaginator(baseURL string, currentPage, lastPage, numItems, totalItems int) Node {
-	prevURL := fmt.Sprintf("%v?page=%v", baseURL, currentPage-1)
-	nextURL := fmt.Sprintf("%v?page=%v", baseURL, currentPage+1)
+func MakePaginator(baseURL url.URL, currentPage, lastPage, numItems, totalItems int) Node {
+	prevURL := s.URLWithQuery(baseURL, "page", strconv.Itoa(currentPage-1))
+	nextURL := s.URLWithQuery(baseURL, "page", strconv.Itoa(currentPage+1))
 	return Nav(Aria("label", "pagination"),
 		Ul(Class("flex shrink-0 items-center gap-2 text-sm font-medium"),
-			If(currentPage > 1, MakePaginatorPrevious(prevURL)),
+			If(currentPage > 1, MakePaginatorPrevious(prevURL.String())),
 			If(currentPage > 1, MakePaginatorNumberedButton(baseURL, currentPage-1, false)),
 			If(lastPage > 1, MakePaginatorNumberedButton(baseURL, currentPage, true)),
 			If(lastPage-2 > currentPage, MakePaginatorEllipsis()),
 			If(lastPage-1 > currentPage, MakePaginatorNumberedButton(baseURL, lastPage-1, false)),
 			If(lastPage > currentPage, MakePaginatorNumberedButton(baseURL, lastPage, false)),
-			If(currentPage < lastPage, MakePaginatorNext(nextURL)),
+			If(currentPage < lastPage, MakePaginatorNext(nextURL.String())),
 			Span(Class("font-light"), Text(fmt.Sprintf("Showing %v items out of %v", numItems, totalItems))),
 		))
 }

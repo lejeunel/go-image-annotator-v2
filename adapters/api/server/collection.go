@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/jonboulle/clockwork"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/api/json/collection"
@@ -26,8 +25,7 @@ type CollectionServer struct {
 	DefaultPageSize int
 }
 
-func NewHTTPCollectionServer(db *sqlx.DB) *CollectionServer {
-	repo := infra.NewSQLiteCollectionRepo(db)
+func NewHTTPCollectionServer(repo *infra.SQLiteCollectionRepo) *CollectionServer {
 	return &CollectionServer{
 		Find:            *read.NewInteractor(repo),
 		Create:          *create.NewInteractor(repo, validation.NewNameValidator(), clockwork.NewRealClock()),

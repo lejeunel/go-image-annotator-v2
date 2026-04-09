@@ -1,6 +1,8 @@
 package html
 
 import (
+	"net/url"
+
 	s "github.com/lejeunel/go-image-annotator-v2/shared"
 	"github.com/lejeunel/go-image-annotator-v2/shared/pagination"
 	. "maragu.dev/gomponents"
@@ -30,7 +32,7 @@ func Scripts(include ScriptIncludes) Node {
 	return Group(scripts)
 }
 
-func MakePaginatedContent(baseURL string, table MyTable, p pagination.Pagination) Node {
+func MakePaginatedContent(baseURL url.URL, table MyTable, p pagination.Pagination) Node {
 	paginator := MakePaginator(baseURL, int(p.Page), int(p.TotalPages), len(table.Rows), int(p.TotalRecords))
 	return Div(Div(Class("py-2"), paginator), table.Render())
 
@@ -43,7 +45,7 @@ func MakeTitledPage(title string, content Node, scripts Node, navBarActivatedIte
 	return MakeBasePage(title, wrappedContent, scripts, navBarActivatedItems, repoURL)
 }
 
-func MakePaginatedView(baseURL string, title string, pagination pagination.Pagination,
+func MakePaginatedView(baseURL url.URL, title string, pagination pagination.Pagination,
 	table MyTable, navBarActives NavBarActivatedItems) Node {
 
 	content := MakePaginatedContent(baseURL, table, pagination)
@@ -51,6 +53,11 @@ func MakePaginatedView(baseURL string, title string, pagination pagination.Pagin
 		Scripts(ScriptIncludes{}),
 		navBarActives, s.RepoURL)
 
+}
+
+func MakeErrorPage(error_msg string) Node {
+	return MakeBasePage("Oops!", Text(error_msg),
+		Scripts(ScriptIncludes{}), NavBarActivatedItems{}, s.RepoURL)
 }
 
 func MakeBasePage(title string, content Node, scripts Node, navBarActivatedItems NavBarActivatedItems, repoURL string) Node {

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS collections (
     id varchar(36),
     name varchar(30) not null unique,
     description text,
+    created_at DATETIME,
     PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX idx_collections_name ON collections(name);
