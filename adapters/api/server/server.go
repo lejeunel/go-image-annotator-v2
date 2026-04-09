@@ -1,19 +1,13 @@
 package server
 
 import (
-	app "github.com/lejeunel/go-image-annotator-v2/application"
+	i "github.com/lejeunel/go-image-annotator-v2/application/interactors"
 )
 
 type Server struct {
-	Label      *LabelServer
-	Collection *CollectionServer
-	Image      *ImageServer
+	*i.Interactors
 }
 
-func NewSQLiteServer(app *app.SQLiteApp, allowedImageFormats []string) *Server {
-	return &Server{
-		Label:      NewHTTPLabelServer(app.LabelRepo),
-		Collection: NewHTTPCollectionServer(app.CollectionRepo),
-		Image:      NewHTTPImageServer(app, allowedImageFormats),
-	}
+func NewServer(interactors *i.Interactors) *Server {
+	return &Server{interactors}
 }

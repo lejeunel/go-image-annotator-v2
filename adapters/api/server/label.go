@@ -6,31 +6,11 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/api/json/label"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/models"
-	infra "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
-	"github.com/lejeunel/go-image-annotator-v2/shared/validation"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/create"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/delete"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/read"
 )
-
-type LabelServer struct {
-	Find            read.Interactor
-	Create          create.Interactor
-	Delete          delete.Interactor
-	List            list.Interactor
-	DefaultPageSize int
-}
-
-func NewHTTPLabelServer(repo *infra.SQLiteLabelRepo) *LabelServer {
-	return &LabelServer{
-		Find:            *read.NewInteractor(repo),
-		Create:          *create.NewInteractor(repo, validation.NewNameValidator()),
-		Delete:          *delete.NewInteractor(repo),
-		List:            *list.NewInteractor(repo),
-		DefaultPageSize: 20,
-	}
-}
 
 func (s *Server) FindLabelByName(w http.ResponseWriter, r *http.Request, name string) {
 	s.Label.Find.Execute(read.Request{Name: name}, presenter.NewFindPresenter(w))

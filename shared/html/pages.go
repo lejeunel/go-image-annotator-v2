@@ -38,11 +38,11 @@ func MakePaginatedContent(baseURL url.URL, table MyTable, p pagination.Paginatio
 
 }
 
-func MakeTitledPage(title string, content Node, scripts Node, navBarActivatedItems NavBarActivatedItems, repoURL string) Node {
+func MakeTitledPage(title string, content Node, scripts Node, navBarActivatedItems NavBarActivatedItems) Node {
 	wrappedContent := Div(Span(Class("font-extrabold text-2xl font-roboto text-gray-900 dark:text-gray-100"), Text(title)),
 		Span(content),
 	)
-	return MakeBasePage(title, wrappedContent, scripts, navBarActivatedItems, repoURL)
+	return MakeBasePage(title, wrappedContent, scripts, navBarActivatedItems)
 }
 
 func MakePaginatedView(baseURL url.URL, title string, pagination pagination.Pagination,
@@ -51,16 +51,16 @@ func MakePaginatedView(baseURL url.URL, title string, pagination pagination.Pagi
 	content := MakePaginatedContent(baseURL, table, pagination)
 	return MakeTitledPage(title, content,
 		Scripts(ScriptIncludes{}),
-		navBarActives, s.RepoURL)
+		navBarActives)
 
 }
 
 func MakeErrorPage(error_msg string) Node {
 	return MakeBasePage("Oops!", Text(error_msg),
-		Scripts(ScriptIncludes{}), NavBarActivatedItems{}, s.RepoURL)
+		Scripts(ScriptIncludes{}), NavBarActivatedItems{})
 }
 
-func MakeBasePage(title string, content Node, scripts Node, navBarActivatedItems NavBarActivatedItems, repoURL string) Node {
+func MakeBasePage(title string, content Node, scripts Node, navBarActivatedItems NavBarActivatedItems) Node {
 	return Doctype(HTML(
 		Attr("x-data", `{
 					darkMode: false,
@@ -94,7 +94,7 @@ console.log("init")
 		),
 		Body(
 			Class("bg-white text-gray-900 dark:bg-gray-900 dark:text-white"),
-			MakeNavBar(navBarActivatedItems, repoURL),
+			MakeNavBar(navBarActivatedItems, s.RepoURL),
 			Div(Class("grow w-full px-1 md:px-2 lg:px-4 py-10 md:py-20"), content),
 			scripts,
 		),

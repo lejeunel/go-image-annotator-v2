@@ -1,7 +1,6 @@
 package site
 
 import (
-	s "github.com/lejeunel/go-image-annotator-v2/shared"
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
@@ -16,6 +15,5 @@ func APIDocsPage(specsFilePath string) Node {
 				Attr("layout", "sidebar"),
 			)),
 		html.Scripts(html.ScriptIncludes{SpotLight: true}),
-		html.NavBarActivatedItems{API: true},
-		s.RepoURL)
+		html.NavBarActivatedItems{API: true})
 }

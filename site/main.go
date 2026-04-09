@@ -4,8 +4,9 @@ import (
 	"fmt"
 	api "github.com/lejeunel/go-image-annotator-v2/adapters/api/server"
 	web "github.com/lejeunel/go-image-annotator-v2/adapters/web"
-	app "github.com/lejeunel/go-image-annotator-v2/application"
 	"github.com/lejeunel/go-image-annotator-v2/config"
+	"github.com/lejeunel/go-image-annotator-v2/infra"
+	i "github.com/lejeunel/go-image-annotator-v2/infra/interactors"
 	"net/http"
 )
 
@@ -24,10 +25,11 @@ func Serve(port int) {
 	cfg := config.Parse()
 	mux := http.NewServeMux()
 
-	app := app.NewSQLiteApp(cfg.DBPath, cfg.ArtefactDir)
+	interactors := i.NewSQLiteInteractors(infra.NewSQLiteInfra(cfg.DBPath, cfg.ArtefactDir),
+		cfg.AllowedImageFormats)
 	RegisterHandlers(mux,
-		*api.NewSQLiteServer(app, cfg.AllowedImageFormats),
-		*web.NewSQLiteServer(app),
+		*api.NewServer(interactors),
+		*web.NewServer(interactors),
 		SiteConfig{APIDocsPath: "/api/docs", OpenAPISpecsPath: "/api/openapi.yaml"})
 
 	fmt.Println("serving on port:", port)

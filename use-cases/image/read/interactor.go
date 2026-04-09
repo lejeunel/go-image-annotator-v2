@@ -1,4 +1,4 @@
-package read_meta
+package read
 
 import (
 	"fmt"
@@ -25,12 +25,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	out.Success(im.Response{
-		Id:            image.Id,
-		Collection:    image.Collection.Name,
-		Labels:        image.Labels,
-		BoundingBoxes: image.BoundingBoxes,
-	})
+	out.Success(image)
 }
 
 func (i *Interactor) handleError(err error, out OutputPort) {

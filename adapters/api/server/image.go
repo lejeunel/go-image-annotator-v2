@@ -7,32 +7,12 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/api/json/image"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/models"
-	app "github.com/lejeunel/go-image-annotator-v2/application"
-	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
-	dec "github.com/lejeunel/go-image-annotator-v2/application/image-decoder"
+	rd "github.com/lejeunel/go-image-annotator-v2/application/image-reader"
 	image "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/ingest"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/list"
-	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read-meta"
+	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read"
 )
-
-type ImageServer struct {
-	Ingest              ingest.Interactor
-	ReadMeta            read_meta.Interactor
-	List                list.Interactor
-	AllowedImageFormats []string
-}
-
-func NewHTTPImageServer(app *app.SQLiteApp, allowedImageFormats []string) *ImageServer {
-	return &ImageServer{
-		Ingest: *ingest.NewInteractor(app.ImageRepo, app.CollectionRepo,
-			app.LabelRepo, app.AnnotationRepo,
-			app.ArtefactRepo, has.NewSha256Hasher()),
-		ReadMeta:            *read_meta.NewInteractor(*app.ImageStore),
-		List:                *list.NewInteractor(app.ImageRepo, app.ImageStore),
-		AllowedImageFormats: allowedImageFormats,
-	}
-}
 
 func (s *Server) IngestImage(w http.ResponseWriter, r *http.Request) {
 	body, ok := json.MustDecodeJSON[models.NewImage](w, r)
@@ -49,7 +29,7 @@ func (s *Server) ReadImage(w http.ResponseWriter, r *http.Request, collectionNam
 	if err != nil {
 		json.WriteError(w, http.StatusBadRequest, fmt.Errorf("parsing UUID from string: %w", err).Error())
 	}
-	s.Image.ReadMeta.Execute(read_meta.Request{ImageId: id, Collection: collectionName},
+	s.Image.Read.Execute(read.Request{ImageId: id, Collection: collectionName},
 		presenter.NewReadMetaPresenter(w))
 }
 
@@ -66,7 +46,7 @@ func (s *Server) ListImages(w http.ResponseWriter, r *http.Request, params ListI
 
 func NewIngestImageRequest(req models.NewImage, allowedImageFormats []string) ingest.Request {
 
-	ingestReq := ingest.Request{Collection: req.Collection, Reader: dec.NewBase64ImageDecoder(allowedImageFormats, req.Data)}
+	ingestReq := ingest.Request{Collection: req.Collection, Reader: rd.NewBase64ImageDecoder(allowedImageFormats, req.Data)}
 	appendLabelsToIngestImageRequest(&ingestReq, req.Labels)
 	appendBoundingBoxesToIngestImageRequest(&ingestReq, req.BoundingBoxes)
 	return ingestReq

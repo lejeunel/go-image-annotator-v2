@@ -23,7 +23,7 @@ func (p ListLabelsPresenter) Success(r list.Response) {
 }
 
 func (s *Server) ListLabels(w http.ResponseWriter, r *http.Request) {
-	s.ListLabelsInteractor.Execute(list.Request{PageSize: s.PageSize, Page: int64(GetPageFromRequest(r))},
+	s.Label.List.Execute(list.Request{PageSize: s.Label.DefaultPageSize, Page: int64(GetPageFromRequest(r))},
 		NewListLabelsPresenter(w))
 }
 

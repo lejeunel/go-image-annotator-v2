@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	rd "github.com/lejeunel/go-image-annotator-v2/application/image-reader"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
@@ -44,7 +45,7 @@ func (s ImageStore) Find(base im.BaseImage) (*im.Image, error) {
 
 	return &im.Image{Id: base.ImageId, Collection: *collection, Labels: labels,
 		BoundingBoxes: boxes,
-		Reader:        *ast.NewImageReader(base.ImageId, s.artefactRepo)}, nil
+		Reader:        rd.NewImageReader(base.ImageId, s.artefactRepo)}, nil
 
 }
 

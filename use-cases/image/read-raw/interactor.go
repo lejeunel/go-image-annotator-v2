@@ -2,7 +2,6 @@ package read_raw
 
 import (
 	"fmt"
-	"io"
 
 	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
@@ -15,7 +14,7 @@ type Interactor struct {
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
-	data, err := io.ReadAll(ast.NewImageReader(r.ImageId, i.repo))
+	data, err := i.repo.Get(r.ImageId)
 	if err != nil {
 		i.handleError(err, out)
 		return

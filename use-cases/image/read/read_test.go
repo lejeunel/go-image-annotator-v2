@@ -1,4 +1,4 @@
-package read_meta
+package read
 
 import (
 	"testing"
@@ -41,7 +41,7 @@ func TestFindImage(t *testing.T) {
 	if !p.GotSuccess {
 		t.Fatalf("expected to get success")
 	}
-	if !(got.Id == existingImage.Id) || !(got.Collection == existingImage.Collection.Name) {
+	if !(got.Id == existingImage.Id) || !(got.Collection.Name == existingImage.Collection.Name) {
 		t.Fatalf("expected to get image id: %v, collection %v, got %v, %v",
 			existingImage.Id, existingImage.Collection.Name,
 			got.Id, got.Collection)

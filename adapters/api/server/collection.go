@@ -3,38 +3,15 @@ package server
 import (
 	"net/http"
 
-	"github.com/jonboulle/clockwork"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/json"
 	presenter "github.com/lejeunel/go-image-annotator-v2/adapters/api/json/collection"
 	"github.com/lejeunel/go-image-annotator-v2/adapters/api/models"
-	infra "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
-	"github.com/lejeunel/go-image-annotator-v2/shared/validation"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/create"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/delete"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/list"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/read"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/update"
 )
-
-type CollectionServer struct {
-	Find            read.Interactor
-	Create          create.Interactor
-	Delete          delete.Interactor
-	List            list.Interactor
-	Update          update.Interactor
-	DefaultPageSize int
-}
-
-func NewHTTPCollectionServer(repo *infra.SQLiteCollectionRepo) *CollectionServer {
-	return &CollectionServer{
-		Find:            *read.NewInteractor(repo),
-		Create:          *create.NewInteractor(repo, validation.NewNameValidator(), clockwork.NewRealClock()),
-		Delete:          *delete.NewInteractor(repo),
-		List:            *list.NewInteractor(repo),
-		Update:          *update.NewInteractor(repo),
-		DefaultPageSize: 20,
-	}
-}
 
 func (s *Server) FindCollectionByName(w http.ResponseWriter, r *http.Request, name string) {
 

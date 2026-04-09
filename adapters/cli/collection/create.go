@@ -5,7 +5,7 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/config"
 
 	cli "github.com/lejeunel/go-image-annotator-v2/adapters/cli"
-	app "github.com/lejeunel/go-image-annotator-v2/application"
+	"github.com/lejeunel/go-image-annotator-v2/infra"
 	clc "github.com/lejeunel/go-image-annotator-v2/use-cases/collection/create"
 )
 
@@ -22,7 +22,7 @@ func (p CreatePresenter) Error(err error) {
 
 func Create(name, description string) {
 	cfg := config.Parse()
-	app := app.NewSQLiteApp(cfg.DBPath, cfg.ArtefactDir)
+	app := infra.NewSQLiteInfra(cfg.DBPath, cfg.ArtefactDir)
 	itr := clc.NewDefaultInteractor(app.CollectionRepo)
 	itr.Execute(clc.Request{Name: name, Description: description}, CreatePresenter{})
 
