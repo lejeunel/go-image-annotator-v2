@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-type FromStoreImageReader struct {
+type ImageReader struct {
 	repo ast.ArtefactReadRepo
 	id   im.ImageId
 
@@ -14,10 +14,10 @@ type FromStoreImageReader struct {
 	pos  int
 }
 
-func NewImageReader(id im.ImageId, repo ast.ArtefactReadRepo) *FromStoreImageReader {
-	return &FromStoreImageReader{repo: repo, id: id}
+func NewImageReader(id im.ImageId, repo ast.ArtefactReadRepo) *ImageReader {
+	return &ImageReader{repo: repo, id: id}
 }
-func (r *FromStoreImageReader) Read(buf []byte) (int, error) {
+func (r *ImageReader) Read(buf []byte) (int, error) {
 	if r.data == nil {
 		data, err := r.repo.Get(r.id)
 		if err != nil {

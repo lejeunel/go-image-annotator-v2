@@ -50,15 +50,14 @@ func TestErrOnExistsShouldFail(t *testing.T) {
 	}
 }
 
-func TestFindImage(t *testing.T) {
+func TestFindImageGivesCorrectAnnotations(t *testing.T) {
 	label := lbl.NewLabel(lbl.NewLabelId(), "a-label")
 	labels := []*a.ImageLabel{{Id: a.NewAnnotationId(), Label: *label}}
 	bboxes := []*a.BoundingBox{{Id: a.NewAnnotationId(), Label: *label}}
 	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
-	data := []byte("test-data")
 
 	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{Collection: *collection},
-		&FakeAnnotationRepo{Labels: labels, BoundingBoxes: bboxes}, &ast.FakeArtefactRepo{Data: data})
+		&FakeAnnotationRepo{Labels: labels, BoundingBoxes: bboxes}, &ast.FakeArtefactRepo{Data: []byte("test-data")})
 	image, _ := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: collection.Name})
 	if !(image.Collection.Id == collection.Id) {
 		t.Fatalf("expected to retrieve image in collection %v, got %v ",
@@ -70,9 +69,36 @@ func TestFindImage(t *testing.T) {
 	if !(len(image.BoundingBoxes) == 1) {
 		t.Fatalf("expected to retrieve image with 1 bounding box, got %v", len(image.BoundingBoxes))
 	}
+}
+
+func TestImageReaderGivesCorrectBytes(t *testing.T) {
+	data := []byte("test-data")
+
+	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{},
+		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Data: data})
+	image, _ := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "the-collection"})
 	gotBytes, _ := io.ReadAll(image.Reader)
 	if !bytes.Equal(gotBytes, data) {
 		t.Fatalf("expected to retrieve bytes %v, got %v", data, gotBytes)
 
+	}
+}
+
+func TestErrOnMIMETypeShouldFail(t *testing.T) {
+	s := NewImageStore(&FakeImageRepo{ErrOnMIMEType: true, Err: e.ErrInternal}, &FakeCollectionRepo{},
+		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Data: []byte("test-data")})
+	_, err := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "the-collection"})
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestRetrieveCorrectMIMEType(t *testing.T) {
+	mimetype := "the-mimetype"
+	s := NewImageStore(&FakeImageRepo{MIMEType_: mimetype}, &FakeCollectionRepo{},
+		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Data: []byte("test-data")})
+	im, _ := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "the-collection"})
+	if im.MIMEType != mimetype {
+		t.Fatalf("expected to retrieve mimetype %v, got %v", mimetype, im.MIMEType)
 	}
 }

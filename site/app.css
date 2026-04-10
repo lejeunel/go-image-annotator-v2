@@ -46,3 +46,6 @@
 
 @source "./navbar.go";
 @source "./components.go";
+@source "../shared/html/table.go";
+@source "../shared/html/spec_table.go";
+@source "../adapters/web/view_image.go"

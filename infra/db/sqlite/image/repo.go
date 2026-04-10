@@ -101,10 +101,24 @@ func (r *SQLiteImageRepo) ImageExists(imageId im.ImageId) (bool, error) {
 
 	return count > 0, nil
 }
+func (r *SQLiteImageRepo) MIMEType(imageId im.ImageId) (*string, error) {
+	errCtx := "finding image MIMEType"
+	var mimetype string
+	err := r.Db.Get(&mimetype, "SELECT mimetype FROM images WHERE id = $1", imageId)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, fmt.Errorf("%v: %v: %w", errCtx, err, e.ErrNotFound)
+		default:
+			return nil, fmt.Errorf("%v: %v: %w", errCtx, err, e.ErrInternal)
+		}
+	}
+	return &mimetype, nil
+}
 
-func (r *SQLiteImageRepo) AddImage(imageId im.ImageId, hash string) error {
-	query := "INSERT INTO images (id, hash) VALUES ($1,$2)"
-	_, err := r.Db.Exec(query, imageId.String(), hash)
+func (r *SQLiteImageRepo) AddImage(imageId im.ImageId, hash, format string) error {
+	query := "INSERT INTO images (id, hash, mimetype) VALUES ($1,$2,$3)"
+	_, err := r.Db.Exec(query, imageId.String(), hash, format)
 	if err != nil {
 		return fmt.Errorf("inserting image record: %v: %w", err, e.ErrInternal)
 	}

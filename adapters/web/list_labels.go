@@ -17,7 +17,7 @@ func (p ListLabelsPresenter) Success(r list.Response) {
 	table := html.MyTable{Fields: []string{"name", "description"}}
 	for _, l := range r.Labels {
 		table.Rows = append(table.Rows,
-			html.TableRow{Values: []Node{html.MakeTextLink("/label/"+l.Name, l.Name), Raw(l.Description)}})
+			html.TableRow{Values: []Node{Text(l.Name), Raw(l.Description)}})
 	}
 	p.RenderSuccess(table, r.Pagination)
 }

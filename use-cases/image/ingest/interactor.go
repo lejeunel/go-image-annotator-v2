@@ -19,20 +19,26 @@ import (
 
 	far "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
 	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
+	rea "github.com/lejeunel/go-image-annotator-v2/application/image-reader"
 	anr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/annotation"
 	clr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
 	imr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
 	lbr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 )
 
+type IImageMIMETypeDetector interface {
+	Detect(io.Reader) (*string, io.Reader, error)
+}
+
 type Interactor struct {
-	hasher         Hasher
-	imageRepo      ImageRepo
-	collectionRepo CollectionRepo
-	annotationRepo AnnotationRepo
-	labelRepo      LabelRepo
-	artefactRepo   ast.ArtefactRepo
-	logger         *slog.Logger
+	Hasher                Hasher
+	ImageRepo             ImageRepo
+	CollectionRepo        CollectionRepo
+	AnnotationRepo        AnnotationRepo
+	LabelRepo             LabelRepo
+	ArtefactRepo          ast.ArtefactRepo
+	Logger                *slog.Logger
+	ImageMIMETypeDetector IImageMIMETypeDetector
 }
 
 func NewSQLiteIngestInteractor(dbPath, artefactDir string) *Interactor {
@@ -43,16 +49,17 @@ func NewSQLiteIngestInteractor(dbPath, artefactDir string) *Interactor {
 	anRepo := anr.NewSQLiteAnnotationRepo(db)
 	artRepo := far.NewFileArtefactRepo(artefactDir)
 	return NewInteractor(imRepo, clRepo, lbRepo, anRepo,
-		artRepo, has.NewSha256Hasher())
+		artRepo, has.NewSha256Hasher(), rea.ImageMIMETypeDetector{})
 }
 
 func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
 	labelRepo LabelRepo, annotationRepo AnnotationRepo,
-	artefactRepo ast.ArtefactRepo, hasher Hasher) *Interactor {
-	return &Interactor{imageRepo: imageRepo, collectionRepo: collectionRepo,
-		annotationRepo: annotationRepo, labelRepo: labelRepo,
-		artefactRepo: artefactRepo, hasher: hasher,
-		logger: logging.NewNoOpLogger(),
+	artefactRepo ast.ArtefactRepo, hasher Hasher, mimetypeDetector IImageMIMETypeDetector) *Interactor {
+	return &Interactor{ImageRepo: imageRepo, CollectionRepo: collectionRepo,
+		AnnotationRepo: annotationRepo, LabelRepo: labelRepo,
+		ArtefactRepo: artefactRepo, Hasher: hasher,
+		ImageMIMETypeDetector: mimetypeDetector,
+		Logger:                logging.NewNoOpLogger(),
 	}
 }
 
@@ -70,22 +77,29 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	data, err := io.ReadAll(r.Reader)
+	format, reader, err := i.ImageMIMETypeDetector.Detect(r.Reader)
+	if err != nil {
+		i.handleError(err, out)
+		return
+
+	}
+
+	data, err := io.ReadAll(reader)
 	if err != nil {
 		i.handleError(err, out)
 		return
 	}
 
-	hash := i.hasher.Hash(data)
+	hash := i.Hasher.Hash(data)
 	if err := i.ingestRawData(imageId, data, hash); err != nil {
 		i.handleError(err, out)
 		return
 	}
 
-	if err := i.ingestImage(image, hash); err != nil {
+	if err := i.ingestImage(image, hash, *format); err != nil {
 		i.handleError(err, out)
-		i.imageRepo.Delete(image.Id)
-		i.artefactRepo.Delete(image.Id)
+		i.ImageRepo.Delete(image.Id)
+		i.ArtefactRepo.Delete(image.Id)
 		return
 	}
 
@@ -96,7 +110,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 func (i *Interactor) handleError(err error, out OutputPort) {
 	errCtx := "ingesting image"
 	err = fmt.Errorf("%v: %w", errCtx, err)
-	i.logger.Error(errCtx, "error", err)
+	i.Logger.Error(errCtx, "error", err)
 	out.Error(err)
 }
 func (i *Interactor) ingestRawData(id im.ImageId, data []byte, hash string) error {
@@ -105,7 +119,7 @@ func (i *Interactor) ingestRawData(id im.ImageId, data []byte, hash string) erro
 		return err
 	}
 
-	if err := i.artefactRepo.Store(id, data); err != nil {
+	if err := i.ArtefactRepo.Store(id, data); err != nil {
 		return err
 	}
 
@@ -158,24 +172,24 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 
 }
 
-func (i *Interactor) ingestImage(image *im.Image, hash string) error {
+func (i *Interactor) ingestImage(image *im.Image, hash, format string) error {
 
-	if err := i.imageRepo.AddImage(image.Id, hash); err != nil {
+	if err := i.ImageRepo.AddImage(image.Id, hash, format); err != nil {
 		return fmt.Errorf("adding image: %w", err)
 	}
 
-	if err := i.imageRepo.AddImageToCollection(image.Id, image.Collection.Id); err != nil {
+	if err := i.ImageRepo.AddImageToCollection(image.Id, image.Collection.Id); err != nil {
 		return fmt.Errorf("adding image to collection: %w", err)
 	}
 
 	for _, label := range image.Labels {
-		if err := i.annotationRepo.AddImageLabel(an.NewAnnotationId(), image.Id, image.Collection.Id, label.Label.Id); err != nil {
+		if err := i.AnnotationRepo.AddImageLabel(an.NewAnnotationId(), image.Id, image.Collection.Id, label.Label.Id); err != nil {
 			return fmt.Errorf("adding image label to collection: %w", err)
 		}
 	}
 
 	for _, box := range image.BoundingBoxes {
-		if err := i.annotationRepo.AddBoundingBox(image.Id, image.Collection.Id, *box); err != nil {
+		if err := i.AnnotationRepo.AddBoundingBox(image.Id, image.Collection.Id, *box); err != nil {
 			return fmt.Errorf("adding bounding box: %w", err)
 		}
 	}
@@ -184,7 +198,7 @@ func (i *Interactor) ingestImage(image *im.Image, hash string) error {
 }
 
 func (i *Interactor) findCollectionByName(name string) (*clc.Collection, error) {
-	collection, err := i.collectionRepo.FindCollectionByName(name)
+	collection, err := i.CollectionRepo.FindCollectionByName(name)
 	baseErr := fmt.Errorf("finding collection with name %v", name)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", baseErr, err)
@@ -195,7 +209,7 @@ func (i *Interactor) findCollectionByName(name string) (*clc.Collection, error) 
 
 func (i *Interactor) findLabelByName(name string) (*lbl.Label, error) {
 	baseErr := fmt.Errorf("fetching label by name %v", name)
-	label, err := i.labelRepo.FindLabelByName(name)
+	label, err := i.LabelRepo.FindLabelByName(name)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", baseErr, err)
 	}
@@ -206,7 +220,7 @@ func (i *Interactor) findLabelByName(name string) (*lbl.Label, error) {
 func (i *Interactor) ensureDuplicateImageDoesNotExists(hash string) error {
 
 	baseErr := fmt.Errorf("ensuring that duplicate image does not exist using hash")
-	duplicateId, err := i.imageRepo.FindImageIdByHash(hash)
+	duplicateId, err := i.ImageRepo.FindImageIdByHash(hash)
 	if duplicateId != nil {
 		return fmt.Errorf("%w: found duplicate image with id %v: %w", baseErr, *duplicateId, e.ErrDuplicate)
 

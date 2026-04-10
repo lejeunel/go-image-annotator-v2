@@ -17,4 +17,5 @@ type AnnotationRepo interface {
 
 type ImageRepo interface {
 	ImageExistsInCollection(im.ImageId, clc.CollectionId) (bool, error)
+	MIMEType(im.ImageId) (*string, error)
 }

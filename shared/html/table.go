@@ -24,6 +24,7 @@ type TableRow struct {
 
 func (r TableRow) Render() gp.Node {
 	return gh.Tr(
+		gh.Class("even:bg-primary/5 dark:even:bg-primary-dark/10"),
 		gp.Map(r.Values, func(node gp.Node) gp.Node {
 			return gh.Td(gh.Class("p-4"),
 				node)

@@ -23,8 +23,10 @@ type FakeAnnotationRepo struct {
 }
 
 type FakeImageRepo struct {
-	Err         error
-	ErrOnExists bool
+	Err           error
+	ErrOnExists   bool
+	ErrOnMIMEType bool
+	MIMEType_     string
 }
 
 func (r *FakeImageRepo) ImageExistsInCollection(imageId im.ImageId, collectionId clc.CollectionId) (bool, error) {
@@ -32,6 +34,12 @@ func (r *FakeImageRepo) ImageExistsInCollection(imageId im.ImageId, collectionId
 		return false, r.Err
 	}
 	return true, nil
+}
+func (r *FakeImageRepo) MIMEType(imageId im.ImageId) (*string, error) {
+	if r.ErrOnMIMEType {
+		return nil, r.Err
+	}
+	return &r.MIMEType_, nil
 }
 
 func (r *FakeAnnotationRepo) FindBoundingBoxes(imageId im.ImageId, collectionId clc.CollectionId) ([]*a.BoundingBox, error) {

@@ -11,9 +11,6 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
-//go:embed sample-image.jpg
-var testJPGImage []byte
-
 func TestErrOnInvalidDataShouldFail(t *testing.T) {
 	decoder := NewBase64ImageDecoder([]string{"jpeg"}, "invalid-data")
 	_, err := io.ReadAll(decoder)

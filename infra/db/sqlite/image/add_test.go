@@ -9,6 +9,20 @@ import (
 	"testing"
 )
 
+func TestAddMIMEType(t *testing.T) {
+	repos := NewImageTestRepos()
+	id := im.NewImageId()
+	mimetype := "the-mimetype"
+	repos.Image.AddImage(id, "the-hash", mimetype)
+	r, err := repos.Image.MIMEType(id)
+	if err != nil {
+		t.Fatalf("expected no error when retrieving mimetype, got %v", err)
+	}
+	if *r != mimetype {
+		t.Fatalf("expected to retrieve mimetype %v, got %v", mimetype, *r)
+	}
+}
+
 func TestCountAddedImageToCollection(t *testing.T) {
 	repos := NewImageTestRepos()
 	collection := "a-collection"

@@ -1,14 +1,31 @@
 package ingest
 
 import (
+	"bytes"
+	"io"
+
+	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
 	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
+	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	t "github.com/lejeunel/go-image-annotator-v2/shared/testing"
-	"io"
 )
+
+func NewTestingInteractor() *Interactor {
+	return &Interactor{
+		ImageRepo:             &FakeImageRepo{},
+		CollectionRepo:        &FakeCollectionRepo{},
+		LabelRepo:             &FakeLabelRepo{},
+		AnnotationRepo:        &FakeAnnotationRepo{},
+		ArtefactRepo:          &ast.FakeArtefactRepo{},
+		Hasher:                &FakeHasher{},
+		Logger:                logging.NewNoOpLogger(),
+		ImageMIMETypeDetector: &FakeMIMETypeDetector{},
+	}
+}
 
 type FakeHasher struct {
 	Hash_ string
@@ -54,6 +71,7 @@ type FakeImageRepo struct {
 	Err                       error
 	GotImage                  bool
 	GotHash                   string
+	GotMIMEType               string
 	ErrOnAddImageToCollection bool
 	ErrOnAddImage             bool
 	ErrOnFindHash             bool
@@ -125,22 +143,37 @@ func (r *FakeImageRepo) AddImageToCollection(im.ImageId, clc.CollectionId) error
 	return nil
 }
 
-func (r *FakeImageRepo) AddImage(imageId im.ImageId, hash string) error {
+func (r *FakeImageRepo) AddImage(imageId im.ImageId, hash, mimetype string) error {
 	if r.ErrOnAddImage {
 		return r.Err
 	}
 	r.GotHash = hash
+	r.GotMIMEType = mimetype
 	return nil
 }
 
-type FakeImageDecoder struct {
-	Err error
+type FakeImageReader struct {
+	Buffer bytes.Buffer
+	Err    error
 }
 
-func (d *FakeImageDecoder) Read([]byte) (int, error) {
+func (d *FakeImageReader) Read(b []byte) (int, error) {
 	if d.Err != nil {
 		return 0, d.Err
 	}
-	return 0, io.EOF
+	return d.Buffer.Read(b)
+
+}
+
+type FakeMIMETypeDetector struct {
+	Err      error
+	MIMEType string
+}
+
+func (d *FakeMIMETypeDetector) Detect(r io.Reader) (*string, io.Reader, error) {
+	if d.Err != nil {
+		return nil, nil, d.Err
+	}
+	return &d.MIMEType, r, nil
 
 }

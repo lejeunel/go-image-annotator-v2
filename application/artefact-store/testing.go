@@ -9,13 +9,15 @@ type FakeArtefactRepo struct {
 	Err              error
 	NumDeletedImages int
 	Data             []byte
+	GotData          []byte
 }
 
-func (r *FakeArtefactRepo) Store(im.ImageId, []byte) error {
+func (r *FakeArtefactRepo) Store(id im.ImageId, data []byte) error {
 	if r.Err != nil {
 		return r.Err
 	}
 	r.GotArtefact = true
+	r.GotData = data
 	return nil
 }
 

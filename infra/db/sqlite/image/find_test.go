@@ -12,7 +12,7 @@ func TestRetrieveImageIdByHash(t *testing.T) {
 	repo := NewTestSQLiteImageRepo()
 	imageId := im.NewImageId()
 	hash := "the-hash"
-	err := repo.AddImage(imageId, hash)
+	err := repo.AddImage(imageId, hash, "")
 	if err != nil {
 		t.Fatalf("expected no error on adding image, got %v", err)
 	}
@@ -30,7 +30,7 @@ func TestRetrieveImageIdByNonExistingHashShouldFail(t *testing.T) {
 	repo := NewTestSQLiteImageRepo()
 	imageId := im.NewImageId()
 	hash := "the-hash"
-	repo.AddImage(imageId, hash)
+	repo.AddImage(imageId, hash, "")
 	_, err := repo.FindImageIdByHash("non-existing-hash")
 
 	if !errors.Is(err, e.ErrNotFound) {

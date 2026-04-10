@@ -11,7 +11,6 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read"
-	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -50,9 +49,13 @@ func (p ViewImagePresenter) Success(image *im.Image) {
 
 	}
 	b64Image := base64.StdEncoding.EncodeToString(bytes)
+	table := html.SpecTable{}
+	table.Rows = append(table.Rows, html.SpecTableRow{Name: "id", Value: image.Id.String()})
+	table.Rows = append(table.Rows, html.SpecTableRow{Name: "collection", Value: image.Collection.Name})
+	imNode := Img(Src(fmt.Sprintf("data:%v;base64,%s", image.MIMEType, b64Image)))
+	tableNode := table.Render()
 
-	content := Div(Text(image.Id.String()), Text(image.Collection.Name),
-		Img(Src(fmt.Sprintf("data:image/jpg;base64,%s", b64Image))))
+	content := Table(Tr(Td(imNode), Td(Class("align-top pl-2"), tableNode)))
 	html.MakeBasePage("Image", content,
 		html.Scripts(html.ScriptIncludes{}),
 		html.NavBarActivatedItems{}).Render(p.Writer)
