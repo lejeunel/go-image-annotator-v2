@@ -1,6 +1,7 @@
 package html
 
 import (
+	n "github.com/lejeunel/go-image-annotator-v2/shared/navigation"
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -62,7 +63,7 @@ func DarkModeToggle() Node {
 		),
 	)
 }
-func MakeNavBar(isActivated NavBarActivatedItems, repoURL string) Node {
+func MakeNavBar(isActivated n.ActivePage, repoURL string) Node {
 	return Nav(
 		Attr("x-on:click.away", "mobileMenuIsOpen = false"),
 		Class("fixed top-0 z-30 hidden h-16 w-screen items-center justify-between border-outline px-10 py-2 backdrop-blur-xl md:flex dark:border-outline-dark bg-surface-alt/75 dark:bg-surface-dark-alt/75 border-b"),
@@ -76,9 +77,8 @@ func MakeNavBar(isActivated NavBarActivatedItems, repoURL string) Node {
 				Text("Image"),
 				Span(
 					Class("text-primary dark:text-primary-dark"),
-					Text("Annotation"),
+					Text("Annotator"),
 				),
-				Text("Platform"),
 			),
 		),
 
@@ -86,16 +86,16 @@ func MakeNavBar(isActivated NavBarActivatedItems, repoURL string) Node {
 		Ul(
 			Class("hidden items-center gap-4 md:flex"),
 			Li(
-				MakeMenuItem("Home", "/", isActivated.Home),
+				MakeMenuItem("Home", "/", isActivated == n.HomePageActive),
 			),
 			Li(
-				MakeMenuItem("Collections", "/collections", isActivated.Collections),
+				MakeMenuItem("Collections", "/collections", isActivated == n.CollectionsPageActive),
 			),
 			Li(
-				MakeMenuItem("Labels", "/labels", isActivated.Labels),
+				MakeMenuItem("Labels", "/labels", isActivated == n.LabelsPageActive),
 			),
 			Li(
-				MakeMenuItem("API Docs", "/api/docs", isActivated.API),
+				MakeMenuItem("API Docs", "/api/docs", isActivated == n.APIDocsPageActive),
 			),
 
 			Li(MakeRepoButton(repoURL)),

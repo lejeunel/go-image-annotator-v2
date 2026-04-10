@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
+	n "github.com/lejeunel/go-image-annotator-v2/shared/navigation"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/list"
 	. "maragu.dev/gomponents"
 )
@@ -31,6 +32,6 @@ func NewListLabelsPresenter(w http.ResponseWriter) ListLabelsPresenter {
 	baseURL, _ := url.Parse("/labels")
 	return ListLabelsPresenter{
 		ListRenderer: NewListRenderer("Labels", *baseURL,
-			html.NavBarActivatedItems{Labels: true}, w),
+			n.LabelsPageActive, w),
 	}
 }

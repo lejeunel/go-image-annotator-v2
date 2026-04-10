@@ -71,7 +71,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 	}
 
 	imageId := im.NewImageId()
-	image, err := i.createImage(imageId, *collection, r.Labels, r.BoundingBoxes)
+	image, err := i.buildImage(imageId, *collection, r.Labels, r.BoundingBoxes)
 	if err != nil {
 		i.handleError(err, out)
 		return
@@ -127,7 +127,7 @@ func (i *Interactor) ingestRawData(id im.ImageId, data []byte, hash string) erro
 
 }
 
-func (i *Interactor) createImage(id im.ImageId, collection clc.Collection, labelNames []string,
+func (i *Interactor) buildImage(id im.ImageId, collection clc.Collection, labelNames []string,
 	bboxes []BoundingBoxRequest) (*im.Image, error) {
 	image := im.NewImage(id, collection)
 

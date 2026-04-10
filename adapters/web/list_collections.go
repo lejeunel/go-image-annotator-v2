@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
+	n "github.com/lejeunel/go-image-annotator-v2/shared/navigation"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/list"
 	. "maragu.dev/gomponents"
 )
@@ -32,6 +33,6 @@ func NewListCollectionsPresenter(w http.ResponseWriter) ListCollectionsPresenter
 	baseURL, _ := url.Parse("/collections")
 	return ListCollectionsPresenter{
 		ListRenderer: NewListRenderer("Collections", *baseURL,
-			html.NavBarActivatedItems{Collections: true}, w),
+			n.CollectionsPageActive, w),
 	}
 }

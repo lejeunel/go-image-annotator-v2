@@ -1,0 +1,94 @@
+package html
+
+import (
+	s "github.com/lejeunel/go-image-annotator-v2/shared"
+	n "github.com/lejeunel/go-image-annotator-v2/shared/navigation"
+	"io"
+	. "maragu.dev/gomponents"
+	. "maragu.dev/gomponents/html"
+)
+
+type PageBuilder struct {
+	Title      string
+	scripts    []Node
+	ActivePage n.ActivePage
+	Content    Node
+}
+
+func (b *PageBuilder) AddScripts(scripts ...Node) *PageBuilder {
+	for _, s := range scripts {
+		b.scripts = append(b.scripts, s)
+	}
+	return b
+}
+func (b *PageBuilder) SetActive(a n.ActivePage) *PageBuilder {
+	b.ActivePage = a
+	return b
+}
+func (b *PageBuilder) SetContent(c Node) *PageBuilder {
+	b.Content = c
+	return b
+}
+
+func (b *PageBuilder) SetError(err string) *PageBuilder {
+	b.Title = "Oops!"
+	b.Content = Text(err)
+	return b
+}
+
+func (b *PageBuilder) Build() Node {
+	b.scripts = append(b.scripts, DefaultScripts()...)
+	return Doctype(HTML(
+		Attr("x-data", `{
+					darkMode: false,
+
+					init() {
+console.log("init")
+						this.darkMode = localStorage.getItem('dark') === 'true'
+						document.documentElement.classList.toggle('dark', this.darkMode)
+					},
+					toggleDark() {
+						this.darkMode = !this.darkMode;
+						localStorage.setItem('dark', this.darkMode);
+						document.documentElement.classList.toggle('dark', this.darkMode)
+					}}`),
+		Attr("x-init", "init()"),
+		Attr("x-bind:class", "{ 'dark': darkMode }"),
+		Head(
+			Title(b.Title),
+			Meta(Charset("utf-8")),
+			Meta(Name("viewport"), Content("width=device-width, initial-scale=1")),
+			Script(Raw(`
+				if (localStorage.getItem('dark') === 'true') {
+					document.documentElement.classList.add('dark');
+				}
+			`)),
+			Link(
+				Rel("stylesheet"),
+				Href("/static/styles.css"),
+			),
+			Link(Rel("stylesheet"), Href("https://fonts.googleapis.com/css2?family=Roboto&display=swap")),
+		),
+		Body(
+			Class("bg-white text-gray-900 dark:bg-gray-900 dark:text-white"),
+			MakeNavBar(b.ActivePage, s.RepoURL),
+			Div(Class("grow w-full px-1 md:px-2 lg:px-4 py-10 md:py-20"), b.Content),
+			Group(b.scripts),
+		),
+	))
+}
+
+func (b *PageBuilder) Render(w io.Writer) {
+	b.Build().Render(w)
+
+}
+
+func NewTitledPageBuilder(title string) *PageBuilder {
+	return &PageBuilder{
+		Title: title,
+	}
+}
+
+func NewPageBuilder() *PageBuilder {
+	return &PageBuilder{}
+}
