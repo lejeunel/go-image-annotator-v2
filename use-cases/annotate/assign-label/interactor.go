@@ -13,7 +13,7 @@ import (
 
 type Interactor struct {
 	repo   Repo
-	store  st.IImageStore
+	store  st.Interface
 	logger *slog.Logger
 }
 
@@ -68,6 +68,6 @@ func (i *Interactor) addLabel(imageId im.ImageId, collectionId clc.CollectionId,
 
 }
 
-func NewInteractor(repo Repo, store st.IImageStore) *Interactor {
+func NewInteractor(repo Repo, store st.Interface) *Interactor {
 	return &Interactor{repo: repo, store: store, logger: logging.NewNoOpLogger()}
 }

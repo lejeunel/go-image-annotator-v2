@@ -75,3 +75,29 @@ func TestListOneImageInGivenCollection(t *testing.T) {
 		t.Fatalf("expected that image belongs to collection named %v, got %v", firstCollection.Name, images[0].Collection)
 	}
 }
+
+func CreateImageInCollectionFromString(repo SQLiteImageRepo, collection *clc.Collection, imageId string) *im.Image {
+	id, _ := im.NewImageIdFromString(imageId)
+	image := im.NewImage(id, *collection)
+	repo.AddImage(image.Id, imageId, "")
+	repo.AddImageToCollection(image.Id, collection.Id)
+	return image
+
+}
+
+func TestListImagesShouldBeOrderedById(t *testing.T) {
+	repos := NewImageListingTestRepos()
+	collectionName := "a-collection"
+	collection := clc.NewCollection(clc.NewCollectionId(), collectionName)
+	repos.Collection.Create(*collection)
+	CreateImageInCollectionFromString(repos.Image, collection, "11111111-1111-1111-1111-111111111111")
+	image0 := CreateImageInCollectionFromString(repos.Image, collection, "00000000-0000-0000-0000-000000000000")
+
+	r, _ := repos.Image.List(ist.FilteringParams{PageSize: 2, Page: 1})
+	got := (*r)[0].ImageId
+	if got != image0.Id {
+		t.Fatalf("expected to retrieve image with first id %v, got %v",
+			image0.Id, got)
+	}
+
+}

@@ -59,6 +59,7 @@ func (r *SQLiteImageRepo) List(f ist.FilteringParams) (*[]im.BaseImage, error) {
 		q = q.Where(fmt.Sprintf("collection_id=(SELECT id FROM collections WHERE name='%v')", *f.Collection))
 	}
 
+	q = q.OrderBy("image_id")
 	sql, args, err := q.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building query: %v: %w", err, e.ErrInternal)

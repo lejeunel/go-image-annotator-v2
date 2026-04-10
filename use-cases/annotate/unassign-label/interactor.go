@@ -13,7 +13,7 @@ import (
 type Interactor struct {
 	repo   Repo
 	output OutputPort
-	store  st.IImageStore
+	store  st.Interface
 	logger *slog.Logger
 }
 
@@ -69,6 +69,6 @@ func (i *Interactor) handleError(err error, out OutputPort) {
 	out.Error(err)
 }
 
-func NewInteractor(repo Repo, store st.IImageStore) *Interactor {
+func NewInteractor(repo Repo, store st.Interface) *Interactor {
 	return &Interactor{repo: repo, store: store, logger: logging.NewNoOpLogger()}
 }

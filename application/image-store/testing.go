@@ -74,7 +74,6 @@ func (r *FakeCollectionRepo) FindCollectionByName(name string) (*clc.Collection,
 
 type FakeImageStore struct {
 	Err    error
-	Got    im.BaseImage
 	Return *im.Image
 }
 

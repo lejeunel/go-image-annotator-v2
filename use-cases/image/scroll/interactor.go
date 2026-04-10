@@ -1,9 +1,8 @@
-package read
+package scroll
 
 import (
 	"fmt"
 	imstore "github.com/lejeunel/go-image-annotator-v2/application/image-store"
-	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
@@ -11,15 +10,23 @@ import (
 type Interactor struct {
 	store  imstore.Interface
 	logger *slog.Logger
+	repo   Repo
 }
 
-func NewInteractor(store imstore.Interface) *Interactor {
-	return &Interactor{store: store, logger: logging.NewNoOpLogger()}
+func NewInteractor(store imstore.Interface, repo Repo) *Interactor {
+	return &Interactor{store: store, repo: repo, logger: logging.NewNoOpLogger()}
 }
 
 func (i *Interactor) Execute(r Request, out OutputPort) {
+	var err error
+	baseImage, err := i.repo.GetAdjacent(r.ImageId, r.Collection, r.Direction)
 
-	image, err := i.store.Find(im.BaseImage{ImageId: r.ImageId, Collection: r.Collection})
+	if err != nil {
+		i.handleError(err, out)
+		return
+	}
+
+	image, err := i.store.Find(*baseImage)
 	if err != nil {
 		i.handleError(err, out)
 		return
@@ -29,7 +36,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 }
 
 func (i *Interactor) handleError(err error, out OutputPort) {
-	errCtx := "reading image meta-data"
+	errCtx := "scrolling images"
 	err = fmt.Errorf("%v: %w", errCtx, err)
 	i.logger.Error(errCtx, "error", err)
 	out.Error(err)

@@ -37,7 +37,7 @@ func (b *PageBuilder) SetError(err string) *PageBuilder {
 }
 
 func (b *PageBuilder) Build() Node {
-	b.scripts = append(b.scripts, DefaultScripts()...)
+	b.scripts = append(b.scripts, BaseLibs()...)
 	return Doctype(HTML(
 		Attr("x-data", `{
 					darkMode: false,

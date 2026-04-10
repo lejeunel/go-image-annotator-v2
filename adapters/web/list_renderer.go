@@ -19,7 +19,7 @@ type ListRenderer struct {
 func (p ListRenderer) RenderSuccess(table html.MyTable, pagination pagination.Pagination) {
 
 	content := html.MakePaginatedContent(p.ListURL, table, pagination)
-	html.NewTitledPageBuilder(p.Title).SetContent(content).Render(p.Writer)
+	html.NewTitledPageBuilder(p.Title).SetContent(content).SetActive(p.ActivePage).Render(p.Writer)
 }
 
 func (p ListRenderer) Error(err error) {

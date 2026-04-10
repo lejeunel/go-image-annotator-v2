@@ -9,5 +9,5 @@ func RegisterWebPages(mux *http.ServeMux, server Server) {
 	mux.HandleFunc("/collections", server.ListCollections)
 	mux.HandleFunc("/images", server.ListImages)
 	mux.HandleFunc("/labels", server.ListLabels)
-	mux.HandleFunc("/image", server.ViewImage)
+	mux.HandleFunc("/image", server.AnnotateImage)
 }

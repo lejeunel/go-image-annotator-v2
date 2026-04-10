@@ -9,7 +9,7 @@ import (
 
 func APIDocsPage(specsFilePath string) Node {
 	p := html.NewPageBuilder()
-	p.AddScripts(html.APIDocsScripts())
+	p.AddScripts(html.APIDocsLib())
 	p.SetContent(Div(Class("spotlight "),
 		El("elements-api",
 			Attr("apiDescriptionUrl", specsFilePath),
