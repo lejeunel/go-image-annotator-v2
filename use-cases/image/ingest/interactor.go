@@ -7,23 +7,14 @@ import (
 
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 
-	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	ast "github.com/lejeunel/go-image-annotator-v2/application/file-store"
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/entities/label"
-	"github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
-
-	far "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
-	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
-	rea "github.com/lejeunel/go-image-annotator-v2/application/image-reader"
-	anr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/annotation"
-	clr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
-	imr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
-	lbr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
 )
 
 type IImageMIMETypeDetector interface {
@@ -36,28 +27,17 @@ type Interactor struct {
 	CollectionRepo        CollectionRepo
 	AnnotationRepo        AnnotationRepo
 	LabelRepo             LabelRepo
-	ArtefactRepo          ast.ArtefactRepo
+	ArtefactRepo          ast.Interface
 	Logger                *slog.Logger
 	ImageMIMETypeDetector IImageMIMETypeDetector
 }
 
-func NewSQLiteIngestInteractor(dbPath, artefactDir string) *Interactor {
-	db := sqlite.NewSQLiteDB(dbPath)
-	imRepo := imr.NewSQLiteImageRepo(db)
-	clRepo := clr.NewSQLiteCollectionRepo(db)
-	lbRepo := lbr.NewSQLiteLabelRepo(db)
-	anRepo := anr.NewSQLiteAnnotationRepo(db)
-	artRepo := far.NewFileArtefactRepo(artefactDir)
-	return NewInteractor(imRepo, clRepo, lbRepo, anRepo,
-		artRepo, has.NewSha256Hasher(), rea.ImageMIMETypeDetector{})
-}
-
 func NewInteractor(imageRepo ImageRepo, collectionRepo CollectionRepo,
 	labelRepo LabelRepo, annotationRepo AnnotationRepo,
-	artefactRepo ast.ArtefactRepo, hasher Hasher, mimetypeDetector IImageMIMETypeDetector) *Interactor {
+	fileStore ast.Interface, hasher Hasher, mimetypeDetector IImageMIMETypeDetector) *Interactor {
 	return &Interactor{ImageRepo: imageRepo, CollectionRepo: collectionRepo,
 		AnnotationRepo: annotationRepo, LabelRepo: labelRepo,
-		ArtefactRepo: artefactRepo, Hasher: hasher,
+		ArtefactRepo: fileStore, Hasher: hasher,
 		ImageMIMETypeDetector: mimetypeDetector,
 		Logger:                logging.NewNoOpLogger(),
 	}
@@ -178,7 +158,7 @@ func (i *Interactor) ingestImage(image *im.Image, hash, format string) error {
 		return fmt.Errorf("adding image: %w", err)
 	}
 
-	if err := i.ImageRepo.AddImageToCollection(image.Id, image.Collection.Id); err != nil {
+	if err := i.ImageRepo.AddToCollection(image.Id, image.Collection.Id); err != nil {
 		return fmt.Errorf("adding image to collection: %w", err)
 	}
 

@@ -6,7 +6,7 @@ import (
 	"io"
 	"testing"
 
-	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	ast "github.com/lejeunel/go-image-annotator-v2/application/file-store"
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
@@ -15,8 +15,7 @@ import (
 )
 
 func TestNonExistingCollectionShouldFail(t *testing.T) {
-	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{MissingCollection: true},
-		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{})
+	s := New(&FakeRepo{MissingCollection: true}, &ast.FakeStore{})
 	_, err := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "a-collection"})
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected error not found, got %v", err)
@@ -24,8 +23,7 @@ func TestNonExistingCollectionShouldFail(t *testing.T) {
 }
 
 func TestErrOnFindLabelShouldFail(t *testing.T) {
-	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{},
-		&FakeAnnotationRepo{ErrOnFindImageLabel: true, Err: e.ErrInternal}, &ast.FakeArtefactRepo{})
+	s := New(&FakeRepo{ErrOnFindImageLabel: true, Err: e.ErrInternal}, &ast.FakeStore{})
 	_, err := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "a-collection"})
 	if err == nil {
 		t.Fatalf("expected error, got %v", err)
@@ -33,8 +31,7 @@ func TestErrOnFindLabelShouldFail(t *testing.T) {
 }
 
 func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
-	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{},
-		&FakeAnnotationRepo{ErrOnFindBoundingBoxes: true, Err: e.ErrInternal}, &ast.FakeArtefactRepo{})
+	s := New(&FakeRepo{ErrOnFindBoundingBoxes: true, Err: e.ErrInternal}, &ast.FakeStore{})
 	_, err := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "a-collection"})
 	if err == nil {
 		t.Fatalf("expected error, got %v", err)
@@ -42,8 +39,7 @@ func TestErrOnFindBoundingBoxesShouldFail(t *testing.T) {
 }
 
 func TestErrOnExistsShouldFail(t *testing.T) {
-	s := NewImageStore(&FakeImageRepo{ErrOnExists: true, Err: e.ErrInternal}, &FakeCollectionRepo{},
-		&FakeAnnotationRepo{ErrOnFindBoundingBoxes: true, Err: e.ErrInternal}, &ast.FakeArtefactRepo{})
+	s := New(&FakeRepo{ErrOnExists: true, Err: e.ErrInternal}, &ast.FakeStore{})
 	_, err := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "a-collection"})
 	if err == nil {
 		t.Fatal("expected error")
@@ -56,8 +52,8 @@ func TestFindImageGivesCorrectAnnotations(t *testing.T) {
 	bboxes := []*a.BoundingBox{{Id: a.NewAnnotationId(), Label: *label}}
 	collection := clc.NewCollection(clc.NewCollectionId(), "a-collection")
 
-	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{Collection: *collection},
-		&FakeAnnotationRepo{Labels: labels, BoundingBoxes: bboxes}, &ast.FakeArtefactRepo{Data: []byte("test-data")})
+	s := New(&FakeRepo{Collection: *collection, Labels: labels,
+		BoundingBoxes: bboxes}, &ast.FakeStore{Data: []byte("test-data")})
 	image, _ := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: collection.Name})
 	if !(image.Collection.Id == collection.Id) {
 		t.Fatalf("expected to retrieve image in collection %v, got %v ",
@@ -74,8 +70,7 @@ func TestFindImageGivesCorrectAnnotations(t *testing.T) {
 func TestImageReaderGivesCorrectBytes(t *testing.T) {
 	data := []byte("test-data")
 
-	s := NewImageStore(&FakeImageRepo{}, &FakeCollectionRepo{},
-		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Data: data})
+	s := New(&FakeRepo{}, &ast.FakeStore{Data: data})
 	image, _ := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "the-collection"})
 	gotBytes, _ := io.ReadAll(image.Reader)
 	if !bytes.Equal(gotBytes, data) {
@@ -85,8 +80,7 @@ func TestImageReaderGivesCorrectBytes(t *testing.T) {
 }
 
 func TestErrOnMIMETypeShouldFail(t *testing.T) {
-	s := NewImageStore(&FakeImageRepo{ErrOnMIMEType: true, Err: e.ErrInternal}, &FakeCollectionRepo{},
-		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Data: []byte("test-data")})
+	s := New(&FakeRepo{ErrOnMIMEType: true, Err: e.ErrInternal}, &ast.FakeStore{Data: []byte("test-data")})
 	_, err := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "the-collection"})
 	if err == nil {
 		t.Fatal("expected error")
@@ -95,8 +89,7 @@ func TestErrOnMIMETypeShouldFail(t *testing.T) {
 
 func TestRetrieveCorrectMIMEType(t *testing.T) {
 	mimetype := "the-mimetype"
-	s := NewImageStore(&FakeImageRepo{MIMEType_: mimetype}, &FakeCollectionRepo{},
-		&FakeAnnotationRepo{}, &ast.FakeArtefactRepo{Data: []byte("test-data")})
+	s := New(&FakeRepo{MIMEType_: mimetype}, &ast.FakeStore{Data: []byte("test-data")})
 	im, _ := s.Find(im.BaseImage{ImageId: im.NewImageId(), Collection: "the-collection"})
 	if im.MIMEType != mimetype {
 		t.Fatalf("expected to retrieve mimetype %v, got %v", mimetype, im.MIMEType)

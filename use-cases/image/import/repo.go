@@ -9,5 +9,5 @@ type Repo interface {
 	ImageExists(im.ImageId) (bool, error)
 	FindCollectionByName(string) (*clc.Collection, error)
 	ImageExistsInCollection(im.ImageId, clc.CollectionId) (bool, error)
-	AddImageToCollection(im.ImageId, clc.CollectionId) error
+	AddToCollection(im.ImageId, clc.CollectionId) error
 }

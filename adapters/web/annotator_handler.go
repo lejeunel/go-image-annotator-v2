@@ -10,11 +10,11 @@ import (
 )
 
 type Request struct {
-	Id         im.ImageId
+	ImageId    im.ImageId
 	Collection string
 }
 
-func ParseImageURL(u *url.URL) (*Request, error) {
+func ParseURL(u *url.URL) (*Request, error) {
 	baseErr := "parsing url"
 	req := Request{}
 	imageIdStr := u.Query().Get("id")
@@ -26,7 +26,7 @@ func ParseImageURL(u *url.URL) (*Request, error) {
 		return nil, fmt.Errorf("%v: validating id (%v): %w", baseErr, imageIdStr, e.ErrValidation)
 
 	}
-	req.Id = imageId
+	req.ImageId = imageId
 
 	collection := u.Query().Get("collection")
 	if collection == "" {
@@ -36,25 +36,25 @@ func ParseImageURL(u *url.URL) (*Request, error) {
 	return &req, nil
 }
 
-func (s *Server) AnnotateImage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ViewImage(w http.ResponseWriter, r *http.Request) {
 
-	p := aw.NewAnnotationView()
-	req, err := ParseImageURL(r.URL)
+	view := aw.NewAnnotationView()
+	req, err := ParseURL(r.URL)
 	if err != nil {
-		p.RenderError(err, w)
+		view.RenderError(err, w)
 		return
 	}
 
-	annotator, err := s.annotatorBuilder.Build(req.Id, req.Collection)
+	annotator, err := s.annotatorBuilder.Build(req.ImageId, req.Collection)
 	if err != nil {
-		p.RenderError(err, w)
+		view.RenderError(err, w)
 		return
 	}
 	state, err := annotator.State()
 	if err != nil {
-		p.RenderError(err, w)
+		view.RenderError(err, w)
 		return
 	}
-	p.Render(*state, w)
+	view.Render(*state, w)
 
 }

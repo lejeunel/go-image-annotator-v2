@@ -2,6 +2,7 @@ package read_raw
 
 import (
 	"bytes"
+	"io"
 	"testing"
 
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
@@ -31,7 +32,7 @@ func TestReadOriginalBytes(t *testing.T) {
 	data := []byte("test-data")
 	itr := NewInteractor(&FakeRepo{Data: data})
 	itr.Execute(Request{ImageId: im.NewImageId()}, p)
-	gotData := p.Got.Data
+	gotData, _ := io.ReadAll(p.Got.Reader)
 	if !p.GotSuccess || !bytes.Equal(gotData, data) {
 		t.Fatalf("expected to retrieve input data (%v), got %v", data, gotData)
 	}

@@ -9,6 +9,7 @@ type Config struct {
 	DBPath              string   `required:"true"`
 	ArtefactDir         string   `required:"true"`
 	AllowedImageFormats []string `required:"true"`
+	DefaultPageSize     int      `default:"10"`
 }
 
 func Parse() Config {

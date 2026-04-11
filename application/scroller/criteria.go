@@ -12,7 +12,7 @@ func WithCollection(collection string) Option {
 	}
 }
 
-func NewScrollingCriteria(opts ...Option) ScrollingCriteria {
+func NewCriteria(opts ...Option) ScrollingCriteria {
 	c := &ScrollingCriteria{}
 	for _, opt := range opts {
 		opt(c)

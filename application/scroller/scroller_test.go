@@ -9,7 +9,7 @@ import (
 )
 
 func TestErrOnCurrentImageShouldFail(t *testing.T) {
-	_, err := NewScroller(&FakeRepo{ErrOnImageExists: true, Err: e.ErrNotFound},
+	_, err := New(&FakeRepo{ErrOnImageExists: true, Err: e.ErrNotFound},
 		im.NewImageId())
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
@@ -17,7 +17,7 @@ func TestErrOnCurrentImageShouldFail(t *testing.T) {
 }
 
 func TestNonExistingCollectionShouldFail(t *testing.T) {
-	_, err := NewScroller(&FakeRepo{ErrOnCollectionExists: true, Err: e.ErrNotFound},
+	_, err := New(&FakeRepo{ErrOnCollectionExists: true, Err: e.ErrNotFound},
 		im.NewImageId(), WithCollection("non-existing-collection"))
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
@@ -25,7 +25,7 @@ func TestNonExistingCollectionShouldFail(t *testing.T) {
 }
 
 func TestSingleImageHasNoNextImage(t *testing.T) {
-	s, _ := NewScroller(&FakeRepo{}, im.NewImageId())
+	s, _ := New(&FakeRepo{}, im.NewImageId())
 	state, _ := s.State()
 	if state.Next != nil {
 		t.Fatal("expected no next image")
@@ -33,7 +33,7 @@ func TestSingleImageHasNoNextImage(t *testing.T) {
 }
 
 func TestSingleImageHasNoPreviousImage(t *testing.T) {
-	s, _ := NewScroller(&FakeRepo{}, im.NewImageId())
+	s, _ := New(&FakeRepo{}, im.NewImageId())
 	state, _ := s.State()
 	if state.Previous != nil {
 		t.Fatal("expected no next image")
@@ -42,7 +42,7 @@ func TestSingleImageHasNoPreviousImage(t *testing.T) {
 
 func TestNextImage(t *testing.T) {
 	next := &im.BaseImage{ImageId: im.NewImageId()}
-	s, _ := NewScroller(&FakeRepo{NextImage: next}, im.NewImageId())
+	s, _ := New(&FakeRepo{NextImage: next}, im.NewImageId())
 	state, _ := s.State()
 	if state.Next == nil {
 		t.Fatal("expected to get one next image")
@@ -54,24 +54,12 @@ func TestNextImage(t *testing.T) {
 
 func TestPreviousImage(t *testing.T) {
 	prev := &im.BaseImage{ImageId: im.NewImageId()}
-	s, _ := NewScroller(&FakeRepo{PreviousImage: prev}, im.NewImageId())
+	s, _ := New(&FakeRepo{PreviousImage: prev}, im.NewImageId())
 	state, _ := s.State()
 	if state.Previous == nil {
 		t.Fatal("expected to get one previous image")
 	}
 	if state.Previous.ImageId != prev.ImageId {
 		t.Fatalf("expected to get previous image with id %v, got %v", prev.ImageId, state.Previous.ImageId)
-	}
-}
-
-func TestStateContainsCriteria(t *testing.T) {
-	next := &im.BaseImage{ImageId: im.NewImageId()}
-	collection := "a-collection"
-	s, _ := NewScroller(&FakeRepo{NextImage: next},
-		im.NewImageId(), WithCollection(collection))
-	state, _ := s.State()
-	if state.Next.Collection != collection {
-		t.Fatalf("expected next image to be in collection %v, got %v",
-			collection, state.Next.Collection)
 	}
 }

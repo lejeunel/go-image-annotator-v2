@@ -28,7 +28,7 @@ func Serve(port int) {
 	mux := http.NewServeMux()
 
 	infra := infra.NewSQLiteInfra(cfg.DBPath, cfg.ArtefactDir)
-	interactors := i.NewSQLiteInteractors(infra, cfg.AllowedImageFormats)
+	interactors := i.NewSQLiteInteractors(infra, cfg.DefaultPageSize, cfg.AllowedImageFormats)
 	annotatorBuilder := a.NewAnnotatorBuilder(infra.ScrollerRepo, infra.ImageStore)
 	RegisterHandlers(mux,
 		*api.NewServer(interactors),

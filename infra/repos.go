@@ -1,14 +1,14 @@
 package infra
 
 import (
-	af_store "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	af_store "github.com/lejeunel/go-image-annotator-v2/application/file-store"
 	im_store "github.com/lejeunel/go-image-annotator-v2/application/image-store"
-	"github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite"
-	an "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/annotation"
-	clc "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
-	im "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
-	lbl "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
-	scr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/scroll"
+	db "github.com/lejeunel/go-image-annotator-v2/infra/db"
+	an "github.com/lejeunel/go-image-annotator-v2/infra/db/annotation"
+	clc "github.com/lejeunel/go-image-annotator-v2/infra/db/collection"
+	im "github.com/lejeunel/go-image-annotator-v2/infra/db/image"
+	lbl "github.com/lejeunel/go-image-annotator-v2/infra/db/label"
+	scr "github.com/lejeunel/go-image-annotator-v2/infra/db/scroll"
 )
 
 type SQLiteInfra struct {
@@ -16,26 +16,34 @@ type SQLiteInfra struct {
 	CollectionRepo *clc.SQLiteCollectionRepo
 	LabelRepo      *lbl.SQLiteLabelRepo
 	ImageStore     *im_store.ImageStore
-	ArtefactRepo   *af_store.FileArtefactRepo
+	FileStore      *af_store.FileStore
 	AnnotationRepo *an.SQLiteAnnotationRepo
 	ScrollerRepo   *scr.SQLiteScrollerRepo
 }
 
+type SQLiteImageStoreRepo struct {
+	*im.SQLiteImageRepo
+	*clc.SQLiteCollectionRepo
+	*lbl.SQLiteLabelRepo
+	*an.SQLiteAnnotationRepo
+}
+
 func NewSQLiteInfra(dbPath, artefactDir string) *SQLiteInfra {
-	db := sqlite.NewSQLiteDB(dbPath)
+	db := db.NewSQLiteDB(dbPath)
 	imrepo := im.NewSQLiteImageRepo(db)
 	anrepo := an.NewSQLiteAnnotationRepo(db)
 	clrepo := clc.NewSQLiteCollectionRepo(db)
 	lbrepo := lbl.NewSQLiteLabelRepo(db)
-	afrepo := af_store.NewFileArtefactRepo(artefactDir)
-	imstore := im_store.NewImageStore(imrepo, clrepo, anrepo, afrepo)
+	afrepo := af_store.NewFileStore(artefactDir)
+	imstorerepo := SQLiteImageStoreRepo{imrepo, clrepo, lbrepo, anrepo}
+	imstore := im_store.New(imstorerepo, afrepo)
 	scrrepo := scr.NewSQLiteScrollerRepo(db)
 	return &SQLiteInfra{
 		ImageRepo:      imrepo,
 		CollectionRepo: clrepo,
 		LabelRepo:      lbrepo,
 		ImageStore:     imstore,
-		ArtefactRepo:   afrepo,
+		FileStore:      afrepo,
 		AnnotationRepo: anrepo,
 		ScrollerRepo:   scrrepo,
 	}

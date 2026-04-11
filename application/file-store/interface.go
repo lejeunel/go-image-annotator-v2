@@ -1,0 +1,16 @@
+package file_store
+
+import (
+	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	"io"
+)
+
+type Interface interface {
+	Store(im.ImageId, []byte) error
+	Delete(im.ImageId) error
+	Get(im.ImageId) (io.Reader, error)
+}
+
+type ReadInterface interface {
+	Get(im.ImageId) (io.Reader, error)
+}

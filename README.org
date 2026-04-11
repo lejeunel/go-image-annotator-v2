@@ -26,7 +26,7 @@
 **** DONE IsPopulated
 *** DONE update
 ** DONE Images
-*** DONE AddImageToCollection(im.ImageId, clc.CollectionId) error
+*** DONE AddToCollection(im.ImageId, clc.CollectionId) error
 *** DONE ImageExistsInCollection(ImageId, string) (bool, error)
 *** DONE FindImageIdByHash(string) (*im.Image, error)
 *** DONE Delete(im.ImageId) error

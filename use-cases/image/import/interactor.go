@@ -35,7 +35,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	if err := i.repo.AddImageToCollection(r.ImageId, collection.Id); err != nil {
+	if err := i.repo.AddToCollection(r.ImageId, collection.Id); err != nil {
 		i.handleError(err, out)
 		return
 	}

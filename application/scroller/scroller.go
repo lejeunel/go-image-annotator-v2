@@ -59,8 +59,8 @@ func checkCriteria(repo Repo, imageId im.ImageId, criteria ScrollingCriteria) er
 	return nil
 }
 
-func NewScroller(repo Repo, imageId im.ImageId, opts ...Option) (*Scroller, error) {
-	criteria := NewScrollingCriteria(opts...)
+func New(repo Repo, imageId im.ImageId, opts ...Option) (*Scroller, error) {
+	criteria := NewCriteria(opts...)
 	if err := checkCriteria(repo, imageId, criteria); err != nil {
 		return nil, err
 	}

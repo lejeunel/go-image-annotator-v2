@@ -134,7 +134,7 @@ func (r *FakeImageRepo) Delete(im.ImageId) error {
 	return nil
 }
 
-func (r *FakeImageRepo) AddImageToCollection(im.ImageId, clc.CollectionId) error {
+func (r *FakeImageRepo) AddToCollection(im.ImageId, clc.CollectionId) error {
 	if r.ErrOnIngest {
 		return r.Err
 	}

@@ -2,6 +2,7 @@ package read_raw
 
 import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
+	"io"
 )
 
 type Request struct {
@@ -9,5 +10,5 @@ type Request struct {
 }
 
 type Response struct {
-	Data []byte
+	Reader io.Reader
 }

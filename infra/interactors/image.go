@@ -2,7 +2,7 @@ package interactors
 
 import (
 	has "github.com/lejeunel/go-image-annotator-v2/application/hasher"
-	rea "github.com/lejeunel/go-image-annotator-v2/application/image-reader"
+	rea "github.com/lejeunel/go-image-annotator-v2/application/reader"
 	"github.com/lejeunel/go-image-annotator-v2/infra"
 	im "github.com/lejeunel/go-image-annotator-v2/use-cases/image"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/ingest"
@@ -14,7 +14,7 @@ func NewSQLiteImageInteractors(repos *infra.SQLiteInfra, allowedImageFormats []s
 	return &im.Interactors{
 		Ingest: *ingest.NewInteractor(repos.ImageRepo, repos.CollectionRepo,
 			repos.LabelRepo, repos.AnnotationRepo,
-			repos.ArtefactRepo, has.NewSha256Hasher(), rea.ImageMIMETypeDetector{}),
+			repos.FileStore, has.NewSha256Hasher(), rea.ImageMIMETypeDetector{}),
 		Read:                *read.NewInteractor(*repos.ImageStore),
 		List:                *list.NewInteractor(repos.ImageRepo, repos.ImageStore),
 		AllowedImageFormats: allowedImageFormats,

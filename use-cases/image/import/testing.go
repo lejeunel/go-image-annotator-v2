@@ -57,7 +57,7 @@ func (r *FakeRepo) ImageExistsInCollection(imageId im.ImageId, collectionId clc.
 	return false, nil
 }
 
-func (r *FakeRepo) AddImageToCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
+func (r *FakeRepo) AddToCollection(imageId im.ImageId, collectionId clc.CollectionId) error {
 	if r.ErrOnImport {
 		return r.Err
 	}

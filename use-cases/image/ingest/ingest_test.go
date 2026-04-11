@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	ast "github.com/lejeunel/go-image-annotator-v2/application/file-store"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
@@ -61,7 +61,7 @@ func TestHandleLabelExistsInternalErr(t *testing.T) {
 func TestHandleIngestionInternalErr(t *testing.T) {
 	p := &FakePresenter{}
 	itr := NewTestingInteractor()
-	itr.ImageRepo = &FakeImageRepo{ErrOnAddImageToCollection: true, Err: e.ErrInternal}
+	itr.ImageRepo = &FakeImageRepo{ErrOnAddToCollection: true, Err: e.ErrInternal}
 	itr.Execute(Request{Reader: &FakeImageReader{}}, p)
 	if !p.GotInternalErr || p.GotSuccess {
 		t.Fatal("expected internal error")
@@ -141,21 +141,21 @@ func TestHandleAddBoundingBoxInternalErr(t *testing.T) {
 
 func TestInternalErrOnAddLabelMustDeleteImage(t *testing.T) {
 	p := &FakePresenter{}
-	artefactRepo := &ast.FakeArtefactRepo{}
+	fileStore := &ast.FakeStore{}
 	imageRepo := &FakeImageRepo{}
 	itr := NewTestingInteractor()
-	itr.ArtefactRepo = artefactRepo
+	itr.ArtefactRepo = fileStore
 	itr.ImageRepo = imageRepo
 	itr.AnnotationRepo = &FakeAnnotationRepo{ErrOnAddLabel: true, Err: e.ErrInternal}
 	itr.Execute(Request{Labels: []string{"a-label"}, Reader: &FakeImageReader{}}, p)
-	if imageRepo.NumDeletedImages != 1 || artefactRepo.NumDeletedImages != 1 {
+	if imageRepo.NumDeletedImages != 1 || fileStore.NumDeletedImages != 1 {
 		t.Fatalf("expected to delete image meta-data and artefacts, got %v and %v",
-			imageRepo.NumDeletedImages, artefactRepo.NumDeletedImages)
+			imageRepo.NumDeletedImages, fileStore.NumDeletedImages)
 	}
 }
 
 func TestCorrectDataIsStored(t *testing.T) {
-	artefactRepo := &ast.FakeArtefactRepo{}
+	artefactRepo := &ast.FakeStore{}
 	itr := NewTestingInteractor()
 	itr.ArtefactRepo = artefactRepo
 	data := []byte("the-data")

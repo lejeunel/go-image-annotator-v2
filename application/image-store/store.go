@@ -3,26 +3,23 @@ package image_store
 import (
 	"fmt"
 
-	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
-	rd "github.com/lejeunel/go-image-annotator-v2/application/image-reader"
+	fs "github.com/lejeunel/go-image-annotator-v2/application/file-store"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
 type ImageStore struct {
-	collectionRepo CollectionRepo
-	annotationRepo AnnotationRepo
-	imageRepo      ImageRepo
-	artefactRepo   ast.ArtefactRepo
+	repo      Repo
+	fileStore fs.Interface
 }
 
 func (s ImageStore) Find(base im.BaseImage) (*im.Image, error) {
-	collection, err := s.collectionRepo.FindCollectionByName(base.Collection)
+	collection, err := s.repo.FindCollectionByName(base.Collection)
 	if err != nil {
 		return nil, fmt.Errorf("fetching collection by name (%v): %w", base.Collection, err)
 	}
 
-	ok, err := s.imageRepo.ImageExistsInCollection(base.ImageId, collection.Id)
+	ok, err := s.repo.ImageExistsInCollection(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("checking whether image %v exists in collection %v: %w",
 			base.ImageId.String(), base.Collection, err)
@@ -33,32 +30,32 @@ func (s ImageStore) Find(base im.BaseImage) (*im.Image, error) {
 
 	}
 
-	labels, err := s.annotationRepo.FindImageLabels(base.ImageId, collection.Id)
+	labels, err := s.repo.FindImageLabels(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("fetching labels: %w", err)
 	}
 
-	boxes, err := s.annotationRepo.FindBoundingBoxes(base.ImageId, collection.Id)
+	boxes, err := s.repo.FindBoundingBoxes(base.ImageId, collection.Id)
 	if err != nil {
 		return nil, fmt.Errorf("fetching bounding boxes: %w", err)
 	}
 
-	mimetype, err := s.imageRepo.MIMEType(base.ImageId)
+	mimetype, err := s.repo.MIMEType(base.ImageId)
 	if err != nil {
 		return nil, fmt.Errorf("fetching MIMEType: %w", err)
 	}
 
+	reader, err := s.fileStore.Get(base.ImageId)
+	if err != nil {
+		return nil, fmt.Errorf("fetching raw data: %w", err)
+	}
 	return &im.Image{Id: base.ImageId, Collection: *collection, Labels: labels,
 		BoundingBoxes: boxes,
 		MIMEType:      *mimetype,
-		Reader:        rd.NewImageReader(base.ImageId, s.artefactRepo)}, nil
+		Reader:        reader}, nil
 
 }
 
-func NewImageStore(imageRepo ImageRepo, collectionRepo CollectionRepo,
-	annotationRepo AnnotationRepo, artefactRepo ast.ArtefactRepo) *ImageStore {
-	return &ImageStore{imageRepo: imageRepo,
-		collectionRepo: collectionRepo,
-		annotationRepo: annotationRepo,
-		artefactRepo:   artefactRepo}
+func New(repo Repo, fileStore fs.Interface) *ImageStore {
+	return &ImageStore{repo: repo, fileStore: fileStore}
 }

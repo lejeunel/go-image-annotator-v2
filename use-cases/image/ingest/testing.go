@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	ast "github.com/lejeunel/go-image-annotator-v2/application/artefact-store"
+	ast "github.com/lejeunel/go-image-annotator-v2/application/file-store"
 	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	clc "github.com/lejeunel/go-image-annotator-v2/entities/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
@@ -20,7 +20,7 @@ func NewTestingInteractor() *Interactor {
 		CollectionRepo:        &FakeCollectionRepo{},
 		LabelRepo:             &FakeLabelRepo{},
 		AnnotationRepo:        &FakeAnnotationRepo{},
-		ArtefactRepo:          &ast.FakeArtefactRepo{},
+		ArtefactRepo:          &ast.FakeStore{},
 		Hasher:                &FakeHasher{},
 		Logger:                logging.NewNoOpLogger(),
 		ImageMIMETypeDetector: &FakeMIMETypeDetector{},
@@ -68,16 +68,16 @@ type FakeAnnotationRepo struct {
 }
 
 type FakeImageRepo struct {
-	Err                       error
-	GotImage                  bool
-	GotHash                   string
-	GotMIMEType               string
-	ErrOnAddImageToCollection bool
-	ErrOnAddImage             bool
-	ErrOnFindHash             bool
-	ErrOnDeleteImage          bool
-	HashAlreadyExists         bool
-	NumDeletedImages          int
+	Err                  error
+	GotImage             bool
+	GotHash              string
+	GotMIMEType          string
+	ErrOnAddToCollection bool
+	ErrOnAddImage        bool
+	ErrOnFindHash        bool
+	ErrOnDeleteImage     bool
+	HashAlreadyExists    bool
+	NumDeletedImages     int
 }
 
 func (r *FakeCollectionRepo) FindCollectionByName(name string) (*clc.Collection, error) {
@@ -136,8 +136,8 @@ func (r *FakeImageRepo) Delete(im.ImageId) error {
 	return nil
 }
 
-func (r *FakeImageRepo) AddImageToCollection(im.ImageId, clc.CollectionId) error {
-	if r.ErrOnAddImageToCollection {
+func (r *FakeImageRepo) AddToCollection(im.ImageId, clc.CollectionId) error {
+	if r.ErrOnAddToCollection {
 		return r.Err
 	}
 	return nil
