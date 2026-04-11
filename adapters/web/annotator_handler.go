@@ -2,11 +2,13 @@ package web
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+
 	aw "github.com/lejeunel/go-image-annotator-v2/adapters/web/annotator"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
-	"net/http"
-	"net/url"
+	"github.com/lejeunel/go-image-annotator-v2/shared/html"
 )
 
 type Request struct {
@@ -38,23 +40,12 @@ func ParseURL(u *url.URL) (*Request, error) {
 
 func (s *Server) ViewImage(w http.ResponseWriter, r *http.Request) {
 
-	view := aw.NewAnnotationView()
 	req, err := ParseURL(r.URL)
 	if err != nil {
-		view.RenderError(err, w)
+		html.NewPageBuilder().SetError(err).Render(w)
 		return
 	}
-
-	annotator, err := s.annotatorBuilder.Build(req.ImageId, req.Collection)
-	if err != nil {
-		view.RenderError(err, w)
-		return
-	}
-	state, err := annotator.State()
-	if err != nil {
-		view.RenderError(err, w)
-		return
-	}
-	view.Render(*state, w)
-
+	view := aw.NewAnnotationView()
+	s.annotator.Init(req.ImageId, req.Collection, view)
+	view.Render(w)
 }

@@ -7,9 +7,9 @@ import (
 
 type Server struct {
 	*u.Interactors
-	annotatorBuilder *a.AnnotatorBuilder
+	annotator *a.Annotator
 }
 
-func NewServer(interactors *u.Interactors, annotatorBuilder *a.AnnotatorBuilder) *Server {
-	return &Server{Interactors: interactors, annotatorBuilder: annotatorBuilder}
+func NewServer(interactors *u.Interactors, annotator *a.Annotator) *Server {
+	return &Server{Interactors: interactors, annotator: annotator}
 }

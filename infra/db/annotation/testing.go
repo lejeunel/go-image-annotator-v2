@@ -26,7 +26,7 @@ func NewAnnotationTestRepos() AnnotationTestingRepos {
 		Annotation: *NewSQLiteAnnotationRepo(db)}
 }
 
-func CreateAnnotableImage(repos AnnotationTestingRepos, collectionName string, labelName string) (*im.Image, *clc.Collection, *lbl.Label) {
+func CreateAnnotableImage(repos AnnotationTestingRepos, collectionName string, labelName string) (im.Image, clc.Collection, lbl.Label) {
 	collection := clc.NewCollection(clc.NewCollectionId(), collectionName)
 	label := lbl.NewLabel(lbl.NewLabelId(), labelName)
 	repos.Label.Create(*label)
@@ -35,6 +35,6 @@ func CreateAnnotableImage(repos AnnotationTestingRepos, collectionName string, l
 	repos.Image.AddImage(image.Id, "", "")
 	repos.Image.AddToCollection(image.Id, collection.Id)
 
-	return image, collection, label
+	return *image, *collection, *label
 
 }

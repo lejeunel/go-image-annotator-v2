@@ -1,8 +1,6 @@
 package annotator
 
 import (
-	"fmt"
-
 	sto "github.com/lejeunel/go-image-annotator-v2/application/image-store"
 	"github.com/lejeunel/go-image-annotator-v2/application/scroller"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
@@ -13,42 +11,35 @@ type AnnotatorState struct {
 	Scroller scroller.ScrollerState
 }
 
+type AnnotatorView interface {
+	DrawScroller(scroller.ScrollerState)
+	DrawImage(im.Image)
+	Error(error)
+}
+
 type Annotator struct {
 	imageId    im.ImageId
 	collection string
-	scroller   *scroller.Scroller
-	store      *sto.ImageStore
+	Scroller   scroller.Interface
+	Store      sto.Interface
 }
 
-func (a *Annotator) State() (*AnnotatorState, error) {
-	image, err := a.store.Find(im.BaseImage{ImageId: a.imageId, Collection: a.collection})
+func (a *Annotator) Init(imageId im.ImageId, collection string, view AnnotatorView) {
+	scrollerState, err := a.Scroller.Init(imageId, scroller.WithCollection(collection))
 	if err != nil {
-		return nil, err
+		view.Error(err)
+		return
 	}
-	scrollerState, err := a.scroller.State()
+	image, err := a.Store.Find(im.BaseImage{ImageId: imageId, Collection: collection})
 	if err != nil {
-		return nil, err
+		view.Error(err)
+		return
 	}
-	return &AnnotatorState{Image: *image, Scroller: *scrollerState}, nil
+	view.DrawScroller(*scrollerState)
+	view.DrawImage(*image)
 }
 
-func NewAnnotator(scrollerRepo scroller.Repo, store *sto.ImageStore, imageId im.ImageId, collection string) (*Annotator, error) {
-	scroller, err := scroller.New(scrollerRepo, imageId, scroller.WithCollection(collection))
-	if err != nil {
-		return nil, fmt.Errorf("building annotator: %w", err)
-	}
-	return &Annotator{scroller: scroller, store: store, imageId: imageId, collection: collection}, nil
-}
-
-type AnnotatorBuilder struct {
-	repo  scroller.Repo
-	store *sto.ImageStore
-}
-
-func (b *AnnotatorBuilder) Build(imageId im.ImageId, collection string) (*Annotator, error) {
-	return NewAnnotator(b.repo, b.store, imageId, collection)
-}
-
-func NewAnnotatorBuilder(scrollerRepo scroller.Repo, store *sto.ImageStore) *AnnotatorBuilder {
-	return &AnnotatorBuilder{repo: scrollerRepo, store: store}
+func NewAnnotator(scrollerRepo scroller.Repo, store *sto.ImageStore) *Annotator {
+	return &Annotator{Scroller: scroller.New(scrollerRepo),
+		Store: store}
 }

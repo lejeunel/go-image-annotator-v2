@@ -9,32 +9,32 @@ import (
 )
 
 func TestErrOnCurrentImageShouldFail(t *testing.T) {
-	_, err := New(&FakeRepo{ErrOnImageExists: true, Err: e.ErrNotFound},
-		im.NewImageId())
+	s := New(&FakeRepo{ErrOnImageExists: true, Err: e.ErrNotFound})
+	_, err := s.Init(im.NewImageId())
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
 	}
 }
 
 func TestNonExistingCollectionShouldFail(t *testing.T) {
-	_, err := New(&FakeRepo{ErrOnCollectionExists: true, Err: e.ErrNotFound},
-		im.NewImageId(), WithCollection("non-existing-collection"))
+	s := New(&FakeRepo{ErrOnCollectionExists: true, Err: e.ErrNotFound})
+	_, err := s.Init(im.NewImageId(), WithCollection("non-existing-collection"))
 	if !errors.Is(err, e.ErrNotFound) {
 		t.Fatalf("expected not found error, got %v", err)
 	}
 }
 
 func TestSingleImageHasNoNextImage(t *testing.T) {
-	s, _ := New(&FakeRepo{}, im.NewImageId())
-	state, _ := s.State()
+	s := New(&FakeRepo{})
+	state, _ := s.Init(im.NewImageId())
 	if state.Next != nil {
 		t.Fatal("expected no next image")
 	}
 }
 
 func TestSingleImageHasNoPreviousImage(t *testing.T) {
-	s, _ := New(&FakeRepo{}, im.NewImageId())
-	state, _ := s.State()
+	s := New(&FakeRepo{})
+	state, _ := s.Init(im.NewImageId())
 	if state.Previous != nil {
 		t.Fatal("expected no next image")
 	}
@@ -42,8 +42,8 @@ func TestSingleImageHasNoPreviousImage(t *testing.T) {
 
 func TestNextImage(t *testing.T) {
 	next := &im.BaseImage{ImageId: im.NewImageId()}
-	s, _ := New(&FakeRepo{NextImage: next}, im.NewImageId())
-	state, _ := s.State()
+	s := New(&FakeRepo{NextImage: next})
+	state, _ := s.Init(im.NewImageId())
 	if state.Next == nil {
 		t.Fatal("expected to get one next image")
 	}
@@ -54,8 +54,8 @@ func TestNextImage(t *testing.T) {
 
 func TestPreviousImage(t *testing.T) {
 	prev := &im.BaseImage{ImageId: im.NewImageId()}
-	s, _ := New(&FakeRepo{PreviousImage: prev}, im.NewImageId())
-	state, _ := s.State()
+	s := New(&FakeRepo{PreviousImage: prev})
+	state, _ := s.Init(im.NewImageId())
 	if state.Previous == nil {
 		t.Fatal("expected to get one previous image")
 	}

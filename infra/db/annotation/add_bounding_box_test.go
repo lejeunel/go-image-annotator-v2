@@ -12,7 +12,7 @@ import (
 func TestInternalErrOnAddBBoxShouldFail(t *testing.T) {
 	repos := NewAnnotationTestRepos()
 	image, collection, label := CreateAnnotableImage(repos, "a-collection", "a-label")
-	bbox := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, *label)
+	bbox := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, label)
 	repos.Annotation.Db.Close()
 	err := repos.Annotation.AddBoundingBox(image.Id, collection.Id, *bbox)
 	if !errors.Is(err, e.ErrInternal) {
@@ -23,7 +23,7 @@ func TestInternalErrOnAddBBoxShouldFail(t *testing.T) {
 func TestInternalErrOnFindBBoxShouldFail(t *testing.T) {
 	repos := NewAnnotationTestRepos()
 	image, collection, label := CreateAnnotableImage(repos, "a-collection", "a-label")
-	bbox := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, *label)
+	bbox := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, label)
 	repos.Annotation.AddBoundingBox(image.Id, collection.Id, *bbox)
 	repos.Annotation.Db.Close()
 	_, err := repos.Annotation.FindBoundingBoxes(image.Id, collection.Id)
@@ -36,7 +36,7 @@ func TestAddBoundingBox(t *testing.T) {
 	repos := NewAnnotationTestRepos()
 	labelName := "a-label"
 	image, collection, label := CreateAnnotableImage(repos, "a-collection", labelName)
-	bbox := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, *label)
+	bbox := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, label)
 	err := repos.Annotation.AddBoundingBox(image.Id, collection.Id, *bbox)
 	if err != nil {
 		t.Fatalf("expected no error on adding bbox, got %v", err)
@@ -63,7 +63,7 @@ func TestRetrieveImageWithBoxesAndImageLabels(t *testing.T) {
 	repos.Label.Create(*newLabel)
 	repos.Annotation.AddImageLabel(a.NewAnnotationId(), image.Id, collection.Id, newLabel.Id)
 
-	box := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, *label)
+	box := a.NewBoundingBox(a.NewAnnotationId(), 1, 1, 1, 1, label)
 	repos.Annotation.AddBoundingBox(image.Id, collection.Id, *box)
 
 	boxes, _ := repos.Annotation.FindBoundingBoxes(image.Id, collection.Id)

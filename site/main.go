@@ -29,10 +29,10 @@ func Serve(port int) {
 
 	infra := infra.NewSQLiteInfra(cfg.DBPath, cfg.ArtefactDir)
 	interactors := i.NewSQLiteInteractors(infra, cfg.DefaultPageSize, cfg.AllowedImageFormats)
-	annotatorBuilder := a.NewAnnotatorBuilder(infra.ScrollerRepo, infra.ImageStore)
+	annotator := a.NewAnnotator(infra.ScrollerRepo, infra.ImageStore)
 	RegisterHandlers(mux,
 		*api.NewServer(interactors),
-		*web.NewServer(interactors, annotatorBuilder),
+		*web.NewServer(interactors, annotator),
 		SiteConfig{APIDocsPath: "/api/docs", OpenAPISpecsPath: "/api/openapi.yaml"})
 
 	fmt.Println("serving on port:", port)

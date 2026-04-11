@@ -8,10 +8,12 @@ import (
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
 )
 
+type Interface interface {
+	Init(im.ImageId, ...Option) (*ScrollerState, error)
+}
+
 type Scroller struct {
-	currentImage im.ImageId
-	repo         Repo
-	criteria     ScrollingCriteria
+	repo Repo
 }
 
 type ScrollerState struct {
@@ -19,19 +21,14 @@ type ScrollerState struct {
 	Previous *im.BaseImage
 }
 
-func (s *Scroller) getOne(direction ScrollingDirection) (*im.BaseImage, error) {
-
-	image, err := s.repo.GetAdjacent(s.currentImage, s.criteria, direction)
-	if err != nil && !errors.Is(err, e.ErrNotFound) {
+func (s Scroller) Init(imageId im.ImageId, opts ...Option) (*ScrollerState, error) {
+	criteria := NewCriteria(opts...)
+	if err := checkCriteria(s.repo, imageId, criteria); err != nil {
 		return nil, err
 	}
-	return image, nil
-}
-
-func (s *Scroller) State() (*ScrollerState, error) {
 	state := ScrollerState{}
-	next, errNext := s.getOne(ScrollNext)
-	prev, errPrev := s.getOne(ScrollPrevious)
+	next, errNext := s.getOne(imageId, ScrollNext, criteria)
+	prev, errPrev := s.getOne(imageId, ScrollPrevious, criteria)
 
 	if errNext != nil || errPrev != nil {
 		return nil, fmt.Errorf("%w, %w", errNext, errPrev)
@@ -40,7 +37,15 @@ func (s *Scroller) State() (*ScrollerState, error) {
 	state.Previous = prev
 
 	return &state, nil
+}
 
+func (s *Scroller) getOne(current im.ImageId, direction ScrollingDirection, criteria ScrollingCriteria) (*im.BaseImage, error) {
+
+	image, err := s.repo.GetAdjacent(current, criteria, direction)
+	if err != nil && !errors.Is(err, e.ErrNotFound) {
+		return nil, err
+	}
+	return image, nil
 }
 
 func checkCriteria(repo Repo, imageId im.ImageId, criteria ScrollingCriteria) error {
@@ -59,10 +64,7 @@ func checkCriteria(repo Repo, imageId im.ImageId, criteria ScrollingCriteria) er
 	return nil
 }
 
-func New(repo Repo, imageId im.ImageId, opts ...Option) (*Scroller, error) {
-	criteria := NewCriteria(opts...)
-	if err := checkCriteria(repo, imageId, criteria); err != nil {
-		return nil, err
-	}
-	return &Scroller{repo: repo, currentImage: imageId, criteria: criteria}, nil
+func New(repo Repo) Scroller {
+	// criteria := NewCriteria(opts...)
+	return Scroller{repo: repo}
 }
