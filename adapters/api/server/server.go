@@ -1,13 +1,13 @@
 package server
 
 import (
-	i "github.com/lejeunel/go-image-annotator-v2/application/interactors"
+	u "github.com/lejeunel/go-image-annotator-v2/use-cases"
 )
 
 type Server struct {
-	*i.Interactors
+	*u.Interactors
 }
 
-func NewServer(interactors *i.Interactors) *Server {
+func NewServer(interactors *u.Interactors) *Server {
 	return &Server{interactors}
 }

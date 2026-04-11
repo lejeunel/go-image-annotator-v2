@@ -1,4 +1,4 @@
-package interactors
+package label
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/create"
@@ -7,7 +7,7 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/label/read"
 )
 
-type LabelInteractors struct {
+type Interactors struct {
 	Find            read.Interactor
 	Create          create.Interactor
 	Delete          delete.Interactor

@@ -2,9 +2,9 @@ package interactors
 
 import (
 	"github.com/jonboulle/clockwork"
-	i "github.com/lejeunel/go-image-annotator-v2/application/interactors"
 	infra "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
 	"github.com/lejeunel/go-image-annotator-v2/shared/validation"
+	clc "github.com/lejeunel/go-image-annotator-v2/use-cases/collection"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/create"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/delete"
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/list"
@@ -12,8 +12,8 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/update"
 )
 
-func NewSQLiteCollectionInteractors(repo *infra.SQLiteCollectionRepo) *i.CollectionInteractors {
-	return &i.CollectionInteractors{
+func NewSQLiteCollectionInteractors(repo *infra.SQLiteCollectionRepo) *clc.Interactors {
+	return &clc.Interactors{
 		Find:            *read.NewInteractor(repo),
 		Create:          *create.NewInteractor(repo, validation.NewNameValidator(), clockwork.NewRealClock()),
 		Delete:          *delete.NewInteractor(repo),

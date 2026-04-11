@@ -1,4 +1,4 @@
-package scroll
+package scroller
 
 import (
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"

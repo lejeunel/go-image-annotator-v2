@@ -1,4 +1,4 @@
-package interactors
+package image
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/ingest"
@@ -6,7 +6,7 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read"
 )
 
-type ImageInteractors struct {
+type Interactors struct {
 	Ingest              ingest.Interactor
 	Read                read.Interactor
 	List                list.Interactor

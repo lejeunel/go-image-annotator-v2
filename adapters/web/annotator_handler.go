@@ -2,18 +2,21 @@ package web
 
 import (
 	"fmt"
-	a "github.com/lejeunel/go-image-annotator-v2/adapters/web/annotator"
+	aw "github.com/lejeunel/go-image-annotator-v2/adapters/web/annotator"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	e "github.com/lejeunel/go-image-annotator-v2/shared/errors"
-	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
-	"github.com/lejeunel/go-image-annotator-v2/use-cases/image/read"
 	"net/http"
 	"net/url"
 )
 
-func ParseImageURL(u *url.URL) (*read.Request, error) {
+type Request struct {
+	Id         im.ImageId
+	Collection string
+}
+
+func ParseImageURL(u *url.URL) (*Request, error) {
 	baseErr := "parsing url"
-	req := read.Request{}
+	req := Request{}
 	imageIdStr := u.Query().Get("id")
 	if imageIdStr == "" {
 		return nil, fmt.Errorf("%v: extracting id: %w", baseErr, e.ErrURLParsing)
@@ -23,7 +26,7 @@ func ParseImageURL(u *url.URL) (*read.Request, error) {
 		return nil, fmt.Errorf("%v: validating id (%v): %w", baseErr, imageIdStr, e.ErrValidation)
 
 	}
-	req.ImageId = imageId
+	req.Id = imageId
 
 	collection := u.Query().Get("collection")
 	if collection == "" {
@@ -35,13 +38,23 @@ func ParseImageURL(u *url.URL) (*read.Request, error) {
 
 func (s *Server) AnnotateImage(w http.ResponseWriter, r *http.Request) {
 
+	p := aw.NewAnnotationView()
 	req, err := ParseImageURL(r.URL)
 	if err != nil {
-		html.NewPageBuilder().SetError(err.Error()).Render(w)
+		p.RenderError(err, w)
 		return
 	}
-	p := a.NewAnnotationView()
-	s.Image.Read.Execute(*req, &p.ImageView)
-	p.Render(req.ImageId, req.Collection, w)
+
+	annotator, err := s.annotatorBuilder.Build(req.Id, req.Collection)
+	if err != nil {
+		p.RenderError(err, w)
+		return
+	}
+	state, err := annotator.State()
+	if err != nil {
+		p.RenderError(err, w)
+		return
+	}
+	p.Render(*state, w)
 
 }

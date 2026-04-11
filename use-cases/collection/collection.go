@@ -1,4 +1,4 @@
-package interactors
+package collection
 
 import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/create"
@@ -8,7 +8,7 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/use-cases/collection/update"
 )
 
-type CollectionInteractors struct {
+type Interactors struct {
 	Find            read.Interactor
 	Create          create.Interactor
 	Delete          delete.Interactor

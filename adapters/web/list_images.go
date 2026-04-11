@@ -32,7 +32,7 @@ func (s *Server) ListImages(w http.ResponseWriter, r *http.Request) {
 
 	collection := r.URL.Query().Get("collection")
 	if collection == "" {
-		p := html.NewPageBuilder().SetError(fmt.Errorf("parsing url to get collection name: %w", e.ErrURLParsing).Error())
+		p := html.NewPageBuilder().SetError(fmt.Errorf("parsing url to get collection name: %w", e.ErrURLParsing))
 		p.Render(w)
 	}
 	s.Image.List.Execute(list_im.Request{PageSize: s.Image.DefaultPageSize,

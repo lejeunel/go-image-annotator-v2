@@ -1,13 +1,15 @@
 package web
 
 import (
-	i "github.com/lejeunel/go-image-annotator-v2/application/interactors"
+	a "github.com/lejeunel/go-image-annotator-v2/application/annotator"
+	u "github.com/lejeunel/go-image-annotator-v2/use-cases"
 )
 
 type Server struct {
-	*i.Interactors
+	*u.Interactors
+	annotatorBuilder *a.AnnotatorBuilder
 }
 
-func NewServer(interactors *i.Interactors) *Server {
-	return &Server{interactors}
+func NewServer(interactors *u.Interactors, annotatorBuilder *a.AnnotatorBuilder) *Server {
+	return &Server{Interactors: interactors, annotatorBuilder: annotatorBuilder}
 }

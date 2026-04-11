@@ -14,28 +14,19 @@ type ImageView struct {
 	result Node
 }
 
-func (p *ImageView) Success(image *im.Image) {
+func (p *ImageView) Render(image *im.Image) Node {
 	if image.Reader == nil {
-		p.result = Text("presenting image: got no reader")
-		return
+		return Text("presenting image: got no reader")
 
 	}
 	bytes, err := io.ReadAll(image.Reader)
 
 	if err != nil {
-		p.result = Text(err.Error())
-		return
+		return Text(err.Error())
 	}
 
 	b64Image := base64.StdEncoding.EncodeToString(bytes)
-	imNode := Img(ID("image"), Src(fmt.Sprintf("data:%v;base64,%s", image.MIMEType, b64Image)))
-	p.result = imNode
+	return Img(ID("image"), Src(fmt.Sprintf("data:%v;base64,%s",
+		image.MIMEType, b64Image)))
 
-}
-func (p *ImageView) Error(err error) {
-	p.result = Text(err.Error())
-}
-
-func (p *ImageView) Build() Node {
-	return p.result
 }

@@ -8,6 +8,7 @@ import (
 	clc "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/collection"
 	im "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/image"
 	lbl "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/label"
+	scr "github.com/lejeunel/go-image-annotator-v2/infra/db/sqlite/scroll"
 )
 
 type SQLiteInfra struct {
@@ -17,6 +18,7 @@ type SQLiteInfra struct {
 	ImageStore     *im_store.ImageStore
 	ArtefactRepo   *af_store.FileArtefactRepo
 	AnnotationRepo *an.SQLiteAnnotationRepo
+	ScrollerRepo   *scr.SQLiteScrollerRepo
 }
 
 func NewSQLiteInfra(dbPath, artefactDir string) *SQLiteInfra {
@@ -27,6 +29,7 @@ func NewSQLiteInfra(dbPath, artefactDir string) *SQLiteInfra {
 	lbrepo := lbl.NewSQLiteLabelRepo(db)
 	afrepo := af_store.NewFileArtefactRepo(artefactDir)
 	imstore := im_store.NewImageStore(imrepo, clrepo, anrepo, afrepo)
+	scrrepo := scr.NewSQLiteScrollerRepo(db)
 	return &SQLiteInfra{
 		ImageRepo:      imrepo,
 		CollectionRepo: clrepo,
@@ -34,6 +37,7 @@ func NewSQLiteInfra(dbPath, artefactDir string) *SQLiteInfra {
 		ImageStore:     imstore,
 		ArtefactRepo:   afrepo,
 		AnnotationRepo: anrepo,
+		ScrollerRepo:   scrrepo,
 	}
 
 }

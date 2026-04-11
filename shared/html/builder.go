@@ -30,9 +30,9 @@ func (b *PageBuilder) SetContent(c Node) *PageBuilder {
 	return b
 }
 
-func (b *PageBuilder) SetError(err string) *PageBuilder {
+func (b *PageBuilder) SetError(err error) *PageBuilder {
 	b.Title = "Oops!"
-	b.Content = Text(err)
+	b.Content = Text(err.Error())
 	return b
 }
 

@@ -1,13 +1,13 @@
 package interactors
 
 import (
-	i "github.com/lejeunel/go-image-annotator-v2/application/interactors"
 	"github.com/lejeunel/go-image-annotator-v2/infra"
+	u "github.com/lejeunel/go-image-annotator-v2/use-cases"
 )
 
-func NewSQLiteInteractors(repos *infra.SQLiteInfra, allowedImageFormats []string) *i.Interactors {
+func NewSQLiteInteractors(repos *infra.SQLiteInfra, allowedImageFormats []string) *u.Interactors {
 
-	return &i.Interactors{
+	return &u.Interactors{
 		Label:      NewSQLiteLabelInteractors(repos.LabelRepo),
 		Collection: NewSQLiteCollectionInteractors(repos.CollectionRepo),
 		Image:      NewSQLiteImageInteractors(repos, allowedImageFormats),
