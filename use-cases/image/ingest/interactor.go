@@ -123,7 +123,7 @@ func (i *Interactor) buildImage(id im.ImageId, collection clc.Collection, labelN
 
 }
 
-func (i *Interactor) appendLabels(image *im.Image, labelNames []string) error {
+func (i Interactor) appendLabels(image *im.Image, labelNames []string) error {
 	for _, labelName := range labelNames {
 		label, err := i.findLabelByName(labelName)
 		if err != nil {
@@ -136,7 +136,7 @@ func (i *Interactor) appendLabels(image *im.Image, labelNames []string) error {
 	return nil
 
 }
-func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRequest) error {
+func (i Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRequest) error {
 	baseErr := fmt.Errorf("appending bounding boxes")
 	for _, bbox := range bboxes {
 		label, err := i.findLabelByName(bbox.Label)
@@ -152,7 +152,7 @@ func (i *Interactor) appendBoundingBoxes(image *im.Image, bboxes []BoundingBoxRe
 
 }
 
-func (i *Interactor) ingestImage(image *im.Image, hash, format string) error {
+func (i Interactor) ingestImage(image *im.Image, hash, format string) error {
 
 	if err := i.ImageRepo.AddImage(image.Id, hash, format); err != nil {
 		return fmt.Errorf("adding image: %w", err)
@@ -177,7 +177,7 @@ func (i *Interactor) ingestImage(image *im.Image, hash, format string) error {
 
 }
 
-func (i *Interactor) findCollectionByName(name string) (*clc.Collection, error) {
+func (i Interactor) findCollectionByName(name string) (*clc.Collection, error) {
 	collection, err := i.CollectionRepo.FindCollectionByName(name)
 	baseErr := fmt.Errorf("finding collection with name %v", name)
 	if err != nil {
@@ -187,7 +187,7 @@ func (i *Interactor) findCollectionByName(name string) (*clc.Collection, error) 
 
 }
 
-func (i *Interactor) findLabelByName(name string) (*lbl.Label, error) {
+func (i Interactor) findLabelByName(name string) (*lbl.Label, error) {
 	baseErr := fmt.Errorf("fetching label by name %v", name)
 	label, err := i.LabelRepo.FindLabelByName(name)
 	if err != nil {
@@ -197,7 +197,7 @@ func (i *Interactor) findLabelByName(name string) (*lbl.Label, error) {
 
 }
 
-func (i *Interactor) ensureDuplicateImageDoesNotExists(hash string) error {
+func (i Interactor) ensureDuplicateImageDoesNotExists(hash string) error {
 
 	baseErr := fmt.Errorf("ensuring that duplicate image does not exist using hash")
 	duplicateId, err := i.ImageRepo.FindImageIdByHash(hash)

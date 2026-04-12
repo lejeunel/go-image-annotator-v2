@@ -20,13 +20,13 @@ func MakeLink(image im.BaseImage) string {
 }
 
 func (p *ScrollerView) Render(s scr.ScrollerState) Node {
-	prevButton := Div()
-	nextButton := Div()
+	prevButton := myhtml.MakePreviousButton("#", false)
+	nextButton := myhtml.MakeNextButton("#", false)
 	if s.Previous != nil {
-		prevButton = myhtml.MakePreviousButton(MakeLink(*s.Previous))
+		prevButton = myhtml.MakePreviousButton(MakeLink(*s.Previous), true)
 	}
 	if s.Next != nil {
-		nextButton = myhtml.MakeNextButton(MakeLink(*s.Next))
+		nextButton = myhtml.MakeNextButton(MakeLink(*s.Next), true)
 	}
 	return Table(Tr(
 		Td(prevButton),

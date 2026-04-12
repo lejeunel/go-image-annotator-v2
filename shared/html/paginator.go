@@ -39,13 +39,13 @@ func MakePaginator(baseURL url.URL, currentPage, lastPage, numItems, totalItems 
 	nextURL := s.URLWithQuery(baseURL, "page", strconv.Itoa(currentPage+1))
 	return Nav(Aria("label", "pagination"),
 		Ul(Class("flex shrink-0 items-center gap-2 text-sm font-medium"),
-			If(currentPage > 1, Li(MakePreviousButton(prevURL.String()))),
+			If(currentPage > 1, Li(MakePreviousButton(prevURL.String(), true))),
 			If(currentPage > 1, MakePaginatorNumberedButton(baseURL, currentPage-1, false)),
 			If(lastPage > 1, MakePaginatorNumberedButton(baseURL, currentPage, true)),
 			If(lastPage-2 > currentPage, MakePaginatorEllipsis()),
 			If(lastPage-1 > currentPage, MakePaginatorNumberedButton(baseURL, lastPage-1, false)),
 			If(lastPage > currentPage, MakePaginatorNumberedButton(baseURL, lastPage, false)),
-			If(currentPage < lastPage, Li(MakeNextButton(nextURL.String()))),
+			If(currentPage < lastPage, Li(MakeNextButton(nextURL.String(), true))),
 			Span(Class("font-light"), Text(fmt.Sprintf("Showing %v items out of %v", numItems, totalItems))),
 		))
 }

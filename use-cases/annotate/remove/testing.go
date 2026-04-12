@@ -1,4 +1,4 @@
-package remove_bbox
+package remove
 
 import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
@@ -23,6 +23,6 @@ type FakePresenter struct {
 	t.TestingErrPresenter
 }
 
-func (p *FakePresenter) Success(Response) {
+func (p *FakePresenter) SuccessDeleteAnnotation(Response) {
 	p.GotSuccess = true
 }

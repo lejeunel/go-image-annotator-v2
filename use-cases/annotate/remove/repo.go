@@ -1,4 +1,4 @@
-package remove_bbox
+package remove
 
 import (
 	a "github.com/lejeunel/go-image-annotator-v2/entities/annotation"

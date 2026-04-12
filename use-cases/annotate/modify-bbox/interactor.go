@@ -9,6 +9,10 @@ import (
 	"log/slog"
 )
 
+type Interface interface {
+	Execute(Request, OutputPort)
+}
+
 type Interactor struct {
 	repo   Repo
 	logger *slog.Logger
@@ -33,7 +37,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		i.handleError(err, out)
 		return
 	}
-	out.Success(Response{})
+	out.SuccessUpdateBox(Response{})
 
 }
 

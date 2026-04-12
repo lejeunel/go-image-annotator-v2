@@ -1,4 +1,4 @@
-package remove_bbox
+package remove
 
 import (
 	"fmt"
@@ -6,6 +6,10 @@ import (
 	"github.com/lejeunel/go-image-annotator-v2/shared/logging"
 	"log/slog"
 )
+
+type Interface interface {
+	Execute(Request, OutputPort)
+}
 
 type Interactor struct {
 	repo   Repo
@@ -24,6 +28,6 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	out.Success(Response{})
+	out.SuccessDeleteAnnotation(Response{})
 
 }

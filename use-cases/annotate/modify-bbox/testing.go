@@ -34,6 +34,6 @@ type FakePresenter struct {
 	t.TestingErrPresenter
 }
 
-func (p *FakePresenter) Success(Response) {
+func (p *FakePresenter) SuccessUpdateBox(Response) {
 	p.GotSuccess = true
 }

@@ -5,9 +5,14 @@ import (
 
 	"embed"
 
+	a "github.com/lejeunel/go-image-annotator-v2/application/annotator"
 	scr "github.com/lejeunel/go-image-annotator-v2/application/scroller"
+	an "github.com/lejeunel/go-image-annotator-v2/entities/annotation"
 	im "github.com/lejeunel/go-image-annotator-v2/entities/image"
 	html "github.com/lejeunel/go-image-annotator-v2/shared/html"
+	addbox "github.com/lejeunel/go-image-annotator-v2/use-cases/annotate/add-bbox"
+	updbox "github.com/lejeunel/go-image-annotator-v2/use-cases/annotate/modify-bbox"
+	del "github.com/lejeunel/go-image-annotator-v2/use-cases/annotate/remove"
 	. "maragu.dev/gomponents/html"
 )
 
@@ -18,7 +23,8 @@ type AnnotationView struct {
 	ImageView      ImageView
 	ImageInfosView ImageInfosView
 	ScrollerView   ScrollerView
-	image          im.Image
+	image          *im.Image
+	imageInfo      *a.ImageInfo
 	scroller       scr.ScrollerState
 	err            error
 }
@@ -32,8 +38,23 @@ func (v *AnnotationView) DrawScroller(scroller scr.ScrollerState) {
 }
 
 func (v *AnnotationView) DrawImage(image im.Image) {
-	v.image = image
+	v.image = &image
 }
+
+func (v *AnnotationView) DrawImageInfo(info a.ImageInfo) {
+	v.imageInfo = &info
+}
+
+func (v *AnnotationView) DrawAnnotationList(annotations []an.Annotation) {
+}
+
+func (v *AnnotationView) SuccessAddBox(r addbox.Response) {
+}
+func (v *AnnotationView) SuccessUpdateBox(r updbox.Response) {
+}
+func (v *AnnotationView) SuccessDeleteAnnotation(r del.Response) {
+}
+
 func (v *AnnotationView) Error(err error) {
 	v.err = err
 }
@@ -56,8 +77,8 @@ func (v *AnnotationView) Render(w io.Writer) {
 		Table(
 			Tr(Td(v.ScrollerView.Render(v.scroller))),
 			Tr(Td(Table(
-				Tr(Td(v.ImageView.Render(&v.image)),
-					Td(Class("align-top pl-2"), v.ImageInfosView.Render(&v.image)))),
+				Tr(Td(v.ImageView.Render(*v.image)),
+					Td(Class("align-top pl-2"), v.ImageInfosView.Render(*v.imageInfo)))),
 			))))
 	b.Render(w)
 

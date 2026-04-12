@@ -11,6 +11,10 @@ import (
 	"log/slog"
 )
 
+type Interface interface {
+	Execute(r Request, out OutputPort)
+}
+
 type Interactor struct {
 	imageStore st.Interface
 	repo       Repo
@@ -44,7 +48,7 @@ func (i *Interactor) Execute(r Request, out OutputPort) {
 		return
 	}
 
-	out.Success(Response{})
+	out.SuccessAddBox(Response{})
 
 }
 func (i *Interactor) handleError(err error, out OutputPort) {

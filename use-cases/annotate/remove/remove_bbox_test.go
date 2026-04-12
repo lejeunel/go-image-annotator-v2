@@ -1,4 +1,4 @@
-package remove_bbox
+package remove
 
 import (
 	"testing"

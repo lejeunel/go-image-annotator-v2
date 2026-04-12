@@ -14,7 +14,7 @@ type ImageView struct {
 	result Node
 }
 
-func (p *ImageView) Render(image *im.Image) Node {
+func (p *ImageView) Render(image im.Image) Node {
 	if image.Reader == nil {
 		return Text("presenting image: got no reader")
 

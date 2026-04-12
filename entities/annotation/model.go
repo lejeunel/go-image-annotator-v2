@@ -11,6 +11,11 @@ type ImageLabel struct {
 	Label lbl.Label
 }
 
+type Annotation struct {
+	Id    AnnotationId
+	Label string
+}
+
 type BoundingBox struct {
 	Id     AnnotationId
 	Label  lbl.Label
