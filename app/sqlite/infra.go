@@ -36,9 +36,9 @@ type Infra struct {
 	*sqlx.DB
 }
 
-func BuildInfra(path string) Infra {
+func BuildInfra(localPath string, imageStore fs.FileStore) Infra {
 	filterParser, orderingParser := im.MakeQueryParsers()
-	db := db.NewSQLiteDB(fmt.Sprintf("%v/%v", path, "db.sqlite"))
+	db := db.NewSQLiteDB(fmt.Sprintf("%v/%v", localPath, "db.sqlite"))
 	return Infra{
 		im.NewImageRepo(db, filterParser, orderingParser),
 		clc.NewCollectionRepo(db),
@@ -49,9 +49,9 @@ func BuildInfra(path string) Infra {
 		usr.NewUserRepo(db),
 		ev.NewEventRepo(db),
 		md.NewMetaRepo(db),
-		fs.NewLocalFileStore(fmt.Sprintf("%v/%v", path, "images")),
-		fs.NewLocalFileStore(fmt.Sprintf("%v/%v", path, "tmp")),
-		fs.NewLocalFileStore(fmt.Sprintf("%v/%v", path, "assets")),
+		imageStore,
+		fs.NewLocalFileStore(fmt.Sprintf("%v/%v", localPath, "tmp")),
+		fs.NewLocalFileStore(fmt.Sprintf("%v/%v", localPath, "assets")),
 		filterParser,
 		orderingParser,
 		db,

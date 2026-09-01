@@ -23,6 +23,7 @@ type PageColumnMode int
 const (
 	PageColumnThinMode PageColumnMode = iota
 	PageColumnExpandMode
+	PageColumnSidebarMode
 )
 
 func (m PageColumnMode) Class() Node {
@@ -31,6 +32,8 @@ func (m PageColumnMode) Class() Node {
 		return Class("flex flex-col w-250")
 	case PageColumnExpandMode:
 		return Class("flex flex-col w-full")
+	case PageColumnSidebarMode:
+		return Class("flex flex-col pt-10 pl-30 w-230")
 	default:
 		return Class("flex flex-col w-250")
 	}
@@ -107,6 +110,7 @@ func (b *PageBuilder) AddSidebarTitle(title string) *PageBuilder {
 }
 
 func (b *PageBuilder) ActivateSidebarEntry(name string) *PageBuilder {
+	b.columnMode = PageColumnSidebarMode
 	b.SidebarEntries = maps.Clone(b.SidebarEntries)
 	for k, v := range b.SidebarEntries {
 		v.IsActive = false
@@ -198,7 +202,7 @@ func (b *PageBuilder) Render(w io.Writer) {
 		}
 		sidebar.Render(&bufSidebar)
 		content = Div(
-			Class("relative flex flex-col"),
+			Class("relative flex flex-col ml-20"),
 			Nav(
 				Attr("x-cloak"),
 				Class(
@@ -207,7 +211,7 @@ func (b *PageBuilder) Render(w io.Writer) {
 				),
 				Raw(bufSidebar.String()),
 			),
-			Div(Class("ml-60 px-4 py-18"), content),
+			Div(b.columnMode.Class(), content),
 		)
 	} else {
 		content = Div(Class("flex w-full px-4 py-18 justify-center"), content)

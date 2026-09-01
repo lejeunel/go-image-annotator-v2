@@ -1,13 +1,21 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"net/url"
 
 	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
-	ArtefactPath                         string   `required:"true" split_words:"true"`
+	LocalArtefactPath                    string   `required:"true" split_words:"true"`
+	ImagesURI                            string   `required:"true" split_words:"true"`
+	S3Endpoint                           string   `split_words:"true"`
+	S3Prefix                             string   `split_words:"true"`
+	S3Region                             string   `split_words:"true"`
+	S3AccessKey                          string   `split_words:"true"`
+	S3Secret                             string   `split_words:"true"`
 	InitialAdminEmail                    string   `required:"true" split_words:"true"`
 	InitialAdminPassword                 string   `required:"true" split_words:"true"`
 	URL                                  string   `required:"true" split_words:"true"`
@@ -28,6 +36,33 @@ type Config struct {
 	GoogleClientSecret                   string   `                split_words:"true"`
 }
 
+func (c Config) S3Config() (*S3Config, error) {
+	u, err := url.Parse(c.ImagesURI)
+	if err != nil {
+		return nil, fmt.Errorf("invalid IMAGE_URI: %w", err)
+	}
+
+	return &S3Config{
+		Bucket:    u.Host,
+		Prefix:    u.Path,
+		Endpoint:  c.S3Endpoint,
+		Region:    c.S3Region,
+		AccessKey: c.S3AccessKey,
+		Secret:    c.S3AccessKey,
+	}, nil
+}
+
+func (c Config) DefinesS3Store() (bool, error) {
+	u, err := url.Parse(c.ImagesURI)
+	if err != nil {
+		return false, fmt.Errorf("invalid IMAGE_URI: %w", err)
+	}
+	if u.Scheme == "s3" {
+		return true, nil
+	}
+	return false, nil
+}
+
 func Parse() Config {
 	var cfg Config
 	err := envconfig.Process("GOIA", &cfg)
@@ -37,8 +72,11 @@ func Parse() Config {
 	return cfg
 }
 
-type APIConfig struct {
-	APIPath          string
-	APIDocsPath      string
-	OpenAPISpecsPath string
+type S3Config struct {
+	Bucket    string
+	Prefix    string
+	Endpoint  string
+	Region    string
+	AccessKey string
+	Secret    string
 }

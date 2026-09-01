@@ -1,6 +1,6 @@
 import typer
 from .client import create_client, Client
-from typing import Any, BinaryIO
+from typing import Any
 from pathlib import Path
 import json
 import mimetypes
